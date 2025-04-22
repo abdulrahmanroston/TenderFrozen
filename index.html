@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tender Frozen Orders Management</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 10px;
+            color: #333;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .filters select, .filters input, .filters button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .filters button {
+            background-color: #3498db;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        .filters button:hover {
+            background-color: #2980b9;
+        }
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .order-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+         .order-card ul {
+            padding: 5px;
+            margin: 0;
+         }
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-card-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+        .order-card-details {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f1f3f5;
+            border-radius: 5px;
+        }
+        .order-card-details.active {
+            display: block;
+        }
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .update-status-btn {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .update-status-btn:hover {
+            background-color: #2980b9;
+        }
+        .edit-products-btn {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+        .edit-products-btn:hover {
+            background-color: #27ae60;
+        }
+        .copy-btn {
+            background-color: #f39c12;
+            color: #fff;
+        }
+        .copy-btn:hover {
+            background-color: #e67e22;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .modal-content select, .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .modal-content button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 48%;
+            margin: 5px 1%;
+        }
+        .save-btn {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+        .cancel-btn {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+        .product-item {
+            width: 100%;
+            padding: 10px 8px;
+            margin-bottom: 10px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .product-item span {
+            display: block;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        .product-item .name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .product-item .details {
+            color: #555;
+        }
+
+        /* Responsive Design for Mobile */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1200px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .filters {
+                flex-direction: row;
+                gap: 20px;
+            }
+            .filters select, .filters input, .filters button {
+                width: auto;
+                min-width: 200px;
+            }
+            .order-card {
+                padding: 20px;
+            }
+            .order-card-header h3 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frozen Orders Management</h1>
+        <div class="filters">
+            <select id="status-filter">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending Payment</option>
+                <option value="processing">Processing</option>
+                <option value="on-hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="refunded">Refunded</option>
+                <option value="failed">Failed</option>
+            </select>
+            <input type="date" id="date-from" placeholder="From Date">
+            <input type="date" id="date-to" placeholder="To Date">
+            <input type="number" id="per-page" placeholder="Number Orders per page" min="1" max="100">
+            <input type="text" id="customer-filter" placeholder="Customer Name or Email">
+            
+            <button id="save-auto-fetch">Save Settings</button>
+        </div>
+        <div class="orders-list" id="orders-list"></div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Edit</h2>
+            <div id="modal-body"></div>
+            <button class="save-btn" id="save-btn">Save</button>
+            <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
+        const consumer_secret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+        const storeUrl = 'https://tenderfrozen.com';
+
+        // Load saved filter values from localStorage
+        function loadFilters() {
+            const status = localStorage.getItem('status-filter') || '';
+            const dateFrom = localStorage.getItem('date-from') || '';
+            const dateTo = localStorage.getItem('date-to') || '';
+            const customer = localStorage.getItem('customer-filter') || '';
+            const perPage = localStorage.getItem('per-page') || '50';
+
+            document.getElementById('status-filter').value = status;
+            document.getElementById('date-from').value = dateFrom;
+            document.getElementById('date-to').value = dateTo;
+            document.getElementById('customer-filter').value = customer;
+            document.getElementById('per-page').value = perPage;
+        }
+
+        // Save filter values to localStorage
+        function saveFilters() {
+            localStorage.setItem('status-filter', document.getElementById('status-filter').value);
+            localStorage.setItem('date-from', document.getElementById('date-from').value);
+            localStorage.setItem('date-to', document.getElementById('date-to').value);
+            localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
+            localStorage.setItem('per-page', document.getElementById('per-page').value);
+        }
+
+        async function fetchOrders() {
+            const status = document.getElementById('status-filter').value;
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const customer = document.getElementById('customer-filter').value;
+            const perPage = document.getElementById('per-page').value || '50';
+
+            let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}`;
+            if (status) url += `&status=${status}`;
+            if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+            if (dateTo) url += `&before=${dateTo}T23:59:59`;
+            if (customer) url += `&search=${customer}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const orders = await response.json();
+                displayOrders(orders);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        async function fetchProducts() {
+            try {
+                const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100`, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                return [];
+            }
+        }
+
+        async function displayOrders(orders) {
+            const ordersList = document.getElementById('orders-list');
+            ordersList.innerHTML = '';
+            for (const order of orders) {
+                const orderCard = document.createElement('div');
+                orderCard.classList.add('order-card');
+
+                // Prepare product list
+                const productItems = order.line_items.map(item => `
+                    <li class="product-item">
+                        <span class="name">${item.name}</span>
+                        <span class="details">Quantity: ${item.quantity} | Price: ${item.price} ${order.currency}</span>
+                    </li>
+                `);
+console.log(order)
+                orderCard.innerHTML = `
+                    <div class="order-card-header">
+                        <h3> ${order.billing.first_name || ''} ${order.billing.last_name || ''}</h3>
+                        <span>${order.status}</span>
+                    </div>
+                    <div class="order-card-details" id="details-${order.id}">
+                        <p><strong>#Order:</strong> ${order.id} </p>
+                        <p><strong>Email:</strong> ${order.billing.email || 'N/A'}</p>
+                        <p><strong>Phone:</strong> ${order.billing.phone || 'N/A'}</p>
+                        <p><strong>Address:</strong> ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}</p>
+                        <p><strong>Location:</strong> <a href="${order.additional?.location || 'Not Found'}">Open Location</a></p>
+                        <button class="action-btn copy-btn" onclick='copyAddress(${JSON.stringify(order)})'>Copy Address</button>
+                        <p><strong>Total:</strong> ${order.total} ${order.currency}</p>
+                        <p><strong>Date:</strong> ${new Date(order.date_created).toLocaleDateString()}</p>
+                        <h4>Products:</h4>
+                        <ul>${productItems.join('') || 'No products'}</ul>
+                        <button class="action-btn copy-btn" onclick='copyOrder(${JSON.stringify(order)})'>Copy Order</button>
+                        <button class="action-btn update-status-btn" onclick="openStatusModal(${order.id}, '${order.status}')">Update Status</button>
+                        <button class="action-btn edit-products-btn" onclick="openProductsModal(${order.id}, '${encodeURIComponent(JSON.stringify(order.line_items))}')">Edit Products</button>
+                    </div>
+                `;
+                orderCard.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('action-btn')) {
+                        const details = document.getElementById(`details-${order.id}`);
+                        details.classList.toggle('active');
+                    }
+                });
+                ordersList.appendChild(orderCard);
+            }
+        }
+
+        function copyAddress(order) {
+            const address = `
+Customer: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+Phone: ${order.billing.phone || 'N/A'}
+Address: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+Location: ${order.additional?.location || 'Not Found'}
+Total: ${order.total} ${order.currency}
+            `.trim();
+            navigator.clipboard.writeText(address).then(() => alert('Address and total copied to clipboard!'));
+        }
+
+        function copyOrder(order) {
+            const orderDetails = `
+Order #${order.id}
+Customer: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+Email: ${order.billing.email || 'N/A'}
+Phone: ${order.billing.phone || 'N/A'}
+Address: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+Location: ${order.additional?.location || 'Not Found'}
+Total: ${order.total} ${order.currency}
+Date: ${new Date(order.date_created).toLocaleDateString()}
+Products:
+${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Price: ${item.price} ${order.currency}`).join('\n')}
+            `.trim();
+            navigator.clipboard.writeText(orderDetails).then(() => alert('Order details copied to clipboard!'));
+        }
+
+        async function openStatusModal(orderId, currentStatus) {
+            const modal = document.getElementById('edit-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const saveBtn = document.getElementById('save-btn');
+
+            modalTitle.textContent = `Update Status for Order #${orderId}`;
+            modalBody.innerHTML = `
+                <select id="new-status">
+                    <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>Pending Payment</option>
+                    <option value="processing" ${currentStatus === 'processing' ? 'selected' : ''}>Processing</option>
+                    <option value="on-hold" ${currentStatus === 'on-hold' ? 'selected' : ''}>On Hold</option>
+                    <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="cancelled" ${currentStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    <option value="refunded" ${currentStatus === 'refunded' ? 'selected' : ''}>Refunded</option>
+                    <option value="failed" ${currentStatus === 'failed' ? 'selected' : ''}>Failed</option>
+                </select>
+            `;
+            saveBtn.onclick = () => updateStatus(orderId);
+            modal.style.display = 'flex';
+        }
+
+        async function updateStatus(orderId) {
+            const newStatus = document.getElementById('new-status').value;
+            try {
+                await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                closeModal();
+                fetchOrders();
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        let productsCache = null;
+
+        async function openProductsModal(orderId, encodedLineItems) {
+            try {
+                const lineItems = JSON.parse(decodeURIComponent(encodedLineItems));
+                const modal = document.getElementById('edit-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalBody = document.getElementById('modal-body');
+                const saveBtn = document.getElementById('save-btn');
+
+                modalTitle.textContent = `Edit Products for Order #${orderId}`;
+                modalBody.innerHTML = `
+                    <div id="edit-products-form">
+                        ${lineItems.map((item, index) => `
+                            <div class="product-item" data-index="${index}">
+                                <p><strong>${item.name}</strong></p>
+                                <input type="number" value="${item.quantity}" id="quantity-${index}" min="0">
+                                <button onclick="removeProduct(${index})">Remove</button>
+                            </div>
+                        `).join('')}
+                        <button onclick="addProduct(${orderId})">Add New Product</button>
+                    </div>
+                `;
+                saveBtn.onclick = () => saveProducts(orderId, lineItems);
+                modal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error opening products modal:', error);
+            }
+        }
+
+        async function addProduct(orderId) {
+            // Fetch products if not already cached
+            if (!productsCache) {
+                productsCache = await fetchProducts();
+            }
+
+            if (!productsCache || productsCache.length === 0) {
+                alert('No products available to add.');
+                return;
+            }
+
+            const modalBody = document.getElementById('modal-body');
+            const productOptions = productsCache.map(product => `
+                <option value="${product.id}">${product.name}</option>
+            `).join('');
+
+            const addProductForm = `
+                <div id="add-product-form">
+                    <select id="new-product-id">
+                        <option value="">Select a product</option>
+                        ${productOptions}
+                    </select>
+                    <input type="number" id="new-product-quantity" placeholder="Quantity" min="1" value="1">
+                    <button onclick="confirmAddProduct()">Add Product</button>
+                </div>
+            `;
+            modalBody.innerHTML += addProductForm;
+        }
+
+        function confirmAddProduct() {
+            const productId = document.getElementById('new-product-id').value;
+            const quantity = parseInt(document.getElementById('new-product-quantity').value) || 1;
+
+            if (!productId) {
+                alert('Please select a product.');
+                return;
+            }
+
+            const selectedProduct = productsCache.find(product => product.id == productId);
+            if (!selectedProduct) {
+                alert('Selected product not found.');
+                return;
+            }
+
+            const editProductsForm = document.getElementById('edit-products-form');
+            const currentItems = editProductsForm.querySelectorAll('.product-item');
+            const newIndex = currentItems.length;
+
+            const newProductItem = `
+                <div class="product-item" data-index="${newIndex}">
+                    <p><strong>${selectedProduct.name}</strong></p>
+                    <input type="number" value="${quantity}" id="quantity-${newIndex}" min="0">
+                    <button onclick="removeProduct(${newIndex})">Remove</button>
+                </div>
+            `;
+            editProductsForm.innerHTML += newProductItem;
+
+            // Remove the add product form
+            document.getElementById('add-product-form').remove();
+        }
+
+        async function saveProducts(orderId, lineItems) {
+            try {
+                const quantities = Array.from(document.querySelectorAll('[id^="quantity-"]')).map(input => parseInt(input.value) || 0);
+                const updatedItems = lineItems.map((item, index) => ({
+                    id: item.id,
+                    quantity: quantities[index]
+                })).filter(item => item.quantity > 0);
+
+                // Add new products
+                const newItems = Array.from(document.querySelectorAll('.product-item')).slice(lineItems.length).map((item, index) => {
+                    const productId = productsCache.find(p => p.name === item.querySelector('p strong').textContent)?.id;
+                    return {
+                        product_id: productId,
+                        quantity: quantities[lineItems.length + index]
+                    };
+                }).filter(item => item.quantity > 0 && item.product_id);
+
+                updatedItems.push(...newItems);
+
+                await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ line_items: updatedItems })
+                });
+                closeModal();
+                fetchOrders();
+            } catch (error) {
+                console.error('Error saving products:', error);
+            }
+        }
+
+        function removeProduct(index) {
+            document.querySelector(`.product-item[data-index="${index}"]`).remove();
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        // Event listeners for filters
+        document.getElementById('status-filter').addEventListener('change', () => {
+            saveFilters();
+            fetchOrders();
+        });
+        document.getElementById('date-from').addEventListener('change', () => {
+            saveFilters();
+            fetchOrders();
+        });
+        document.getElementById('date-to').addEventListener('change', () => {
+            saveFilters();
+            fetchOrders();
+        });
+        document.getElementById('customer-filter').addEventListener('input', () => {
+            saveFilters();
+            fetchOrders();
+        });
+        document.getElementById('per-page').addEventListener('input', () => {
+            saveFilters();
+            fetchOrders();
+        });
+
+        // Save auto-fetch settings
+        document.getElementById('save-auto-fetch').addEventListener('click', () => {
+            saveFilters();
+            alert('Auto-fetch settings saved!');
+        });
+
+        // Load filters and fetch orders on page load
+        loadFilters();
+        fetchOrders();
+    </script>
+</body>
+</html>
