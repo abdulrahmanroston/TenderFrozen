@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WooCommerce Orders Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,7 +18,6 @@
             --dark: #1f2937;
             --background: #f1f5f9;
             --border: #e5e7eb;
-            --accent: #8b5cf6;
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -28,17 +26,11 @@
             padding: 0;
             color: var(--dark);
             overflow-x: hidden;
-            position: relative;
-        }
-        body.dark-mode {
-            --background: #1f2937;
-            --light: #374151;
-            --border: #4b5563;
-            --dark: #f3f4f6;
+            width: 100%;
         }
         .container {
             max-width: 100%;
-            margin: 0 auto;
+            margin: 0 0;
             background: #fff;
             min-height: 100vh;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -46,23 +38,25 @@
         .header {
             background: var(--dark);
             color: #fff;
-            padding: 15px 20px;
+            padding: 8px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            justify-content: center;
             position: sticky;
             top: 0;
             z-index: 1000;
+            flex-wrap: wrap;
         }
         .header h1 {
+            width: fit-content;
             font-size: 1.8rem;
-            margin: 0;
+            padding: 0 0;
             font-weight: 600;
         }
         .header-actions {
             display: flex;
             gap: 12px;
-            flex-wrap: wrap;
         }
         .header-btn {
             background: var(--secondary);
@@ -77,27 +71,6 @@
         .header-btn:hover {
             background: #9ca3af;
             transform: translateY(-2px);
-        }
-        .hamburger-menu {
-            display: none;
-            cursor: pointer;
-            font-size: 24px;
-            color: #fff;
-        }
-        .header-actions-mobile {
-            display: none;
-            flex-direction: column;
-            background: var(--dark);
-            padding: 15px;
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 999;
-        }
-        .header-actions-mobile.active {
-            display: flex;
         }
         .search-bar {
             padding: 20px;
@@ -156,21 +129,17 @@
             background: #2563eb;
             transform: translateY(-2px);
         }
-        .choices__inner {
-            border-radius: 8px !important;
-            border: 1px solid var(--border) !important;
-            padding: 8px !important;
-            background: #fff !important;
+        .status-checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .choices__item--selectable {
-            background: var(--primary) !important;
-            color: #fff !important;
-            border-radius: 6px !important;
-            padding: 6px 10px !important;
-        }
-        .choices__list--dropdown {
-            border-radius: 8px !important;
-            border: 1px solid var(--border) !important;
+        .status-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            color: var(--dark);
         }
         .stats {
             padding: 20px;
@@ -204,7 +173,8 @@
         }
         .tabs {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: no-wrap;
+            flex-direction: column;
             gap: 12px;
             padding: 20px;
             background: #fff;
@@ -240,25 +210,10 @@
         .tab-content.active {
             display: block;
         }
-        .date-group {
-            margin-bottom: 20px;
-        }
-        .date-header {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--dark);
-            padding: 10px 0;
-            border-bottom: 2px solid var(--primary);
-            margin-bottom: 15px;
-        }
         .orders-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
-        }
-        .orders-list.grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         }
         .order-card {
             background: #fff;
@@ -266,17 +221,10 @@
             padding: 20px;
             border: 1px solid var(--border);
             transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
         }
         .order-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .order-card input[type="checkbox"] {
-            position: absolute;
-            top: 15px;
-            left: 15px;
         }
         .order-card-header {
             display: flex;
@@ -287,14 +235,14 @@
         }
         .order-card-header h3 {
             margin: 0;
-            font-size: 1.4rem;
+            font-size: 15px;
             color: var(--dark);
             font-weight: 600;
         }
         .order-card-header .status {
             padding: 6px 12px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 12px;
             color: #fff;
             font-weight: 500;
         }
@@ -324,6 +272,7 @@
         }
         .order-card-details .product-item {
             display: flex;
+            align-items: center;
             gap: 12px;
             padding: 12px;
             border: 1px solid var(--border);
@@ -356,45 +305,7 @@
         .edit-products-btn:hover { background: #059669; }
         .copy-btn { background: var(--warning); color: #fff; }
         .copy-btn:hover { background: #d97706; }
-        .export-btn { background: var(--secondary); color: #fff; }
-        .export-btn:hover { background: #4b5563; }
-        .bulk-action-btn { background: var(--accent); color: #fff; }
-        .bulk-action-btn:hover { background: #7c3aed; }
-        .retry-btn, .reset-filters-btn {
-            padding: 12px 24px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s, transform 0.2s;
-            margin: 20px auto;
-            display: block;
-        }
-        .retry-btn:hover, .reset-filters-btn:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-        }
-        .load-more {
-            text-align: center;
-            padding: 20px;
-        }
-        .load-more button {
-            padding: 12px 24px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s, transform 0.2s;
-        }
-        .load-more button:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-        }
-        .no-orders, .error-message {
+        .no-orders {
             text-align: center;
             color: var(--secondary);
             padding: 30px;
@@ -434,23 +345,8 @@
             to { transform: translateY(0); opacity: 1; }
         }
         @media (max-width: 768px) {
-            .header-actions {
-                display: none;
-            }
-            .hamburger-menu {
-                display: block;
-            }
-            .header-btn {
-                padding: 8px 12px;
-                font-size: 13px;
-            }
-            .header-actions-mobile .header-btn {
-                width: 100%;
-                text-align: left;
-                margin: 5px 0;
-            }
             .container {
-                margin: 10px;
+                margin: 3px;
                 border-radius: 8px;
             }
             .settings-panel {
@@ -486,104 +382,46 @@
     </div>
     <div class="container">
         <div class="header">
-            <h1>WooCommerce Orders Management</h1>
             <div class="header-actions">
-                <button class="header-btn" onclick="toggleSettings()" data-tippy-content="Settings"><i class="fas fa-cog"></i></button>
-                <button class="header-btn" onclick="refreshOrders()" data-tippy-content="Refresh Orders"><i class="fas fa-sync-alt"></i></button>
-                <button class="header-btn" onclick="toggleDarkMode()" data-tippy-content="Dark Mode"><i class="fas fa-moon"></i></button>
-                <button class="header-btn" onclick="toggleFullScreen()" data-tippy-content="Full Screen"><i class="fas fa-expand"></i></button>
-                <button class="header-btn export-btn" onclick="exportOrders()" data-tippy-content="Export to CSV"><i class="fas fa-download"></i></button>
-                <button class="header-btn" onclick="toggleViewMode()" data-tippy-content="Toggle View"><i class="fas fa-th-large"></i></button>
-                <button class="header-btn bulk-action-btn" onclick="bulkUpdateStatus()" data-tippy-content="Bulk Update Status"><:: <i class="fas fa-tasks"></i></button>
-                <button class="header-btn reset-filters-btn" onclick="resetFilters()" data-tippy-content="Reset Filters"><i class="fas fa-undo"></i></button>
-            </div>
-            <div class="hamburger-menu" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></div>
-            <div class="header-actions-mobile" id="header-actions-mobile">
-                <button class="header-btn" onclick="toggleSettings()">Settings <i class="fas fa-cog"></i></button>
-                <button class="header-btn" onclick="refreshOrders()">Refresh Orders <i class="fas fa-sync-alt"></i></button>
-                <button class="header-btn" onclick="toggleDarkMode()">Dark Mode <i class="fas fa-moon"></i></button>
-                <button class="header-btn" onclick="toggleFullScreen()">Full Screen <i class="fas fa-expand"></i></button>
-                <button class="header-btn export-btn" onclick="exportOrders()">Export to CSV <i class="fas fa-download"></i></button>
-                <button class="header-btn" onclick="toggleViewMode()">Toggle View <i class="fas fa-th-large"></i></button>
-                <button class="header-btn bulk-action-btn" onclick="bulkUpdateStatus()">Bulk Update Status <i class="fas fa-tasks"></i></button>
-                <button class="header-btn reset-filters-btn" onclick="resetFilters()">Reset Filters <i class="fas fa-undo"></i></button>
+                <button class="header-btn" onclick="toggleSettings()"><i class="fas fa-cog"></i> Settings</button>
+                <button class="header-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button class="header-btn" onclick="toggleFullScreen()"><i class="fas fa-expand"></i> Full Screen</button>
             </div>
         </div>
         <div class="search-bar">
-            <input type="text" id="customer-filter" placeholder="Search by Customer Name, Email, or Order ID">
+            <input type="text" id="customer-filter" placeholder="Search by Customer Name or Email">
         </div>
         <div class="settings-panel" id="settings-panel">
-            <div>
-                <label for="status-filter" style="font-weight: 500; color: var(--dark); margin-bottom: 8px; display: block;">Order Statuses</label>
-                <select id="status-filter" multiple>
-                    <option value="pending">Pending Payment</option>
-                    <option value="processing">Processing</option>
-                    <option value="on-hold">On Hold</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="refunded">Refunded</option>
-                    <option value="failed">Failed</option>
-                </select>
+            <div class="status-checkboxes">
+                <label><input type="checkbox" name="status-filter" value="pending"> Pending Payment</label>
+                <label><input type="checkbox" name="status-filter" value="processing"> Processing</label>
+                <label><input type="checkbox" name="status-filter" value="on-hold"> On Hold</label>
+                <label><input type="checkbox" name="status-filter" value="completed"> Completed</label>
+                <label><input type="checkbox" name="status-filter" value="cancelled"> Cancelled</label>
+                <label><input type="checkbox" name="status-filter" value="refunded"> Refunded</label>
+                <label><input type="checkbox" name="status-filter" value="failed"> Failed</label>
             </div>
-            <div>
-                <label for="date-from" style="font-weight: 500; color: var(--dark); margin-bottom: 8px; display: block;">From Date</label>
-                <input type="date" id="date-from">
-            </div>
-            <div>
-                <label for="date-to" style="font-weight: 500; color: var(--dark); margin-bottom: 8px; display: block;">To Date</label>
-                <input type="date" id="date-to">
-            </div>
-            <div>
-                <label for="per-page" style="font-weight: 500; color: var(--dark); margin-bottom: 8px; display: block;">Orders per Page</label>
-                <input type="number" id="per-page" min="1" max="100" placeholder="Orders per page">
-            </div>
-            <div>
-                <label for="sort-by" style="font-weight: 500; color: var(--dark); margin-bottom: 8px; display: block;">Sort By</label>
-                <select id="sort-by">
-                    <option value="date-desc">Date (Newest First)</option>
-                    <option value="date-asc">Date (Oldest First)</option>
-                    <option value="total-desc">Total (High to Low)</option>
-                    <option value="total-asc">Total (Low to High)</option>
-                </select>
-            </div>
+            <input type="date" id="date-from" placeholder="From Date">
+            <input type="date" id="date-to" placeholder="To Date">
+            <input type="number" id="per-page" placeholder="Orders per page" min="1" max="100">
+            <select id="sort-by">
+                <option value="date-desc">Date (Newest First)</option>
+                <option value="date-asc">Date (Oldest First)</option>
+                <option value="total-desc">Total (High to Low)</option>
+                <option value="total-asc">Total (Low to High)</option>
+            </select>
             <button id="save-auto-fetch">Save Settings</button>
         </div>
         <div class="stats" id="stats"></div>
         <div class="tabs" id="zone-tabs"></div>
         <div id="tab-contents"></div>
-        <div class="load-more" id="load-more">
-            <button onclick="loadMoreOrders()">Load More</button>
-        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js"></script>
-    <!-- Removed Toastify to avoid null error -->
     <script>
         const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
         const consumer_secret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
         const storeUrl = 'https://tenderfrozen.com';
-        let currentPage = 1;
-        let allOrders = [];
-        let isGridView = false;
-
-        // Initialize Choices.js for multi-select
-        const statusFilter = new Choices('#status-filter', {
-            removeItemButton: true,
-            placeholderValue: 'Select Statuses',
-            noChoicesText: 'No statuses available',
-            classNames: {
-                containerOuter: 'choices choices-custom',
-            },
-        });
-
-        // Initialize Tippy.js for tooltips
-        tippy('[data-tippy-content]', {
-            placement: 'bottom',
-            animation: 'fade',
-        });
 
         // Show loading overlay
         function showLoading() {
@@ -595,35 +433,18 @@
             document.getElementById('loading-overlay').classList.remove('active');
         }
 
-        // Toggle mobile menu
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('header-actions-mobile');
-            mobileMenu.classList.toggle('active');
-        }
-
         // Load saved filter values
         function loadFilters() {
-            let status = [];
-            const statusData = localStorage.getItem('status-filter');
-            if (statusData) {
-                try {
-                    status = JSON.parse(statusData);
-                    if (!Array.isArray(status)) {
-                        status = [];
-                    }
-                } catch (e) {
-                    console.error('Error parsing status-filter from localStorage:', e);
-                    status = [];
-                }
-            }
-
+            const statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
             const dateFrom = localStorage.getItem('date-from') || '';
             const dateTo = localStorage.getItem('date-to') || '';
             const customer = localStorage.getItem('customer-filter') || '';
             const perPage = localStorage.getItem('per-page') || '50';
             const sortBy = localStorage.getItem('sort-by') || 'date-desc';
 
-            statusFilter.setChoiceByValue(status);
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
+                checkbox.checked = statuses.includes(checkbox.value);
+            });
             document.getElementById('date-from').value = dateFrom;
             document.getElementById('date-to').value = dateTo;
             document.getElementById('customer-filter').value = customer;
@@ -633,42 +454,20 @@
 
         // Save filter values
         function saveFilters() {
-            try {
-                localStorage.setItem('status-filter', JSON.stringify(statusFilter.getValue(true)));
-                localStorage.setItem('date-from', document.getElementById('date-from').value);
-                localStorage.setItem('date-to', document.getElementById('date-to').value);
-                localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
-                localStorage.setItem('per-page', document.getElementById('per-page').value);
-                localStorage.setItem('sort-by', document.getElementById('sort-by').value);
-                return true;
-            } catch (e) {
-                console.error('Error saving filters to localStorage:', e);
-                showNotification('Error saving settings', 'error');
-                return false;
-            }
-        }
-
-        // Reset filters
-        function resetFilters() {
-            localStorage.clear();
-            statusFilter.setChoiceByValue([]);
-            document.getElementById('date-from').value = '';
-            document.getElementById('date-to').value = '';
-            document.getElementById('customer-filter').value = '';
-            document.getElementById('per-page').value = '50';
-            document.getElementById('sort-by').value = 'date-desc';
-            showNotification('Filters reset successfully', 'success');
-            refreshOrders();
+            const statuses = Array.from(document.querySelectorAll('input[name="status-filter"]:checked')).map(cb => cb.value);
+            localStorage.setItem('status-filter', JSON.stringify(statuses));
+            localStorage.setItem('date-from', document.getElementById('date-from').value);
+            localStorage.setItem('date-to', document.getElementById('date-to').value);
+            localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
+            localStorage.setItem('per-page', document.getElementById('per-page').value);
+            localStorage.setItem('sort-by', document.getElementById('sort-by').value);
+            fetchOrders();
         }
 
         // Show notification with SweetAlert2
         function showNotification(message, type) {
-            if (!message || typeof message !== 'string') {
-                console.warn('Invalid notification message:', message);
-                return;
-            }
             Swal.fire({
-                title: type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Error',
+                title: type === 'success' ? 'Success' : 'Error',
                 text: message,
                 icon: type,
                 confirmButtonColor: '#10b981',
@@ -683,12 +482,6 @@
             panel.classList.toggle('active');
         }
 
-        // Toggle dark mode
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
-        }
-
         // Toggle full screen
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -700,60 +493,50 @@
             }
         }
 
-        // Toggle view mode (Grid/List)
-        function toggleViewMode() {
-            isGridView = !isGridView;
-            document.querySelectorAll('.orders-list').forEach(list => {
-                list.classList.toggle('grid', isGridView);
-            });
-            const icon = document.querySelector('.header-btn i.fa-th-large') || document.querySelector('.header-actions-mobile .header-btn i.fa-th-large');
-            if (icon) {
-                icon.className = isGridView ? 'fas fa-list' : 'fas fa-th-large';
-            }
-        }
-
-        // Fetch orders with pagination
-        async function fetchOrders(page = 1) {
+        // Fetch orders
+        async function fetchOrders() {
             showLoading();
-            const statuses = statusFilter.getValue(true);
-            const dateFrom = document.getElementById('date-from').value;
-            const dateTo = document.getElementById('date-to').value;
-            const customer = document.getElementById('customer-filter').value;
-            const perPage = document.getElementById('per-page').value || '50';
+            const statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
+            const dateFrom = localStorage.getItem('date-from') || '';
+            const dateTo = localStorage.getItem('date-to') || '';
+            const customer = localStorage.getItem('customer-filter') || '';
+            const perPage = localStorage.getItem('per-page') || '50';
+            const sortBy = localStorage.getItem('sort-by') || 'date-desc';
 
-            let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}&page=${page}`;
-            if (statuses.length) url += `&status=${statuses.join(',')}`;
-            if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
-            if (dateTo) url += `&before=${dateTo}T23:59:59`;
-            if (customer) url += `&search=${customer}`;
-
-            console.log('Fetching orders from:', url); // Log URL for debugging
-
+            let allOrders = [];
             try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                    },
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                }
-                const orders = await response.json();
-                console.log('Orders received:', orders); // Log response for debugging
-
-                if (!Array.isArray(orders)) {
-                    throw new Error('Invalid API response: Expected an array of orders');
-                }
-
-                if (page === 1) {
-                    allOrders = orders;
+                if (statuses.length === 0) {
+                    let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}`;
+                    if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+                    if (dateTo) url += `&before=${dateTo}T23:59:59`;
+                    if (customer) url += `&search=${customer}`;
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                        }
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    allOrders = await response.json();
                 } else {
-                    allOrders = [...allOrders, ...orders];
+                    for (const status of statuses) {
+                        let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}&status=${status}`;
+                        if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+                        if (dateTo) url += `&before=${dateTo}T23:59:59`;
+                        if (customer) url += `&search=${customer}`;
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                            }
+                        });
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const orders = await response.json();
+                        allOrders = [...allOrders, ...orders];
+                    }
+                    // Remove duplicates by order ID
+                    allOrders = Array.from(new Map(allOrders.map(order => [order.id, order])).values());
                 }
 
                 // Sort orders
-                const sortBy = document.getElementById('sort-by').value;
                 if (sortBy === 'date-desc') {
                     allOrders.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
                 } else if (sortBy === 'date-asc') {
@@ -766,40 +549,21 @@
 
                 displayStats(allOrders);
                 groupAndDisplayOrders(allOrders);
-                document.getElementById('load-more').style.display = orders.length < perPage ? 'none' : 'block';
-                if (orders.length > 0) {
-                    showNotification('Orders loaded successfully', 'success');
-                } else {
-                    showNotification('No orders found with current filters', 'warning');
-                }
+                showNotification('Orders loaded successfully', 'success');
             } catch (error) {
                 console.error('Error fetching orders:', error);
-                const contentsContainer = document.getElementById('tab-contents');
-                let errorMessage = error.message;
-                if (error.message.includes('Failed to fetch')) {
-                    errorMessage = 'Failed to load orders. This may be due to CORS restrictions. Try hosting the app on a server or use a proxy.';
-                }
-                contentsContainer.innerHTML = `
-                    <p class="error-message">${errorMessage}</p>
-                    <button class="retry-btn" onclick="refreshOrders()">Try Again</button>
-                    <button class="reset-filters-btn" onclick="resetFilters()">Reset Filters</button>
+                document.getElementById('tab-contents').innerHTML = `
+                    <p class="no-orders">Error loading orders. Please try again.</p>
+                    <button class="action-btn" onclick="refreshOrders()">Retry</button>
                 `;
-                showNotification(errorMessage, 'error');
+                showNotification('Error loading orders', 'error');
             } finally {
                 hideLoading();
             }
         }
 
-        // Load more orders
-        function loadMoreOrders() {
-            currentPage++;
-            fetchOrders(currentPage);
-        }
-
         // Refresh orders
         function refreshOrders() {
-            currentPage = 1;
-            allOrders = [];
             fetchOrders();
         }
 
@@ -814,7 +578,7 @@
                 completed: 'Completed',
                 cancelled: 'Cancelled',
                 refunded: 'Refunded',
-                failed: 'Failed',
+                failed: 'Failed'
             };
             const statusColors = {
                 pending: '#f59e0b',
@@ -823,7 +587,7 @@
                 completed: '#10b981',
                 cancelled: '#ef4444',
                 refunded: '#6b7280',
-                failed: '#991b1b',
+                failed: '#991b1b'
             };
 
             statsContainer.innerHTML = '';
@@ -840,17 +604,6 @@
                     statsContainer.appendChild(statCard);
                 }
             });
-        }
-
-        // Group orders by date
-        function groupOrdersByDate(orders) {
-            const grouped = {};
-            orders.forEach(order => {
-                const date = new Date(order.date_created).toLocaleDateString();
-                if (!grouped[date]) grouped[date] = [];
-                grouped[date].push(order);
-            });
-            return grouped;
         }
 
         // Group orders by zone_name
@@ -873,14 +626,6 @@
             tabsContainer.innerHTML = '';
             contentsContainer.innerHTML = '';
 
-            if (Object.keys(groupedOrders).length === 0) {
-                contentsContainer.innerHTML = `
-                    <p class="no-orders">No orders found. Try adjusting filters or refreshing.</p>
-                    <button class="reset-filters-btn" onclick="resetFilters()">Reset Filters</button>
-                `;
-                return;
-            }
-
             Object.keys(groupedOrders).sort().forEach((zone, index) => {
                 const tab = document.createElement('div');
                 tab.classList.add('tab');
@@ -893,11 +638,15 @@
                 content.classList.add('tab-content');
                 content.id = `tab-${zone.replace(/\s+/g, '-')}`;
                 if (index === 0) content.classList.add('active');
-                content.innerHTML = `<div class="orders-list ${isGridView ? 'grid' : ''}" id="orders-${zone.replace(/\s+/g, '-')}"></div>`;
+                content.innerHTML = `<div class="orders-list" id="orders-${zone.replace(/\s+/g, '-')}"></div>`;
                 contentsContainer.appendChild(content);
 
                 displayOrdersForZone(groupedOrders[zone], `orders-${zone.replace(/\s+/g, '-')}`);
             });
+
+            if (Object.keys(groupedOrders).length === 0) {
+                contentsContainer.innerHTML = '<p class="no-orders">No orders found.</p>';
+            }
         }
 
         // Display orders for a specific zone
@@ -911,86 +660,72 @@
                 completed: '#10b981',
                 cancelled: '#ef4444',
                 refunded: '#6b7280',
-                failed: '#991b1b',
+                failed: '#991b1b'
             };
 
-            const dateGroupedOrders = groupOrdersByDate(orders);
-            Object.keys(dateGroupedOrders).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-                const dateGroup = document.createElement('div');
-                dateGroup.classList.add('date-group');
-                dateGroup.innerHTML = `<div class="date-header">${date}</div>`;
-                const dateOrdersList = document.createElement('div');
-                dateOrdersList.classList.add('orders-list', isGridView ? 'grid' : '');
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
 
-                dateGroupedOrders[date].forEach(order => {
-                    const orderCard = document.createElement('div');
-                    orderCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
-                    orderCard.setAttribute('data-order-id', order.id);
+                const productItems = order.line_items.map(item => `
+                    <div class="product-item">
+                        ${item.image?.src ? `<img src="${item.image.src}" alt="${item.name}" />` : ''}
+                        <div>
+                            <span class="name">${item.name}</span>
+                            <span class="details"> ×  ${item.quantity} 
+                            <br/>
+                            Price: ${item.price} ${order.currency}</span>
+                        </div>
+                    </div>
+                `);
 
-                    const productItems = order.line_items.map(item => `
-                        <div class="product-item">
-                            ${item.image?.src ? `<img src="${item.image.src}" alt="${item.name}" />` : ''}
-                            <div>
-                                <span class="name">${item.name}</span>
-                                <span class="details">Quantity: ${item.quantity} | Price: ${item.price} ${order.currency}</span>
-                            </div>
+                orderCard.innerHTML = `
+                    <div class="order-card-header">
+                        <h3>${order.billing.first_name || ''} ${order.billing.last_name || ''}</h3>
+                        <span class="status" style="background-color: ${statusColors[order.status]}">${order.status}</span>
+                    </div>
+                    <div class="order-card-details" id="details-${order.id}">
+                        <div class="section">
+                            <h4>Order Details</h4>
+                            <p><strong>Order #:</strong> ${order.id}</p>
+                            <p><strong>Date:</strong> ${new Date(order.date_created).toLocaleDateString()}</p>
+                            <p><strong>Total:</strong> ${order.total} ${order.currency}</p>
                         </div>
-                    `);
-
-                    orderCard.innerHTML = `
-                        <input type="checkbox" class="bulk-select" data-order-id="${order.id}">
-                        <div class="order-card-header">
-                            <h3>${order.billing.first_name || ''} ${order.billing.last_name || ''}</h3>
-                            <span class="status" style="background-color: ${statusColors[order.status]}">${order.status}</span>
+                        <div class="section">
+                            <h4>Customer</h4>
+                            <p><strong>Email:</strong> ${order.billing.email || 'N/A'}</p>
+                            <p><strong>Phone:</strong> ${order.billing.phone || 'N/A'}</p>
                         </div>
-                        <div class="order-card-details" id="details-${order.id}">
-                            <div class="section">
-                                <h4>Order Details</h4>
-                                <p><strong>Order #:</strong> ${order.id}</p>
-                                <p><strong>Date:</strong> ${new Date(order.date_created).toLocaleDateString()}</p>
-                                <p><strong>Total:</strong> ${order.total} ${order.currency}</p>
-                            </div>
-                            <div class="section">
-                                <h4>Customer</h4>
-                                <p><strong>Email:</strong> ${order.billing.email || 'N/A'}</p>
-                                <p><strong>Phone:</strong> ${order.billing.phone || 'N/A'}</p>
-                            </div>
-                            <div class="section">
-                                <h4>Address</h4>
-                                <p><strong>Address:</strong> ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}</p>
-                                <p><strong>Location:</strong> <a href="${order.billing.location || '#'}" target="_blank">Open Location</a></p>
-                                <p><strong>Zone:</strong> ${order.billing.zone_name || 'Unspecified'}</p>
-                            </div>
-                            <div class="section">
-                                <h4>Products</h4>
-                                ${productItems.join('') || 'No products'}
-                            </div>
-                            <div class="section">
-                                <button class="action-btn copy-btn" data-tippy-content="Copy Address"><i class="fas fa-copy"></i> Copy Address</button>
-                                <button class="action-btn copy-btn" data-tippy-content="Copy Order"><i class="fas fa-copy"></i> Copy Order</button>
-                                <button class="action-btn update-status-btn" data-tippy-content="Update Status"><i class="fas fa-sync-alt"></i> Update Status</button>
-                                <button class="action-btn edit-products-btn" data-tippy-content="Edit Products"><i class="fas fa-edit"></i> Edit Products</button>
-                            </div>
+                        <div class="section">
+                            <h4>Address</h4>
+                            <p><strong>Address:</strong> ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}</p>
+                            <p><strong>Location:</strong> <a href="${order.billing.location || '#'}" target="_blank">Open Location</a></p>
+                            <p><strong>Zone:</strong> ${order.billing.zone_name || 'Unspecified'}</p>
                         </div>
-                    `;
-                    orderCard.querySelector('.copy-btn:nth-of-type(1)').addEventListener('click', () => copyAddress(order));
-                    orderCard.querySelector('.copy-btn:nth-of-type(2)').addEventListener('click', () => copyOrder(order));
-                    orderCard.querySelector('.update-status-btn').addEventListener('click', () => openStatusModal(order.id, order.status));
-                    orderCard.querySelector('.edit-products-btn').addEventListener('click', () => openProductsModal(order.id, order.line_items));
-                    orderCard.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('action-btn') && !e.target.closest('.action-btn') && !e.target.classList.contains('bulk-select')) {
-                            const details = document.getElementById(`details-${order.id}`);
-                            details.classList.toggle('active');
-                        }
-                    });
-                    dateOrdersList.appendChild(orderCard);
+                        <div class="section">
+                            <h4>Products</h4>
+                            ${productItems.join('') || 'No products'}
+                        </div>
+                        <div class="section">
+                            <button class="action-btn copy-btn"><i class="fas fa-copy"></i> Copy Address</button>
+                            <button class="action-btn copy-btn"><i class="fas fa-copy"></i> Copy Order</button>
+                            <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Update Status</button>
+                            <button class="action-btn edit-products-btn"><i class="fas fa-edit"></i> Edit Products</button>
+                        </div>
+                    </div>
+                `;
+                orderCard.querySelector('.copy-btn:nth-of-type(1)').addEventListener('click', () => copyAddress(order));
+                orderCard.querySelector('.copy-btn:nth-of-type(2)').addEventListener('click', () => copyOrder(order));
+                orderCard.querySelector('.update-status-btn').addEventListener('click', () => openStatusModal(order.id, order.status));
+                orderCard.querySelector('.edit-products-btn').addEventListener('click', () => openProductsModal(order.id, order.line_items));
+                orderCard.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('action-btn') && !e.target.closest('.action-btn')) {
+                        const details = document.getElementById(`details-${order.id}`);
+                        details.classList.toggle('active');
+                    }
                 });
-
-                dateGroup.appendChild(dateOrdersList);
-                ordersList.appendChild(dateGroup);
+                ordersList.appendChild(orderCard);
             });
-
-            tippy(ordersList.querySelectorAll('[data-tippy-content]'), { placement: 'bottom' });
         }
 
         // Switch between tabs
@@ -1005,12 +740,17 @@
         // Copy address
         function copyAddress(order) {
             const address = `
-Customer: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
-Phone: ${order.billing.phone || 'N/A'}
-Address: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
-Location: ${order.billing.location || 'Not Found'}
-Zone: ${order.billing.zone_name || 'Unspecified'}
-Total: ${order.total} ${order.currency}
+العميل: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+
+رقم الهاتف: ${order.billing.phone || 'N/A'}
+
+العنوان: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+
+اللوكيشن: ${order.billing.location || 'Not Found'}
+
+المنطقة: ${order.billing.zone_name || 'Unspecified'}
+
+الاجمالي: ${order.total} ${order.currency}
             `.trim();
             navigator.clipboard.writeText(address).then(() => showNotification('Address copied to clipboard', 'success'));
         }
@@ -1018,17 +758,30 @@ Total: ${order.total} ${order.currency}
         // Copy order
         function copyOrder(order) {
             const orderDetails = `
-Order #${order.id}
-Customer: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
-Email: ${order.billing.email || 'N/A'}
-Phone: ${order.billing.phone || 'N/A'}
-Address: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
-Location: ${order.billing.location || 'Not Found'}
-Zone: ${order.billing.zone_name || 'Unspecified'}
-Total: ${order.total} ${order.currency}
-Date: ${new Date(order.date_created).toLocaleDateString()}
-Products:
-${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Price: ${item.price} ${order.currency}`).join('\n')}
+رقم الطلب #${order.id}
+
+العميل: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+
+الايميل: ${order.billing.email || 'N/A'}
+
+رقم الهاتف: ${order.billing.phone || 'N/A'}
+
+العنوان: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+
+اللوكيشن: ${order.billing.location || 'Not Found'}
+
+المنطقة: ${order.billing.zone_name || 'Unspecified'}
+
+الاجمالي: ${order.total} ${order.currency}
+
+تاريخ الطلب: ${new Date(order.date_created).toLocaleDateString()}
+
+المنتجات:
+
+${order.line_items.map(item => `
+
+${item.name} - Quantity: ${item.quantity} | Price: ${item.price} 
+${order.currency}`).join('\n')}
             `.trim();
             navigator.clipboard.writeText(orderDetails).then(() => showNotification('Order details copied to clipboard', 'success'));
         }
@@ -1070,12 +823,12 @@ ${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Pric
                     method: 'PUT',
                     headers: {
                         'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ status: newStatus }),
+                    body: JSON.stringify({ status: newStatus })
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                refreshOrders();
+                fetchOrders();
                 showNotification('Status updated successfully', 'success');
             } catch (error) {
                 console.error('Error updating status:', error);
@@ -1083,52 +836,13 @@ ${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Pric
             }
         }
 
-        // Bulk update status
-        async function bulkUpdateStatus() {
-            const selectedOrders = Array.from(document.querySelectorAll('.bulk-select:checked')).map(checkbox => checkbox.getAttribute('data-order-id'));
-            if (selectedOrders.length === 0) {
-                showNotification('Please select at least one order', 'error');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Bulk Update Status',
-                html: `
-                    <select id="swal-status" class="swal2-select">
-                        <option value="pending">Pending Payment</option>
-                        <option value="processing">Processing</option>
-                        <option value="on-hold">On Hold</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="refunded">Refunded</option>
-                        <option value="failed">Failed</option>
-                    </select>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Update',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#ef4444',
-                preConfirm: () => {
-                    return document.getElementById('swal-status').value;
-                },
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    for (const orderId of selectedOrders) {
-                        await updateStatus(orderId, result.value);
-                    }
-                    document.querySelectorAll('.bulk-select').forEach(checkbox => (checkbox.checked = false));
-                }
-            });
-        }
-
         // Fetch products
         async function fetchProducts() {
             try {
                 const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100`, {
                     headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                    },
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                    }
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
@@ -1144,23 +858,83 @@ ${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Pric
             let products = JSON.parse(JSON.stringify(lineItems)); // Deep copy
             let productsCache = await fetchProducts();
 
-            const generateProductList = () => `
-                ${products.map((item, index) => `
+            // Function to generate product fields (extensible for additional properties)
+            function generateProductFields(item, index) {
+                return `
                     <div class="product-item" data-index="${index}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                        ${item.image?.src ? `<img src="${item.image.src}" alt="${item.name}" style="width: 48px; height: 48px; border-radius: 8px;" />` : ''}
                         <div style="flex: 1;">
                             <strong>${item.name}</strong>
                             <div>
                                 <label>Quantity:</label>
                                 <input type="number" value="${item.quantity}" id="quantity-${index}" min="0" style="width: 70px; margin-left: 8px; padding: 6px; border-radius: 6px;">
                             </div>
+                            <!-- Add more fields here as needed -->
                         </div>
                         <button class="remove-product-btn" data-index="${index}" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px;"><i class="fas fa-trash"></i></button>
                     </div>
-                `).join('')}
-            `;
+                `;
+            }
 
-            Swal.fire({
+            // Function to generate product list
+            const generateProductList = () => products.map((item, index) => generateProductFields(item, index)).join('');
+
+            // Function to add a new product (extensible for additional properties)
+            async function addProduct() {
+                if (!productsCache || productsCache.length === 0) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No products available to add.',
+                        icon: 'error',
+                        confirmButtonColor: '#10b981',
+                    });
+                    return;
+                }
+
+                const productOptions = productsCache.map(product => `
+                    <option value="${product.id}">${product.name}</option>
+                `).join('');
+
+                Swal.fire({
+                    title: 'Add New Product',
+                    html: `
+                        <select id="swal-product-id" class="swal2-select">
+                            <option value="">Select a product</option>
+                            ${productOptions}
+                        </select>
+                        <input type="number" id="swal-quantity" placeholder="Quantity" min="1" value="1" class="swal2-input" style="margin-top: 12px;">
+                        <!-- Add more fields here as needed -->
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Add',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#ef4444',
+                    preConfirm: () => {
+                        const productId = document.getElementById('swal-product-id').value;
+                        const quantity = parseInt(document.getElementById('swal-quantity').value) || 1;
+                        if (!productId) {
+                            Swal.showValidationMessage('Please select a product');
+                            return false;
+                        }
+                        const selectedProduct = productsCache.find(p => p.id == productId);
+                        return {
+                            product_id: selectedProduct.id,
+                            name: selectedProduct.name,
+                            quantity: quantity,
+                            price: selectedProduct.price,
+                            image: selectedProduct.images[0]
+                            // Add more properties here as needed
+                        };
+                    },
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        products.push(result.value);
+                        form.innerHTML = generateProductList();
+                    }
+                });
+            }
+
+            const { value: formValues } = await Swal.fire({
                 title: `Edit Products for Order #${orderId}`,
                 html: `
                     <div id="edit-products-form" style="max-height: 300px; overflow-y: auto;">
@@ -1186,170 +960,80 @@ ${order.line_items.map(item => `${item.name} - Quantity: ${item.quantity} | Pric
                         }
                     });
 
-                    addButton.addEventListener('click', async () => {
-                        if (!productsCache || productsCache.length === 0) {
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'No products available to add.',
-                                icon: 'error',
-                                confirmButtonColor: '#10b981',
-                            });
-                            return;
-                        }
-
-                        const productOptions = productsCache.map(product => `
-                            <option value="${product.id}">${product.name}</option>
-                        `).join('');
-
-                        Swal.fire({
-                            title: 'Add New Product',
-                            html: `
-                                <select id="swal-product-id" class="swal2-select">
-                                    <option value="">Select a product</option>
-                                    ${productOptions}
-                                </select>
-                                <input type="number" id="swal-quantity" placeholder="Quantity" min="1" value="1" class="swal2-input" style="margin-top: 12px;">
-                            `,
-                            showCancelButton: true,
-                            confirmButtonText: 'Add',
-                            cancelButtonText: 'Cancel',
-                            confirmButtonColor: '#10b981',
-                            cancelButtonColor: '#ef4444',
-                            preConfirm: () => {
-                                const productId = document.getElementById('swal-product-id').value;
-                                const quantity = parseInt(document.getElementById('swal-quantity').value) || 1;
-                                if (!productId) {
-                                    Swal.showValidationMessage('Please select a product');
-                                    return false;
-                                }
-                                const selectedProduct = productsCache.find(p => p.id == productId);
-                                return { product: selectedProduct, quantity };
-                            },
-                        }).then(result => {
-                            if (result.isConfirmed) {
-                                products.push({
-                                    id: result.value.product.id,
-                                    name: result.value.product.name,
-                                    quantity: result.value.quantity,
-                                    price: result.value.product.price,
-                                    image: result.value.product.images[0],
-                                });
-                                form.innerHTML = generateProductList();
-                            }
-                        });
-                    });
+                    addButton.addEventListener('click', addProduct);
                 },
                 preConfirm: () => {
                     const quantities = Array.from(Swal.getPopup().querySelectorAll('[id^="quantity-"]')).map(input => parseInt(input.value) || 0);
                     return { products, quantities };
                 },
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await saveProducts(orderId, result.value.products, result.value.quantities);
-                }
             });
+
+            if (formValues) {
+                await saveProducts(orderId, formValues.products, formValues.quantities);
+            }
         }
 
         // Save products
         async function saveProducts(orderId, products, quantities) {
             try {
                 const updatedItems = products.map((item, index) => ({
-                    id: item.id || 0,
-                    product_id: item.id,
+                    id: item.id || 0, // Use 0 for new items
+                    product_id: item.product_id || item.id,
+                    name: item.name,
                     quantity: quantities[index],
+                    total: (quantities[index] * parseFloat(item.price || 0)).toFixed(2)
                 })).filter(item => item.quantity > 0);
 
                 const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ line_items: updatedItems }),
+                    body: JSON.stringify({ line_items: updatedItems })
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                refreshOrders();
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`);
+                }
+                fetchOrders();
                 showNotification('Products updated successfully', 'success');
             } catch (error) {
                 console.error('Error saving products:', error);
-                showNotification('Error saving products', 'error');
+                showNotification(`Error saving products: ${error.message}`, 'error');
             }
         }
 
-        // Export orders to CSV
-        function exportOrders() {
-            const headers = ['Order ID', 'Customer', 'Email', 'Phone', 'Address', 'Zone', 'Total', 'Currency', 'Status', 'Date', 'Products'];
-            const rows = allOrders.map(order => [
-                order.id,
-                `${order.billing.first_name || ''} ${order.billing.last_name || ''}`,
-                order.billing.email || 'N/A',
-                order.billing.phone || 'N/A',
-                `${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}`,
-                order.billing.zone_name || 'Unspecified',
-                order.total,
-                order.currency,
-                order.status,
-                new Date(order.date_created).toLocaleDateString(),
-                order.line_items.map(item => `${item.name} (Qty: ${item.quantity}, Price: ${item.price})`).join('; '),
-            ]);
-
-            const csvContent = [
-                headers.join(','),
-                ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
-            ].join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'orders_export.csv';
-            link.click();
+        // Debounce function for search input
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
         // Event listeners for filters
-        document.getElementById('status-filter').addEventListener('change', () => {
-            saveFilters();
-            refreshOrders();
-        });
-        document.getElementById('date-from').addEventListener('change', () => {
-            saveFilters();
-            refreshOrders();
-        });
-        document.getElementById('date-to').addEventListener('change', () => {
-            saveFilters();
-            refreshOrders();
-        });
-        document.getElementById('customer-filter').addEventListener('input', () => {
-            saveFilters();
-            refreshOrders();
-        });
-        document.getElementById('per-page').addEventListener('input', () => {
-            saveFilters();
-            refreshOrders();
-        });
-        document.getElementById('sort-by').addEventListener('change', () => {
-            saveFilters();
-            refreshOrders();
-        });
+        const debouncedSaveCustomerFilter = debounce(() => {
+            localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
+        }, 500);
+
+        document.getElementById('customer-filter').addEventListener('input', debouncedSaveCustomerFilter);
 
         // Save auto-fetch settings
         document.getElementById('save-auto-fetch').addEventListener('click', () => {
-            const saved = saveFilters();
+            saveFilters();
             toggleSettings();
-            if (saved) {
-                showNotification('Settings saved successfully', 'success');
-            }
+            showNotification('Settings saved successfully', 'success');
         });
 
         // Initialize
-        try {
-            if (localStorage.getItem('dark-mode') === 'true') toggleDarkMode();
-            loadFilters();
-            fetchOrders();
-        } catch (e) {
-            console.error('Initialization error:', e);
-            showNotification('Error initializing the application', 'error');
-            hideLoading();
-        }
+        loadFilters();
+        fetchOrders();
     </script>
 </body>
 </html>
