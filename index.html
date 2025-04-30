@@ -18,6 +18,7 @@
             --dark: #1f2937;
             --background: #f1f5f9;
             --border: #e5e7eb;
+            --whatsapp: #25D366;
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -129,17 +130,36 @@
             background: #2563eb;
             transform: translateY(-2px);
         }
-        .status-checkboxes {
+        .status-checkboxes, .user-management-section {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        .status-checkboxes label {
+        .status-checkboxes label, .user-management-section label {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 15px;
             color: var(--dark);
+        }
+        .user-management-section .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+        .user-management-section .user-item .user-info {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .user-management-section .user-item .user-actions button {
+            margin-left: 5px;
+            padding: 4px 8px;
+            font-size: 12px;
         }
         .stats {
             padding: 20px;
@@ -154,11 +174,21 @@
             padding: 15px;
             border-radius: 10px;
             text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s, border 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent; /* Add border for active state */
         }
         .stat-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card.active {
+            background: var(--primary);
+            color: #fff;
+            border: 2px solid #1d4ed8; /* Darker border for active */
+        }
+        .stat-card.active h3, .stat-card.active p {
+            color: #fff;
         }
         .stat-card h3 {
             margin: 0;
@@ -186,13 +216,16 @@
             background: var(--light);
             border-radius: 8px;
             font-weight: 500;
-            transition: background 0.3s, color 0.3s;
+            transition: background 0.3s, color 0.3s, box-shadow 0.2s;
+            border: 2px solid transparent;
         }
         .tab.active {
             background: var(--primary);
             color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid #1d4ed8;
         }
-        .tab:hover {
+        .tab:hover:not(.active) {
             background: var(--border);
         }
         .tab .count {
@@ -205,7 +238,7 @@
         }
         .tab-content {
             display: none;
-            padding: 20px;
+            padding: 10px;
         }
         .tab-content.active {
             display: block;
@@ -218,7 +251,7 @@
         .order-card {
             background: #fff;
             border-radius: 12px;
-            padding: 20px;
+            padding: 10px;
             border: 1px solid var(--border);
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -295,6 +328,7 @@
             margin: 6px;
             font-weight: 500;
             transition: background 0.3s, transform 0.2s;
+            
         }
         .action-btn:hover {
             transform: translateY(-2px);
@@ -303,8 +337,17 @@
         .update-status-btn:hover { background: #2563eb; }
         .edit-products-btn { background: var(--success); color: #fff; }
         .edit-products-btn:hover { background: #059669; }
-        .copy-btn { background: var(--warning); color: #fff; }
-        .copy-btn:hover { background: #d97706; }
+        .copy-address-btn { background: var(--warning); color: #fff; }
+        .copy-address-btn:hover { background: #d97706; }
+        .copy-order-btn { background: var(--warning); color: #fff; }
+        .copy-order-btn:hover { background: #d97706; }
+        .send-address-btn, .send-order-btn {
+            background: var(--whatsapp);
+            color: #fff;
+        }
+        .send-address-btn:hover, .send-order-btn:hover {
+            background: #128C7E;
+        }
         .no-orders {
             text-align: center;
             color: var(--secondary);
@@ -334,7 +377,7 @@
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            animation: spin 3.0s linear infinite;
+            animation: spin 1.0s linear infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -345,34 +388,15 @@
             to { transform: translateY(0); opacity: 1; }
         }
         @media (max-width: 768px) {
-            .container {
-                margin: 3px;
-                border-radius: 8px;
-            }
-            .settings-panel {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .order-card {
-                padding: 15px;
-            }
+            .container { margin: 3px; border-radius: 8px; }
+            .settings-panel { grid-template-columns: 1fr; gap: 12px; }
+            .order-card { padding: 15px; }
         }
         @media (min-width: 769px) {
-            .container {
-                max-width: 1400px;
-                margin: 30px auto;
-                border-radius: 12px;
-            }
-            .header h1 {
-                font-size: 2rem;
-            }
-            .settings-panel {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-            }
-            .order-card {
-                padding: 25px;
-            }
+            .container { max-width: 1400px; margin: 30px auto; border-radius: 12px; }
+            .header h1 { font-size: 2rem; }
+            .settings-panel { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+            .order-card { padding: 25px; }
         }
     </style>
 </head>
@@ -393,6 +417,7 @@
         </div>
         <div class="settings-panel" id="settings-panel">
             <div class="status-checkboxes">
+                <h4>Filter by Status</h4>
                 <label><input type="checkbox" name="status-filter" value="pending"> Pending Payment</label>
                 <label><input type="checkbox" name="status-filter" value="processing"> Processing</label>
                 <label><input type="checkbox" name="status-filter" value="on-hold"> On Hold</label>
@@ -401,16 +426,31 @@
                 <label><input type="checkbox" name="status-filter" value="refunded"> Refunded</label>
                 <label><input type="checkbox" name="status-filter" value="failed"> Failed</label>
             </div>
-            <input type="date" id="date-from" placeholder="From Date">
-            <input type="date" id="date-to" placeholder="To Date">
-            <input type="number" id="per-page" placeholder="Orders per page" min="1" max="100">
-            <select id="sort-by">
-                <option value="date-desc">Date (Newest First)</option>
-                <option value="date-asc">Date (Oldest First)</option>
-                <option value="total-desc">Total (High to Low)</option>
-                <option value="total-asc">Total (Low to High)</option>
-            </select>
-            <button id="save-auto-fetch">Save Settings</button>
+            <div class="user-management-section" id="user-management-section"> <!-- Updated ID -->
+                <h4>Delivery & Order Preparation Users</h4> <!-- Updated Heading -->
+                <button id="add-user-btn" style="background: var(--success);"><i class="fas fa-plus"></i> Add User</button>
+                <!-- User items will be added here by JS -->
+            </div>
+            <div>
+                <h4>Filter by Date</h4>
+                <input type="date" id="date-from" placeholder="From Date">
+                <input type="date" id="date-to" placeholder="To Date">
+            </div>
+            <div>
+                <h4>Display Options</h4>
+                <input type="number" id="per-page" placeholder="Orders per page (e.g., 20)" min="1" max="100" value="20">
+                <select id="sort-by">
+                    <option value="date-desc">Date (Newest First)</option>
+                    <option value="date-asc">Date (Oldest First)</option>
+                    <option value="total-desc">Total (High to Low)</option>
+                    <option value="total-asc">Total (Low to High)</option>
+                </select>
+            </div>
+            <div>
+                <h4>Actions</h4>
+                <button id="save-settings-btn">Apply Filters & Settings</button>
+                <button id="clear-filters-btn" style="background: var(--secondary);"><i class="fas fa-times"></i> Clear Filters</button> <!-- Added Clear Filters Button -->
+            </div>
         </div>
         <div class="stats" id="stats"></div>
         <div class="tabs" id="zone-tabs"></div>
@@ -422,29 +462,244 @@
         const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
         const consumer_secret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
         const storeUrl = 'https://tenderfrozen.com';
+        let users = []; // Renamed from localUsers
+        const USERS_KEY = 'tenderFrozenDeliveryUsers'; // Updated Key
+        const EGYPT_COUNTRY_CODE = '+20';
 
-        // Show loading overlay
+        // --- User Management --- 
+
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            let cleaned = phone.trim().replace(/[^0-9+]/g, '');
+            if (cleaned.startsWith(EGYPT_COUNTRY_CODE)) {
+                return cleaned;
+            }
+            if (cleaned.startsWith('0')) {
+                if (cleaned.length === 11) {
+                    return EGYPT_COUNTRY_CODE + cleaned.substring(1);
+                }
+            }
+            if (cleaned.length === 10) {
+                return EGYPT_COUNTRY_CODE + cleaned;
+            }
+            console.warn(`Phone number "${phone}" could not be automatically formatted. Using cleaned value: ${cleaned}`);
+            return cleaned;
+        }
+
+        function loadUsers() { // Renamed from loadLocalUsers
+            const storedUsers = localStorage.getItem(USERS_KEY);
+            if (storedUsers) {
+                try {
+                    users = JSON.parse(storedUsers);
+                    console.log('Delivery/Prep users loaded:', users.length);
+                } catch (e) {
+                    console.error('Error parsing users:', e);
+                    users = [];
+                    localStorage.removeItem(USERS_KEY);
+                }
+            } else {
+                users = [];
+            }
+            displayUsers(); // Renamed from displayLocalUsers
+        }
+
+        function saveUsers() { // Renamed from saveLocalUsers
+            try {
+                localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            } catch (e) {
+                console.error('Error saving users:', e);
+                showNotification('Error saving user data. Local storage might be full.', 'error');
+            }
+        }
+
+        function displayUsers() { // Renamed from displayLocalUsers
+            const container = document.getElementById('user-management-section');
+            const userItems = container.querySelectorAll('.user-item');
+            userItems.forEach(item => item.remove());
+            const noUsersP = container.querySelector('p.no-users-msg'); // Added class for specific targeting
+            if (users.length === 0) {
+                if (!noUsersP) {
+                    const p = document.createElement('p');
+                    p.textContent = 'No users found.';
+                    p.classList.add('no-users-msg'); // Add class
+                    container.insertBefore(p, container.querySelector('#add-user-btn'));
+                }
+            } else {
+                if (noUsersP) noUsersP.remove();
+                users.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.classList.add('user-item');
+                    userItem.dataset.id = user.id;
+                    userItem.innerHTML = `
+                        <div class="user-info">
+                            <strong>${user.name || 'N/A'}</strong><br>
+                            <small>Phone: ${user.phone || 'N/A'} | Job: ${user.job || 'N/A'} | Zone: ${user.zone || 'N/A'}</small> <!-- Added Zone -->
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn edit-user-btn" style="background: var(--warning); color: #fff;"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete-user-btn" style="background: var(--danger); color: #fff;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    userItem.querySelector('.edit-user-btn').addEventListener('click', () => editUser(user.id)); // Renamed
+                    userItem.querySelector('.delete-user-btn').addEventListener('click', () => deleteUser(user.id)); // Renamed
+                    container.insertBefore(userItem, container.querySelector('#add-user-btn'));
+                });
+            }
+        }
+
+        function addUser() { // Renamed from addLocalUser
+            Swal.fire({
+                title: 'Add New User',
+                html: `
+                    <input id="swal-user-name" class="swal2-input" placeholder="Full Name">
+                    <input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., 01xxxxxxxxx)">
+                    <input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)">
+                    <input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)"> <!-- Added Zone -->
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Add',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-user-name').value;
+                    const phoneInput = document.getElementById('swal-user-phone').value;
+                    const job = document.getElementById('swal-user-job').value;
+                    const zone = document.getElementById('swal-user-zone').value; // Get Zone
+
+                    if (!name || !phoneInput) {
+                        Swal.showValidationMessage('Name and Phone Number are required');
+                        return false;
+                    }
+                    const formattedPhone = formatPhoneNumber(phoneInput);
+                    if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+                         Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)');
+                         return false;
+                    }
+
+                    return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' }; // Added Zone
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const newUser = {
+                        id: Date.now().toString(),
+                        name: result.value.name,
+                        phone: result.value.phone,
+                        job: result.value.job,
+                        zone: result.value.zone // Added Zone
+                    };
+                    users.push(newUser);
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User added successfully', 'success');
+                }
+            });
+        }
+
+        function editUser(userId) { // Renamed from editLocalUser
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) {
+                showNotification('User not found for editing.', 'error');
+                return;
+            }
+            const user = users[userIndex];
+
+            Swal.fire({
+                title: 'Edit User',
+                html: `
+                    <input id="swal-user-name" class="swal2-input" placeholder="Full Name" value="${user.name || ''}">
+                    <input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., +20...)" value="${user.phone || ''}">
+                    <input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)" value="${user.job || ''}">
+                    <input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)" value="${user.zone || ''}"> <!-- Added Zone -->
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Save Changes',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-user-name').value;
+                    const phoneInput = document.getElementById('swal-user-phone').value;
+                    const job = document.getElementById('swal-user-job').value;
+                    const zone = document.getElementById('swal-user-zone').value; // Get Zone
+
+                    if (!name || !phoneInput) {
+                        Swal.showValidationMessage('Name and Phone Number are required');
+                        return false;
+                    }
+                    const formattedPhone = formatPhoneNumber(phoneInput);
+                     if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+                         Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)');
+                         return false;
+                    }
+                    return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' }; // Added Zone
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    users[userIndex] = {
+                        ...user,
+                        name: result.value.name,
+                        phone: result.value.phone,
+                        job: result.value.job,
+                        zone: result.value.zone // Added Zone
+                    };
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User updated successfully', 'success');
+                }
+            });
+        }
+
+        function deleteUser(userId) { // Renamed from deleteLocalUser
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) {
+                showNotification('User not found for deletion.', 'error');
+                return;
+            }
+            const user = users[userIndex];
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `Delete user "${user.name}"? This cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    users.splice(userIndex, 1);
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User deleted successfully', 'success');
+                }
+            });
+        }
+
+        // --- End User Management ---
+
+        function sanitizeZoneName(zone) {
+            return zone?.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') || 'unspecified';
+        }
+
         function showLoading() {
             document.getElementById('loading-overlay').classList.add('active');
         }
 
-        // Hide loading overlay
         function hideLoading() {
-            document.getElementById('loading-overlay').classList.remove('active');
+            requestAnimationFrame(() => {
+                document.getElementById('loading-overlay').classList.remove('active');
+            });
         }
 
-        // Load saved filter values
         function loadFilters() {
             const statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
             const dateFrom = localStorage.getItem('date-from') || '';
             const dateTo = localStorage.getItem('date-to') || '';
             const customer = localStorage.getItem('customer-filter') || '';
-            const perPage = localStorage.getItem('per-page') || '50';
+            const perPage = localStorage.getItem('per-page') || '20';
             const sortBy = localStorage.getItem('sort-by') || 'date-desc';
-
-            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
-                checkbox.checked = statuses.includes(checkbox.value);
-            });
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => { checkbox.checked = statuses.includes(checkbox.value); });
             document.getElementById('date-from').value = dateFrom;
             document.getElementById('date-to').value = dateTo;
             document.getElementById('customer-filter').value = customer;
@@ -452,8 +707,7 @@
             document.getElementById('sort-by').value = sortBy;
         }
 
-        // Save filter values
-        function saveFilters() {
+        function saveFiltersAndFetch() {
             const statuses = Array.from(document.querySelectorAll('input[name="status-filter"]:checked')).map(cb => cb.value);
             localStorage.setItem('status-filter', JSON.stringify(statuses));
             localStorage.setItem('date-from', document.getElementById('date-from').value);
@@ -461,579 +715,353 @@
             localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
             localStorage.setItem('per-page', document.getElementById('per-page').value);
             localStorage.setItem('sort-by', document.getElementById('sort-by').value);
+            localStorage.removeItem('active-status-filter');
             fetchOrders();
         }
 
-        // Show notification with SweetAlert2
+        function clearFiltersAndFetch() {
+            // Clear UI elements
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => { checkbox.checked = false; });
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('customer-filter').value = '';
+            document.getElementById('per-page').value = '20'; // Reset to default
+            document.getElementById('sort-by').value = 'date-desc'; // Reset to default
+
+            // Clear localStorage
+            localStorage.removeItem('status-filter');
+            localStorage.removeItem('date-from');
+            localStorage.removeItem('date-to');
+            localStorage.removeItem('customer-filter');
+            localStorage.removeItem('per-page');
+            localStorage.removeItem('sort-by');
+            localStorage.removeItem('active-status-filter');
+
+            // Fetch orders with cleared filters
+            fetchOrders();
+            showNotification('Filters cleared', 'success');
+        }
+
         function showNotification(message, type) {
-            Swal.fire({
-                title: type === 'success' ? 'Success' : 'Error',
-                text: message,
-                icon: type,
-                confirmButtonColor: '#10b981',
-                timer: 500,
-                timerProgressBar: true,
-            });
+            Swal.fire({ title: type === 'success' ? 'Success' : (type === 'error' ? 'Error' : 'Info'), text: message, icon: type, confirmButtonColor: '#10b981', timer: type === 'error' ? 5000 : 800, timerProgressBar: true });
         }
 
-        // Toggle settings panel
         function toggleSettings() {
-            const panel = document.getElementById('settings-panel');
-            panel.classList.toggle('active');
+            document.getElementById('settings-panel').classList.toggle('active');
         }
 
-        // Toggle full screen
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error('Error entering fullscreen:', err);
-                });
+                document.documentElement.requestFullscreen().catch(err => { console.error('Error entering fullscreen:', err); showNotification('Could not enter fullscreen mode.', 'error'); });
             } else {
                 document.exitFullscreen();
             }
         }
 
-        // Fetch orders
-        async function fetchOrders() {
+        const debounce = (func, delay) => { let debounceTimer; return function(...args) { const context = this; clearTimeout(debounceTimer); debounceTimer = setTimeout(() => func.apply(context, args), delay); } };
+        const debouncedSaveFiltersAndFetch = debounce(saveFiltersAndFetch, 800);
+
+        async function fetchOrders(statusFilter = null) {
             showLoading();
-            const statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
+            const statuses = statusFilter ? [statusFilter] : JSON.parse(localStorage.getItem('status-filter') || '[]');
             const dateFrom = localStorage.getItem('date-from') || '';
             const dateTo = localStorage.getItem('date-to') || '';
             const customer = localStorage.getItem('customer-filter') || '';
-            const perPage = localStorage.getItem('per-page') || '50';
+            const perPage = localStorage.getItem('per-page') || '20';
             const sortBy = localStorage.getItem('sort-by') || 'date-desc';
-
-            let allOrders = [];
+            const perPageNum = parseInt(perPage) || 20;
+            const tabsContainer = document.getElementById('zone-tabs');
+            const contentsContainer = document.getElementById('tab-contents');
+            const statsContainer = document.getElementById('stats');
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
+            statsContainer.innerHTML = '';
             try {
-                if (statuses.length === 0) {
-                    let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}`;
-                    if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
-                    if (dateTo) url += `&before=${dateTo}T23:59:59`;
-                    if (customer) url += `&search=${customer}`;
-                    const response = await fetch(url, {
-                        headers: {
-                            'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-                        }
-                    });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    allOrders = await response.json();
-                } else {
-                    for (const status of statuses) {
-                        let url = `${storeUrl}/wp-json/wc/v3/orders?per_page=${perPage}&status=${status}`;
-                        if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
-                        if (dateTo) url += `&before=${dateTo}T23:59:59`;
-                        if (customer) url += `&search=${customer}`;
-                        const response = await fetch(url, {
-                            headers: {
-                                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-                            }
-                        });
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        const orders = await response.json();
-                        allOrders = [...allOrders, ...orders];
-                    }
-                    // Remove duplicates by order ID
-                    allOrders = Array.from(new Map(allOrders.map(order => [order.id, order])).values());
+                let url = `${storeUrl}/wp-json/wc/v3/orders?page=1&per_page=${perPageNum}`;
+                if (statuses.length > 0) url += `&status=${statuses.join(',')}`;
+                if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+                if (dateTo) url += `&before=${dateTo}T23:59:59`;
+                if (customer) url += `&search=${customer}`;
+                const [orderBy, order] = sortBy.split('-');
+                url += `&orderby=${orderBy}&order=${order}`;
+                const response = await fetch(url, { headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`) } });
+                const contentType = response.headers.get('content-type');
+                if (!response.ok) {
+                    let errorText = `HTTP error! status: ${response.status}`;
+                    try { const errorJson = await response.json(); errorText += `, message: ${errorJson.message || 'Unknown API error'}`; } catch(e) { errorText += `, body: ${await response.text()}`; }
+                    throw new Error(errorText);
                 }
-
-                // Sort orders
-                if (sortBy === 'date-desc') {
-                    allOrders.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
-                } else if (sortBy === 'date-asc') {
-                    allOrders.sort((a, b) => new Date(a.date_created) - new Date(b.date_created));
-                } else if (sortBy === 'total-desc') {
-                    allOrders.sort((a, b) => parseFloat(b.total) - parseFloat(a.total));
-                } else if (sortBy === 'total-asc') {
-                    allOrders.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
-                }
-
-                displayStats(allOrders);
-                groupAndDisplayOrders(allOrders);
-                showNotification('Orders loaded successfully', 'success');
+                if (!contentType || !contentType.includes('application/json')) { throw new Error(`Expected JSON, got ${contentType}: ${await response.text()}`); }
+                const orders = await response.json();
+                displayStats(orders);
+                if (orders.length > 0) { groupAndDisplayOrders(orders); } else { contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>'; }
             } catch (error) {
-                console.error('Error fetching orders:', error);
-                document.getElementById('tab-contents').innerHTML = `
-                    <p class="no-orders">Error loading orders. Please try again.</p>
-                    <button class="action-btn" onclick="refreshOrders()">Retry</button>
-                `;
-                showNotification('Error loading orders', 'error');
-            } finally {
-                hideLoading();
-            }
+                console.error('Detailed error fetching orders:', error);
+                contentsContainer.innerHTML = `<div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;"><p><strong>Error loading orders:</strong></p><p>${error.message}</p><button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;"><i class="fas fa-sync-alt"></i> Retry</button></div>`;
+                showNotification(`Error loading orders: ${error.message}`, 'error');
+            } finally { hideLoading(); }
         }
 
-        // Refresh orders
-        function refreshOrders() {
-            fetchOrders();
-        }
+        function refreshOrders() { localStorage.removeItem('active-status-filter'); fetchOrders(); showNotification('Refreshing orders...', 'info'); }
 
-        // Display statistics
         function displayStats(orders) {
             const statsContainer = document.getElementById('stats');
-            const statuses = ['pending', 'processing', 'on-hold', 'completed', 'cancelled', 'refunded', 'failed'];
-            const statusNames = {
-                pending: 'Pending Payment',
-                processing: 'Processing',
-                'on-hold': 'On Hold',
-                completed: 'Completed',
-                cancelled: 'Cancelled',
-                refunded: 'Refunded',
-                failed: 'Failed'
-            };
-            const statusColors = {
-                pending: '#f59e0b',
-                processing: '#3b82f6',
-                'on-hold': '#f97316',
-                completed: '#10b981',
-                cancelled: '#ef4444',
-                refunded: '#6b7280',
-                failed: '#991b1b'
-            };
-
             statsContainer.innerHTML = '';
-            statuses.forEach(status => {
-                const count = orders.filter(order => order.status === status).length;
+            const statusConfig = { pending: { name: 'Pending Payment', color: '#f59e0b' }, processing: { name: 'Processing', color: '#3b82f6' }, 'on-hold': { name: 'On Hold', color: '#f97316' }, completed: { name: 'Completed', color: '#10b981' }, cancelled: { name: 'Cancelled', color: '#ef4444' }, refunded: { name: 'Refunded', color: '#6b7280' }, failed: { name: 'Failed', color: '#991b1b' } };
+            let activeStatus = localStorage.getItem('active-status-filter') || null;
+            let statusCounts = {};
+            orders.forEach(order => { statusCounts[order.status] = (statusCounts[order.status] || 0) + 1; });
+            Object.keys(statusConfig).forEach(status => {
+                const count = statusCounts[status] || 0;
                 if (count > 0) {
+                    const config = statusConfig[status];
                     const statCard = document.createElement('div');
                     statCard.classList.add('stat-card');
-                    statCard.style.backgroundColor = statusColors[status] + '22';
-                    statCard.innerHTML = `
-                        <h3>${statusNames[status]}</h3>
-                        <p>${count}</p>
-                    `;
+                    if (activeStatus === status) statCard.classList.add('active');
+                    statCard.style.backgroundColor = config.color + '22';
+                    statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
+                    statCard.addEventListener('click', () => { if (activeStatus === status) { localStorage.removeItem('active-status-filter'); fetchOrders(); } else { localStorage.setItem('active-status-filter', status); fetchOrders(status); } });
                     statsContainer.appendChild(statCard);
                 }
             });
+            if (statsContainer.children.length === 0 && orders.length > 0) { statsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--secondary);">Stats reflect displayed orders.</p>'; }
         }
 
-        // Group orders by zone_name
         function groupOrdersByZone(orders) {
-            const grouped = {};
-            orders.forEach(order => {
-                const zone = order.billing.zone_name || 'Unspecified';
-                if (!grouped[zone]) grouped[zone] = [];
-                grouped[zone].push(order);
-            });
-            return grouped;
+            const groupedOrders = {};
+            orders.forEach(order => { const zone = order.billing?.zone_name || order.shipping?.zone_name || 'Unspecified'; if (!groupedOrders[zone]) groupedOrders[zone] = []; groupedOrders[zone].push(order); });
+            return groupedOrders;
         }
 
-        // Display grouped orders
         function groupAndDisplayOrders(orders) {
-            const groupedOrders = groupOrdersByZone(orders);
+            const grouped = groupOrdersByZone(orders);
             const tabsContainer = document.getElementById('zone-tabs');
             const contentsContainer = document.getElementById('tab-contents');
-
-            tabsContainer.innerHTML = '';
-            contentsContainer.innerHTML = '';
-
-            Object.keys(groupedOrders).sort().forEach((zone, index) => {
-                const tab = document.createElement('div');
-                tab.classList.add('tab');
-                if (index === 0) tab.classList.add('active');
-                tab.innerHTML = `${zone} <span class="count">${groupedOrders[zone].length}</span>`;
-                tab.addEventListener('click', () => switchTab(zone));
-                tabsContainer.appendChild(tab);
-
-                const content = document.createElement('div');
-                content.classList.add('tab-content');
-                content.id = `tab-${zone.replace(/\s+/g, '-')}`;
-                if (index === 0) content.classList.add('active');
-                content.innerHTML = `<div class="orders-list" id="orders-${zone.replace(/\s+/g, '-')}"></div>`;
-                contentsContainer.appendChild(content);
-
-                displayOrdersForZone(groupedOrders[zone], `orders-${zone.replace(/\s+/g, '-')}`);
+            tabsContainer.innerHTML = ''; contentsContainer.innerHTML = '';
+            const zones = Object.keys(grouped).sort();
+            if (zones.length === 0) { contentsContainer.innerHTML = '<p class="no-orders">No orders found or could not group by zone.</p>'; return; }
+            zones.forEach((zone, index) => {
+                const sanitizedZone = sanitizeZoneName(zone);
+                const zoneOrders = grouped[zone];
+                let tab = document.createElement('div'); tab.classList.add('tab'); tab.dataset.zone = sanitizedZone; tab.innerHTML = `${zone} <span class="count">${zoneOrders.length}</span>`; tab.addEventListener('click', () => switchTab(zone)); tabsContainer.appendChild(tab);
+                let content = document.createElement('div'); content.classList.add('tab-content'); content.id = `tab-${sanitizedZone}`; content.innerHTML = `<div class="orders-list" id="orders-${sanitizedZone}"></div>`; contentsContainer.appendChild(content);
+                displayOrdersForZone(zoneOrders, `orders-${sanitizedZone}`);
+                if (index === 0) { tab.classList.add('active'); content.classList.add('active'); }
             });
-
-            if (Object.keys(groupedOrders).length === 0) {
-                contentsContainer.innerHTML = '<p class="no-orders">No orders found.</p>';
-            }
         }
 
-        // Display orders for a specific zone
         function displayOrdersForZone(orders, containerId) {
-            const ordersList = document.getElementById(containerId);
-            ordersList.innerHTML = '';
-            const statusColors = {
-                pending: '#f59e0b',
-                processing: '#3b82f6',
-                'on-hold': '#f97316',
-                completed: '#10b981',
-                cancelled: '#ef4444',
-                refunded: '#6b7280',
-                failed: '#991b1b'
-            };
-
+            const ordersList = document.getElementById(containerId); if (!ordersList) return; ordersList.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            const statusColors = { pending: '#f59e0b', processing: '#3b82f6', 'on-hold': '#f97316', completed: '#10b981', cancelled: '#ef4444', refunded: '#6b7280', failed: '#991b1b' };
             orders.forEach(order => {
-                const orderCard = document.createElement('div');
-                orderCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
-
-                const productItems = order.line_items.map(item => `
-                    <div class="product-item">
-                        ${item.image?.src ? `<img src="${item.image.src}" alt="${item.name}" />` : ''}
-                        <div>
-                            <span class="name">${item.name}</span>
-                            <span class="details"> ×  ${item.quantity} 
-                            <br/>
-                            Price: ${item.price} ${order.currency}</span>
+                try {
+                    const orderCard = document.createElement('div'); orderCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
+                    const billing = order.billing || {}; const shipping = order.shipping || {};
+                    const customerName = `${billing.first_name || shipping.first_name || 'N/A'} ${billing.last_name || shipping.last_name || ''}`.trim() || 'Unknown Customer';
+                    const status = order.status || 'Unknown'; const zoneName = billing.zone_name || shipping.zone_name || 'Unspecified'; const locationLink = billing.location || shipping.location || '#';
+                    const address = `${billing.address_1 || shipping.address_1 || ''}, ${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}, ${billing.postcode || shipping.postcode || ''}, ${billing.country || shipping.country || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+                    let productItemsHtml = '';
+                    try {
+                        const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
+                        productItemsHtml = lineItems.map(item => {
+                            const imageSrc = item.image?.src || ''; const imageAlt = item.name || 'Product'; const itemName = item.name || 'Unknown Product'; const itemQuantity = item.quantity || 0;
+                            // Removed price from here
+                            return `<div class="product-item">${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" />` : '<div style="width: 60px; height: 60px; background: #eee; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #aaa;"><i class="fas fa-image"></i></div>'}<div><span class="name">${itemName}</span><span class="details"> × ${itemQuantity}</span></div></div>`;
+                        }).join('');
+                    } catch (error) { console.error(`Error processing line items for order ${order.id}:`, error); productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>'; }
+                    orderCard.innerHTML = `
+                        <div class="order-card-header"><h3>${customerName} ( #${order.id || 'N/A'})</h3><span class="status" style="background-color: ${statusColors[status] || '#6b7280'};">${status}</span></div>
+                        <div class="order-card-details" id="details-${order.id}">
+                            <div class="section"><h4>Order Details</h4><p><strong>Date:</strong> ${order.date_created ? new Date(order.date_created).toLocaleString() : 'N/A'}</p><p><strong>Total:</strong> ${parseFloat(order.total || 0).toFixed(2)} ${order.currency || ''}</p></div>
+                            <div class="section"><h4>Customer</h4><p><strong>Email:</strong> ${billing.email || 'N/A'}</p><p><strong>Phone:</strong> ${billing.phone || 'N/A'}</p></div>
+                            <div class="section"><h4>Address</h4><p><strong>Address:</strong> ${address || 'N/A'}</p><p><strong>Location:</strong> <a href="${locationLink}" target="_blank" ${locationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p><p><strong>Zone:</strong> ${zoneName}</p></div>
+                            <div class="section"><h4>Products (${(order.line_items || []).length})</h4>${productItemsHtml || '<p>No products</p>'}</div>
+                            <div class="section action-buttons">
+                                <button class="action-btn copy-address-btn"><i class="fas fa-copy"></i> Copy Address</button>
+                                <button class="action-btn copy-order-btn"><i class="fas fa-copy"></i> Copy Order</button>
+                                <button class="action-btn send-address-btn"><i class="fab fa-whatsapp"></i> Send Address</button>
+                                <button class="action-btn send-order-btn"><i class="fab fa-whatsapp"></i> Send Order</button>
+                                <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Update Status</button>
+                                <button class="action-btn edit-products-btn"><i class="fas fa-edit"></i> Edit Products</button>
+                            </div>
                         </div>
-                    </div>
-                `);
-
-                orderCard.innerHTML = `
-                    <div class="order-card-header">
-                        <h3>${order.billing.first_name || ''} ${order.billing.last_name || ''}</h3>
-                        <span class="status" style="background-color: ${statusColors[order.status]}">${order.status}</span>
-                    </div>
-                    <div class="order-card-details" id="details-${order.id}">
-                        <div class="section">
-                            <h4>Order Details</h4>
-                            <p><strong>Order #:</strong> ${order.id}</p>
-                            <p><strong>Date:</strong> ${new Date(order.date_created).toLocaleDateString()}</p>
-                            <p><strong>Total:</strong> ${order.total} ${order.currency}</p>
-                        </div>
-                        <div class="section">
-                            <h4>Customer</h4>
-                            <p><strong>Email:</strong> ${order.billing.email || 'N/A'}</p>
-                            <p><strong>Phone:</strong> ${order.billing.phone || 'N/A'}</p>
-                        </div>
-                        <div class="section">
-                            <h4>Address</h4>
-                            <p><strong>Address:</strong> ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}</p>
-                            <p><strong>Location:</strong> <a href="${order.billing.location || '#'}" target="_blank">Open Location</a></p>
-                            <p><strong>Zone:</strong> ${order.billing.zone_name || 'Unspecified'}</p>
-                        </div>
-                        <div class="section">
-                            <h4>Products</h4>
-                            ${productItems.join('') || 'No products'}
-                        </div>
-                        <div class="section">
-                            <button class="action-btn copy-btn"><i class="fas fa-copy"></i> Copy Address</button>
-                            <button class="action-btn copy-btn"><i class="fas fa-copy"></i> Copy Order</button>
-                            <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Update Status</button>
-                            <button class="action-btn edit-products-btn"><i class="fas fa-edit"></i> Edit Products</button>
-                        </div>
-                    </div>
-                `;
-                orderCard.querySelector('.copy-btn:nth-of-type(1)').addEventListener('click', () => copyAddress(order));
-                orderCard.querySelector('.copy-btn:nth-of-type(2)').addEventListener('click', () => copyOrder(order));
-                orderCard.querySelector('.update-status-btn').addEventListener('click', () => openStatusModal(order.id, order.status));
-                orderCard.querySelector('.edit-products-btn').addEventListener('click', () => openProductsModal(order.id, order.line_items));
-                orderCard.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('action-btn') && !e.target.closest('.action-btn')) {
-                        const details = document.getElementById(`details-${order.id}`);
-                        details.classList.toggle('active');
+                    `;
+                    const detailsDiv = orderCard.querySelector(`#details-${order.id}`);
+                    if (detailsDiv) {
+                        const copyAddressBtn = detailsDiv.querySelector('.copy-address-btn'); const copyOrderBtn = detailsDiv.querySelector('.copy-order-btn'); const sendAddressBtn = detailsDiv.querySelector('.send-address-btn'); const sendOrderBtn = detailsDiv.querySelector('.send-order-btn'); const updateStatusBtn = detailsDiv.querySelector('.update-status-btn'); const editProductsBtn = detailsDiv.querySelector('.edit-products-btn');
+                        if (copyAddressBtn) copyAddressBtn.addEventListener('click', (e) => { e.stopPropagation(); copyAddress(order); });
+                        if (copyOrderBtn) copyOrderBtn.addEventListener('click', (e) => { e.stopPropagation(); copyOrder(order); });
+                        if (sendAddressBtn) sendAddressBtn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'address'); });
+                        if (sendOrderBtn) sendOrderBtn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'order'); });
+                        if (updateStatusBtn) updateStatusBtn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status); });
+                        if (editProductsBtn) editProductsBtn.addEventListener('click', (e) => { e.stopPropagation(); openProductsModal(order.id, order.line_items); });
                     }
-                });
-                ordersList.appendChild(orderCard);
+                    orderCard.addEventListener('click', () => { const details = document.getElementById(`details-${order.id}`); if (details) details.classList.toggle('active'); });
+                    fragment.appendChild(orderCard);
+                } catch (error) {
+                    console.error(`Error rendering order ${order.id}:`, error, error.stack);
+                    const errorCard = document.createElement('div'); errorCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
+                    errorCard.innerHTML = `<div class="order-card-header"><h3>Error Loading Order #${order.id || 'Unknown'}</h3><span class="status" style="background-color: #991b1b">Error</span></div><div class="order-card-details active" id="details-${order.id}"><p style="color: var(--danger);">Unable to display order details: ${error.message}.</p><p><small>Check console.</small></p><button class="action-btn retry-btn" style="background: #3b82f6; color: #fff;" onclick="event.stopPropagation(); fetchOrders();"><i class="fas fa-sync-alt"></i> Retry Load</button></div>`;
+                    fragment.appendChild(errorCard);
+                }
             });
+            requestAnimationFrame(() => { ordersList.appendChild(fragment); });
         }
 
-        // Switch between tabs
         function switchTab(zone) {
+            const sanitizedZone = sanitizeZoneName(zone);
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            document.querySelector(`#tab-${zone.replace(/\s+/g, '-')}`).classList.add('active');
-            document.querySelector(`.tab:nth-child(${[...document.querySelectorAll('.tab')].findIndex(tab => tab.textContent.includes(zone)) + 1})`).classList.add('active');
+            const tabToActivate = document.querySelector(`.tab[data-zone="${sanitizedZone}"]`);
+            const contentToActivate = document.querySelector(`#tab-${sanitizedZone}`);
+            if (tabToActivate) tabToActivate.classList.add('active');
+            if (contentToActivate) contentToActivate.classList.add('active');
         }
 
-        // Copy address
-        function copyAddress(order) {
+        function copyAddress(order, forWhatsApp = false) {
+            const billing = order.billing || {}; const shipping = order.shipping || {};
             const address = `
-العميل: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+العميل: ${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}
 
-رقم الهاتف: ${order.billing.phone || 'N/A'}
+رقم الهاتف: ${billing.phone || 'N/A'}
 
-العنوان: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+العنوان: ${billing.address_1 || shipping.address_1 || ''},
 
-اللوكيشن: ${order.billing.location || 'Not Found'}
+${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}, ${billing.postcode || shipping.postcode || ''}, ${billing.country || shipping.country || ''}
 
-المنطقة: ${order.billing.zone_name || 'Unspecified'}
+اللوكيشن: ${billing.location || shipping.location || 'Not Found'}
 
-الاجمالي: ${order.total} ${order.currency}
+المنطقة: ${billing.zone_name || shipping.zone_name || 'Unspecified'}
+
+الاجمالي: ${parseFloat(order.total || 0).toFixed(2)} ${order.currency || ''}
+
             `.trim();
-            navigator.clipboard.writeText(address).then(() => showNotification('Address copied to clipboard', 'success'));
+            if (!forWhatsApp) { navigator.clipboard.writeText(address).then(() => { showNotification('Address copied', 'success'); }).catch(err => { console.error('Failed to copy address: ', err); showNotification('Failed to copy address.', 'error'); }); }
+            return address;
         }
 
-        // Copy order
-        function copyOrder(order) {
+        function copyOrder(order, forWhatsApp = false) {
+            const billing = order.billing || {}; const shipping = order.shipping || {};
             const orderDetails = `
-رقم الطلب #${order.id}
+رقم الطلب #${order.id || 'N/A'}
 
-العميل: ${order.billing.first_name || ''} ${order.billing.last_name || ''}
+العميل: ${billing.first_name || shipping.first_name || ''}
+${billing.last_name || shipping.last_name || ''}
 
-الايميل: ${order.billing.email || 'N/A'}
+الايميل: ${billing.email || 'N/A'}
 
-رقم الهاتف: ${order.billing.phone || 'N/A'}
+رقم الهاتف: ${billing.phone || 'N/A'}
 
-العنوان: ${order.billing.address_1 || ''}, ${order.billing.city || ''}, ${order.billing.state || ''}, ${order.billing.postcode || ''}, ${order.billing.country || ''}
+العنوان: ${billing.address_1 || shipping.address_1 || ''},
 
-اللوكيشن: ${order.billing.location || 'Not Found'}
+${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}, ${billing.postcode || shipping.postcode || ''}, ${billing.country || shipping.country || ''}
 
-المنطقة: ${order.billing.zone_name || 'Unspecified'}
+اللوكيشن: ${billing.location || shipping.location || 'Not Found'}
 
-الاجمالي: ${order.total} ${order.currency}
+المنطقة: ${billing.zone_name || shipping.zone_name || 'Unspecified'}
 
-تاريخ الطلب: ${new Date(order.date_created).toLocaleDateString()}
+الاجمالي: ${parseFloat(order.total || 0).toFixed(2)} ${order.currency || ''}
+
+تاريخ الطلب: ${order.date_created ? new Date(order.date_created).toLocaleString() : 'N/A'}
 
 المنتجات:
+${(Array.isArray(order.line_items) ? order.line_items : []).map(item => `
 
-${order.line_items.map(item => `
-
-${item.name} - Quantity: ${item.quantity} | Price: ${item.price} 
-${order.currency}`).join('\n')}
+- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('') || '- No products'}
             `.trim();
-            navigator.clipboard.writeText(orderDetails).then(() => showNotification('Order details copied to clipboard', 'success'));
+            if (!forWhatsApp) { navigator.clipboard.writeText(orderDetails).then(() => { showNotification('Order details copied', 'success'); }).catch(err => { console.error('Failed to copy order details: ', err); showNotification('Failed to copy order details.', 'error'); }); }
+            return orderDetails;
         }
 
-        // Open status modal with SweetAlert2
-        function openStatusModal(orderId, currentStatus) {
+        function sendToWhatsApp(order, type) {
+            if (users.length === 0) { showNotification('No users available. Please add users in Settings.', 'warning'); return; }
+            const userOptions = users.map(user => `<option value="${user.id}">${user.name} (${user.job || 'N/A'})</option>`).join('');
             Swal.fire({
-                title: `Update Status for Order #${orderId}`,
-                html: `
-                    <select id="swal-status" class="swal2-select">
-                        <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>Pending Payment</option>
-                        <option value="processing" ${currentStatus === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="on-hold" ${currentStatus === 'on-hold' ? 'selected' : ''}>On Hold</option>
-                        <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>Completed</option>
-                        <option value="cancelled" ${currentStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                        <option value="refunded" ${currentStatus === 'refunded' ? 'selected' : ''}>Refunded</option>
-                        <option value="failed" ${currentStatus === 'failed' ? 'selected' : ''}>Failed</option>
-                    </select>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Save',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#ef4444',
-                preConfirm: () => {
-                    return document.getElementById('swal-status').value;
-                },
-            }).then(async (result) => {
+                title: `Send ${type === 'address' ? 'Address' : 'Order'} to WhatsApp`,
+                html: `<select id="swal-user" class="swal2-select"><option value="">Select a user</option>${userOptions}</select>`,
+                showCancelButton: true, confirmButtonText: 'Send', cancelButtonText: 'Cancel', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444',
+                preConfirm: () => { const userId = document.getElementById('swal-user').value; if (!userId) { Swal.showValidationMessage('Please select a user'); return false; } return userId; }
+            }).then(result => {
                 if (result.isConfirmed) {
-                    await updateStatus(orderId, result.value);
+                    const user = users.find(u => u.id === result.value);
+                    if (!user || !user.phone || !user.phone.startsWith(EGYPT_COUNTRY_CODE)) { showNotification('Selected user does not have a valid Egypt phone number starting with +20.', 'error'); return; }
+                    const message = type === 'address' ? copyAddress(order, true) : copyOrder(order, true);
+                    const encodedMessage = encodeURIComponent(message);
+                    const phoneNumber = user.phone.replace(/[^0-9+]/g, '');
+                    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+                    window.open(whatsappUrl, '_blank');
+                    showNotification(`${type === 'address' ? 'Address' : 'Order'} prepared for WhatsApp`, 'success');
                 }
             });
         }
 
-        // Update status
+        function openStatusModal(orderId, currentStatus) {
+            Swal.fire({ title: `Update Status for Order #${orderId}`, html: `<select id="swal-status" class="swal2-select"><option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>Pending Payment</option><option value="processing" ${currentStatus === 'processing' ? 'selected' : ''}>Processing</option><option value="on-hold" ${currentStatus === 'on-hold' ? 'selected' : ''}>On Hold</option><option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>Completed</option><option value="cancelled" ${currentStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="refunded" ${currentStatus === 'refunded' ? 'selected' : ''}>Refunded</option><option value="failed" ${currentStatus === 'failed' ? 'selected' : ''}>Failed</option></select>`, showCancelButton: true, confirmButtonText: 'Save', cancelButtonText: 'Cancel', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', preConfirm: () => document.getElementById('swal-status').value }).then(async (result) => { if (result.isConfirmed) { await updateStatus(orderId, result.value); } });
+        }
+
         async function updateStatus(orderId, newStatus) {
+            showLoading();
             try {
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                fetchOrders();
+                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, { method: 'PUT', headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`), 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`); }
+                await fetchOrders(localStorage.getItem('active-status-filter'));
                 showNotification('Status updated successfully', 'success');
-            } catch (error) {
-                console.error('Error updating status:', error);
-                showNotification('Error updating status', 'error');
-            }
+            } catch (error) { console.error('Error updating status:', error); showNotification(`Error updating status: ${error.message}`, 'error'); } finally { hideLoading(); }
         }
 
-        // Fetch products
-        async function fetchProducts() {
+        let productsCache = null;
+        async function fetchProductsCached() {
+            if (productsCache) return productsCache;
             try {
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100`, {
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-                    }
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.error('Error fetching products:', error);
-                showNotification('Error fetching products', 'error');
-                return [];
-            }
+                const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100&status=publish&stock_status=instock`, { headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`) } });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status} fetching products`);
+                productsCache = await response.json(); return productsCache;
+            } catch (error) { console.error('Error fetching products:', error); showNotification('Error fetching products list', 'error'); return []; }
         }
 
-        // Open products modal with SweetAlert2
         async function openProductsModal(orderId, lineItems) {
-            let products = JSON.parse(JSON.stringify(lineItems)); // Deep copy
-            let productsCache = await fetchProducts();
-
-            // Function to generate product fields (extensible for additional properties)
-            function generateProductFields(item, index) {
-                return `
-                    <div class="product-item" data-index="${index}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                        <div style="flex: 1;">
-                            <strong>${item.name}</strong>
-                            <div>
-                                <label>Quantity:</label>
-                                <input type="number" value="${item.quantity}" id="quantity-${index}" min="0" style="width: 70px; margin-left: 8px; padding: 6px; border-radius: 6px;">
-                            </div>
-                            <!-- Add more fields here as needed -->
-                        </div>
-                        <button class="remove-product-btn" data-index="${index}" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px;"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
-            }
-
-            // Function to generate product list
-            const generateProductList = () => products.map((item, index) => generateProductFields(item, index)).join('');
-
-            // Function to add a new product (extensible for additional properties)
+            showLoading(); let currentProducts = JSON.parse(JSON.stringify(lineItems || [])); let allStoreProducts = await fetchProductsCached(); hideLoading();
+            if (!allStoreProducts || allStoreProducts.length === 0) { showNotification('Could not load product list.', 'error'); return; }
+            function generateProductFields(item, index) { const productDetail = allStoreProducts.find(p => p.id === item.product_id) || {}; const imageSrc = item.image?.src || productDetail.images?.[0]?.src || ''; const imageAlt = item.name || productDetail.name || 'Product'; return `<div class="product-item modal-product-item" data-index="${index}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #eee;">${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" loading="lazy" />` : '<div style="width: 50px; height: 50px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #aaa;"><i class="fas fa-image"></i></div>'}<div style="flex: 1;"><strong>${item.name || 'Unknown Product'}</strong> (ID: ${item.product_id || item.id})<div><label>Quantity:</label><input type="number" value="${item.quantity || 0}" id="quantity-${index}" min="0" style="width: 70px; margin-left: 8px; padding: 6px; border: 1px solid #ccc; border-radius: 6px;"></div></div><button class="remove-product-btn" data-index="${index}" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;"><i class="fas fa-trash"></i></button></div>`; }
+            const generateProductList = () => currentProducts.map((item, index) => generateProductFields(item, index)).join('') || '<p style="text-align: center; color: grey;">No products.</p>';
+            function updateProductListUI(formElement) { formElement.innerHTML = generateProductList(); }
             async function addProduct() {
-                if (!productsCache || productsCache.length === 0) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'No products available to add.',
-                        icon: 'error',
-                        confirmButtonColor: '#10b981',
-                    });
-                    return;
-                }
-
-                const productOptions = productsCache.map(product => `
-                    <option value="${product.id}">${product.name}</option>
-                `).join('');
-
-                Swal.fire({
-                    title: 'Add New Product',
-                    html: `
-                        <select id="swal-product-id" class="swal2-select">
-                            <option value="">Select a product</option>
-                            ${productOptions}
-                        </select>
-                        <input type="number" id="swal-quantity" placeholder="Quantity" min="1" value="1" class="swal2-input" style="margin-top: 12px;">
-                        <!-- Add more fields here as needed -->
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Add',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#10b981',
-                    cancelButtonColor: '#ef4444',
-                    preConfirm: () => {
-                        const productId = document.getElementById('swal-product-id').value;
-                        const quantity = parseInt(document.getElementById('swal-quantity').value) || 1;
-                        if (!productId) {
-                            Swal.showValidationMessage('Please select a product');
-                            return false;
-                        }
-                        const selectedProduct = productsCache.find(p => p.id == productId);
-                        return {
-                            product_id: selectedProduct.id,
-                            name: selectedProduct.name,
-                            quantity: quantity,
-                            price: selectedProduct.price,
-                            image: selectedProduct.images[0]
-                            // Add more properties here as needed
-                        };
-                    },
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        products.push(result.value);
-                        form.innerHTML = generateProductList();
-                    }
-                });
+                const productOptions = allStoreProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(product => `<option value="${product.id}">${product.name || 'Unknown Product'} (ID: ${product.id})</option>`).join('');
+                Swal.fire({ title: 'Add Product', html: `<select id="swal-product-id" class="swal2-select" style="width: 100%; margin-bottom: 10px;"><option value="">Select product</option>${productOptions}</select><input type="number" id="swal-quantity" placeholder="Quantity" min="1" value="1" class="swal2-input" style="width: 100%;">`, showCancelButton: true, confirmButtonText: 'Add', cancelButtonText: 'Cancel', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', didOpen: () => { document.getElementById('swal-product-id').focus(); }, preConfirm: () => { const productId = document.getElementById('swal-product-id').value; const quantity = parseInt(document.getElementById('swal-quantity').value) || 1; if (!productId) { Swal.showValidationMessage('Select product'); return false; } if (quantity <= 0) { Swal.showValidationMessage('Quantity >= 1'); return false; } const selectedProduct = allStoreProducts.find(p => p.id == productId); if (!selectedProduct) { Swal.showValidationMessage('Product not found'); return false; } const existingProductIndex = currentProducts.findIndex(p => p.product_id == productId); if (existingProductIndex > -1) { currentProducts[existingProductIndex].quantity += quantity; return { updatedExisting: true }; } else { return { product_id: selectedProduct.id, name: selectedProduct.name || 'Unknown Product', quantity: quantity, price: selectedProduct.price || 0, image: selectedProduct.images?.[0] || null }; } } }).then(result => { if (result.isConfirmed) { if (result.value && !result.value.updatedExisting) { currentProducts.push(result.value); } const form = document.getElementById('edit-products-form'); if (form) { updateProductListUI(form); } } });
             }
-
-            const { value: formValues } = await Swal.fire({
-                title: `Edit Products for Order #${orderId}`,
-                html: `
-                    <div id="edit-products-form" style="max-height: 300px; overflow-y: auto;">
-                        ${generateProductList()}
-                    </div>
-                    <button id="add-product-btn" style="margin-top: 12px; background: #10b981; color: #fff; border: none; padding: 10px; border-radius: 8px;"><i class="fas fa-plus"></i> Add Product</button>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Save',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#ef4444',
-                width: '700px',
-                didOpen: () => {
-                    const form = Swal.getPopup().querySelector('#edit-products-form');
-                    const addButton = Swal.getPopup().querySelector('#add-product-btn');
-
-                    form.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('remove-product-btn')) {
-                            const index = parseInt(e.target.getAttribute('data-index'));
-                            products.splice(index, 1);
-                            form.innerHTML = generateProductList();
-                        }
-                    });
-
-                    addButton.addEventListener('click', addProduct);
-                },
-                preConfirm: () => {
-                    const quantities = Array.from(Swal.getPopup().querySelectorAll('[id^="quantity-"]')).map(input => parseInt(input.value) || 0);
-                    return { products, quantities };
-                },
-            });
-
-            if (formValues) {
-                await saveProducts(orderId, formValues.products, formValues.quantities);
-            }
+            const { value: finalProductsToSave } = await Swal.fire({ title: `Edit Products for Order #${orderId}`, html: `<div id="edit-products-form" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; margin-bottom: 15px; padding: 10px; text-align: left;">${generateProductList()}</div><button id="add-product-btn-swal" type="button" style="background: #10b981; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer;"><i class="fas fa-plus"></i> Add Product</button>`, showCancelButton: true, confirmButtonText: 'Save Changes', cancelButtonText: 'Cancel', confirmButtonColor: '#10b981', cancelButtonColor: '#ef4444', width: '80%', didOpen: () => { const form = Swal.getPopup().querySelector('#edit-products-form'); const addButton = Swal.getPopup().querySelector('#add-product-btn-swal'); form.addEventListener('click', (e) => { const removeButton = e.target.closest('.remove-product-btn'); if (removeButton) { const index = parseInt(removeButton.getAttribute('data-index')); if (!isNaN(index) && index >= 0 && index < currentProducts.length) { currentProducts.splice(index, 1); updateProductListUI(form); } } }); addButton.addEventListener('click', addProduct); }, preConfirm: () => { const updatedProducts = currentProducts.map((item, index) => { const quantityInput = Swal.getPopup().querySelector(`#quantity-${index}`); const newQuantity = quantityInput ? (parseInt(quantityInput.value) || 0) : item.quantity; return { ...item, quantity: newQuantity }; }); return updatedProducts.filter(item => item.quantity > 0); } });
+            if (finalProductsToSave) { await saveProducts(orderId, finalProductsToSave); }
         }
 
-        // Save products
-        async function saveProducts(orderId, products, quantities) {
-            try {
-                const updatedItems = products.map((item, index) => ({
-                    id: item.id || 0, // Use 0 for new items
-                    product_id: item.product_id || item.id,
-                    name: item.name,
-                    quantity: quantities[index],
-                    total: (quantities[index] * parseFloat(item.price || 0)).toFixed(2)
-                })).filter(item => item.quantity > 0);
-
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ line_items: updatedItems })
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`);
-                }
-                fetchOrders();
-                showNotification('Products updated successfully', 'success');
-            } catch (error) {
-                console.error('Error saving products:', error);
-                showNotification(`Error saving products: ${error.message}`, 'error');
-            }
+        async function saveProducts(orderId, productsToSave) {
+            showLoading();
+            try { 
+                const updatedLineItems = productsToSave.map(item => ({ id: item.id || 0, product_id: item.product_id, quantity: item.quantity }));
+                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, { method: 'PUT', headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`), 'Content-Type': 'application/json' }, body: JSON.stringify({ line_items: updatedLineItems }) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Failed to update line items'}`); }
+                await fetchOrders(localStorage.getItem('active-status-filter'));
+                showNotification('Order products updated successfully', 'success');
+            } catch (error) { console.error('Error saving products:', error); showNotification(`Error saving products: ${error.message}`, 'error'); } finally { hideLoading(); }
         }
 
-        // Debounce function for search input
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // Event listeners for filters
-        const debouncedSaveCustomerFilter = debounce(() => {
-            localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
-        }, 500);
-
-        document.getElementById('customer-filter').addEventListener('input', debouncedSaveCustomerFilter);
-
-        // Save auto-fetch settings
-        document.getElementById('save-auto-fetch').addEventListener('click', () => {
-            saveFilters();
-            toggleSettings();
-            showNotification('Settings saved successfully', 'success');
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerFilterInput = document.getElementById('customer-filter'); if (customerFilterInput) customerFilterInput.addEventListener('input', debouncedSaveFiltersAndFetch);
+            const saveSettingsButton = document.getElementById('save-settings-btn'); if (saveSettingsButton) { saveSettingsButton.addEventListener('click', () => { saveFiltersAndFetch(); toggleSettings(); showNotification('Filters applied', 'success'); }); }
+            const clearFiltersButton = document.getElementById('clear-filters-btn'); if (clearFiltersButton) clearFiltersButton.addEventListener('click', clearFiltersAndFetch); // Added listener for clear button
+            const addUserButton = document.getElementById('add-user-btn'); if (addUserButton) addUserButton.addEventListener('click', addUser);
+            const statusCheckboxes = document.querySelectorAll('input[name="status-filter"]'); statusCheckboxes.forEach(checkbox => checkbox.addEventListener('change', debouncedSaveFiltersAndFetch));
+            ['date-from', 'date-to', 'per-page', 'sort-by'].forEach(id => { const element = document.getElementById(id); if (element) element.addEventListener('change', debouncedSaveFiltersAndFetch); });
+            initialize();
         });
 
-        // Initialize
-        loadFilters();
-        fetchOrders();
+        async function initialize() {
+            showLoading();
+            loadFilters();
+            loadUsers(); // Renamed
+            await fetchOrders(localStorage.getItem('active-status-filter'));
+        }
+
     </script>
 </body>
-</html>
+</html> 
