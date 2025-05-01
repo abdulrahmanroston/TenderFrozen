@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tender Frozen - Order Dashboard v8</title> <!-- Updated Title -->
+    <title>Tender Frozen Order Dashboard</title> <!-- Updated Title -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -575,7 +575,6 @@
     </div>
     <div class="container">
         <header class="header">
-         
             <div class="header-actions">
                 <button class="header-btn" onclick="toggleSettings()"><i class="fas fa-sliders-h"></i> Settings</button>
                 <button class="header-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -986,7 +985,7 @@
                             </div>`;
                 }).join('');
             } catch (error) { console.error(`Error processing line items for order ${orderData.id}:`, error); productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>'; }
-
+            console.log(orderData)
             const billingInfo = orderData.billing || {};
             const shippingInfo = orderData.shipping || {};
             const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
@@ -998,9 +997,11 @@
             const paymentMethod = orderData.payment_method_title || 'N/A';
             const email = billingInfo.email || 'N/A';
             const phone = billingInfo.phone || 'N/A';
-
+            const orderSelectTime = orderData.additional.order_time || 'No Selected Time';
             return `
-                <div class="section"><h4>Order Details</h4><p><strong>Date:</strong> ${dateCreated}</p><p><strong>Total:</strong> ${total} ${currency}</p><p><strong>Payment:</strong> ${paymentMethod}</p></div>
+                <div class="section"><h4>Order Details</h4><p><strong>Date:</strong> ${dateCreated}</p><p><strong>Total:</strong> ${total} ${currency}</p><p><strong>Payment:</strong> ${paymentMethod}</p>
+                <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
+                </div>
                 <div class="section"><h4>Customer</h4><p><strong>Email:</strong> ${email}</p><p><strong>Phone:</strong> ${phone}</p></div>
                 <div class="section"><h4>Address</h4><p><strong>Address:</strong> ${customerAddress || 'N/A'}</p><p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p><p><strong>Zone:</strong> ${customerZoneName}</p></div>
                 <div class="section"><h4>Products (${(orderData.line_items || []).length})</h4>${productItemsHtml || '<p>No products</p>'}</div>
@@ -1062,14 +1063,23 @@
             const shipping = order.shipping || {};
             const paymentInfo = getPaymentInfoForCopy(order);
             const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
+            const orderSelectTime = order.additional.order_time || {} ;
 
             const addressText = `
 رقم الطلب: #${order.id || 'N/A'}
+
 العميل: ${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}
+
 رقم الهاتف: ${formattedPhone || 'N/A'}
+
 العنوان: ${billing.address_1 || shipping.address_1 || ''}, ${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}
+
 اللوكيشن: ${billing.location || shipping.location || 'Not Found'}
+
+موعد التوصيل : ${orderSelectTime}
+
 ${paymentInfo.note ? `\n${paymentInfo.note}` : ''}
+
 ${paymentInfo.totalLine}
             `.trim().replace(/\n{2,}/g, '\n');
             
@@ -1095,13 +1105,21 @@ ${paymentInfo.totalLine}
         function copyOrder(order, forWhatsApp = false) {
             const billing = order.billing || {}; const shipping = order.shipping || {};
             const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
+            const orderSelectTime = order.additional.order_time || 'لم يتم التحديد' ;
             const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => `- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('\n') || '- No products';
             const orderDetailsText = `
 رقم الطلب: #${order.id || 'N/A'}
-العميل: ${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}
+
+العميل: ${billing.first_name || shipping.first_name || ''}${billing.last_name || shipping.last_name || ''}
+
 رقم الهاتف: ${formattedPhone || 'N/A'}
+
+موعد التوصيل : ${orderSelectTime}
+
 المنتجات:
+
 ${productLines}
+
             `.trim().replace(/\n{2,}/g, '\n');
             const formattedText = formatForCopySend(orderDetailsText);
             if (!forWhatsApp) { navigator.clipboard.writeText(formattedText).then(() => { showNotification('Order copied (bold format)', 'success'); }).catch(err => { console.error('Failed to copy order: ', err); navigator.clipboard.writeText(orderDetailsText).then(() => { showNotification('Order copied (plain format)', 'success'); }).catch(err2 => { console.error('Failed to copy plain order: ', err2); showNotification('Failed to copy order details.', 'error'); }); }); }
