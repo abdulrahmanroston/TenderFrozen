@@ -998,9 +998,11 @@
             const email = billingInfo.email || 'N/A';
             const phone = billingInfo.phone || 'N/A';
             const orderSelectTime = orderData.additional.order_time || 'No Selected Time';
+            const orderSelectDate = orderData.additional.order_date || 'No Selected Time';
             return `
                 <div class="section"><h4>Order Details</h4><p><strong>Date:</strong> ${dateCreated}</p><p><strong>Total:</strong> ${total} ${currency}</p><p><strong>Payment:</strong> ${paymentMethod}</p>
                 <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
+                <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
                 </div>
                 <div class="section"><h4>Customer</h4><p><strong>Email:</strong> ${email}</p><p><strong>Phone:</strong> ${phone}</p></div>
                 <div class="section"><h4>Address</h4><p><strong>Address:</strong> ${customerAddress || 'N/A'}</p><p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p><p><strong>Zone:</strong> ${customerZoneName}</p></div>
@@ -1063,7 +1065,8 @@
             const shipping = order.shipping || {};
             const paymentInfo = getPaymentInfoForCopy(order);
             const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
-            const orderSelectTime = order.additional.order_time || {} ;
+            const orderSelectTime = order.additional.order_time || '' ;
+            const orderSelectDate = order.additional.order_date || '' ;
 
             const addressText = `
 رقم الطلب: #${order.id || 'N/A'}
@@ -1076,7 +1079,9 @@
 
 اللوكيشن: ${billing.location || shipping.location || 'Not Found'}
 
-موعد التوصيل : ${orderSelectTime}
+يوم التوصيل : ${orderSelectDate}
+
+وقت التوصيل : ${orderSelectTime}
 
 ${paymentInfo.note ? `\n${paymentInfo.note}` : ''}
 
@@ -1106,6 +1111,7 @@ ${paymentInfo.totalLine}
             const billing = order.billing || {}; const shipping = order.shipping || {};
             const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
             const orderSelectTime = order.additional.order_time || 'لم يتم التحديد' ;
+            const orderSelectDate = order.additional.order_date || '' ;
             const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => `- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('\n') || '- No products';
             const orderDetailsText = `
 رقم الطلب: #${order.id || 'N/A'}
@@ -1114,7 +1120,9 @@ ${paymentInfo.totalLine}
 
 رقم الهاتف: ${formattedPhone || 'N/A'}
 
-موعد التوصيل : ${orderSelectTime}
+يوم التوصيل : ${orderSelectDate}
+
+وقت التوصيل : ${orderSelectTime}
 
 المنتجات:
 
