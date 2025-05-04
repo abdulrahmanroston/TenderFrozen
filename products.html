@@ -89,7 +89,7 @@
             border-radius: 12px;
             padding: 5px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
+            
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
             overflow: hidden;
@@ -112,7 +112,7 @@
         }
 
         .product-card h3 {
-            font-size: 1.2rem;
+            font-size: 16px;
             color: var(--primary);
             margin-bottom: 8px;
             font-weight: 500;
@@ -135,11 +135,12 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
             margin-top: 10px;
         }
 
         .product-card .actions button {
-            padding: 4px 7px;
+            padding: 8px 7px;
             font-size: 0.9rem;
             background: var(--primary);
             color: #fff;
@@ -615,7 +616,7 @@
                 const imageSrc = product.images && product.images[0] && product.images[0].src
                     ? product.images[0].src
                     : 'https://via.placeholder.com/150?text=No+Image';
-                const price = product.regular_price ? `$${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
+                const price = product.regular_price ? `EGP${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
                 const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
                 card.innerHTML = `
                     <img src="${imageSrc}" alt="${product.name || 'Product'}">
