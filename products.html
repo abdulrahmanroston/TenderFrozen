@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frozen Product's</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --danger: #c62828;
+            --warning: #f57c00;
+            --success: #2e7d32;
+            --background: #f9fbfc;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: #333;
+            padding: 5px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: clamp(1.8rem, 5vw, 2.2rem);
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 500px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
+            outline: none;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: #666;
+            background: var(--card-bg);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .product-card {
+            max-width: 46%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            overflow: hidden;
+            min-height: 320px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            aspect-ratio: 4/3;
+            background: #eee;
+        }
+
+        .product-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .product-card .price {
+            font-size: 1rem;
+            color: var(--success);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .product-card .stock-status {
+            font-size: 0.9rem;
+            color: var(--danger);
+            margin-bottom: 10px;
+        }
+
+        .product-card .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .product-card .actions button {
+            padding: 4px 7px;
+            font-size: 0.9rem;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .product-card .actions button:hover {
+            background: #1557b0;
+            transform: scale(1.05);
+        }
+
+        .modal, .quick-view-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .modal-content, .quick-view-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .quick-view-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .quick-view-content th, .quick-view-content td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .quick-view-content th {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .modal.active, .quick-view-modal.active {
+            display: flex;
+        }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+            scrollbar-width: thin;
+        }
+
+        .tabs::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .tabs::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .tab {
+            flex: 0 0 auto;
+            padding: 10px 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab:hover {
+            background: #e8f0fe;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .form-group input[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .stock-price-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background: #1557b0;
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background: var(--warning);
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #e65100;
+        }
+
+        .close-btn {
+            background: var(--danger);
+            margin-top: 10px;
+        }
+
+        .close-btn:hover {
+            background: #b71c1c;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background: #e6f4ea;
+            color: var(--success);
+        }
+
+        .error {
+            background: #fce4ec;
+            color: var(--danger);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .product-card {
+            width: 49%;
+            }
+
+            .modal-content, .quick-view-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .stock-price-group {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Search products by name...">
+        </div>
+        <div id="status-message" class="status-message">Loading products...</div>
+        <div id="loader" class="loader"></div>
+        <div class="product-grid" id="product-grid"></div>
+        <div class="modal" id="edit-modal">
+            <div class="modal-content">
+                <h2>Edit Product</h2>
+                <div id="message" class="message"></div>
+                <div class="tabs">
+                    <div class="tab active" data-tab="general">General</div>
+                    <div class="tab" data-tab="oraby">Oraby</div>
+                    <div class="tab" data-tab="tagamo3">Tagamo3</div>
+                    <div class="tab" data-tab="giza">Giza</div>
+                    <div class="tab" data-tab="lavista">Lavista</div>
+                </div>
+                <div class="tab-content active" id="general-tab">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-badge"></i> Product ID</label>
+                        <input type="number" id="product_id" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> Product Name</label>
+                        <input type="text" id="name" placeholder="Enter product name" title="The displayed product name">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-dollar-sign"></i> Price</label>
+                        <input type="number" id="price" step="0.01" placeholder="Enter price" title="Default product price">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-check-circle"></i> Stock Status</label>
+                        <select id="stock_status">
+                            <option value="instock">In Stock</option>
+                            <option value="outofstock">Out of Stock</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="tab-content" id="oraby-tab">
+                    <div class="stock-price-group">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> Oraby Stock</label>
+                            <input type="number" id="stock_oraby" placeholder="Enter Oraby stock" title="Stock quantity in Oraby">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-dollar-sign"></i> Oraby Price</label>
+                            <input type="number" id="price_oraby" step="0.01" placeholder="Enter Oraby price" title="Price in Oraby">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-exclamation-triangle"></i> Oraby Minimum Stock</label>
+                            <input type="number" id="min_stock_oraby" placeholder="Enter minimum stock" title="Minimum stock for Oraby">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="tagamo3-tab">
+                    <div class="stock-price-group">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> Tagamo3 Stock</label>
+                            <input type="number" id="stock_tagamo3" placeholder="Enter Tagamo3 stock" title="Stock quantity in Tagamo3">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-dollar-sign"></i> Tagamo3 Price</label>
+                            <input type="number" id="price_tagamo3" step="0.01" placeholder="Enter Tagamo3 price" title="Price in Tagamo3">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-exclamation-triangle"></i> Tagamo3 Minimum Stock</label>
+                            <input type="number" id="min_stock_tagamo3" placeholder="Enter minimum stock" title="Minimum stock for Tagamo3">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="giza-tab">
+                    <div class="stock-price-group">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> Giza Stock</label>
+                            <input type="number" id="stock_giza" placeholder="Enter Giza stock" title="Stock quantity in Giza">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-dollar-sign"></i> Giza Price</label>
+                            <input type="number" id="price_giza" step="0.01" placeholder="Enter Giza price" title="Price in Giza">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-exclamation-triangle"></i> Giza Minimum Stock</label>
+                            <input type="number" id="min_stock_giza" placeholder="Enter minimum stock" title="Minimum stock for Giza">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="lavista-tab">
+                    <div class="stock-price-group">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> Lavista Stock</label>
+                            <input type="number" id="stock_lavista" placeholder="Enter Lavista stock" title="Stock quantity in Lavista">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-dollar-sign"></i> Lavista Price</label>
+                            <input type="number" id="price_lavista" step="0.01" placeholder="Enter Lavista price" title="Price in Lavista">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-exclamation-triangle"></i> Lavista Minimum Stock</label>
+                            <input type="number" id="min_stock_lavista" placeholder="Enter minimum stock" title="Minimum stock for Lavista">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="updateProduct()">Update Product</button>
+                <button class="reset-btn" onclick="resetForm()">Reset Fields</button>
+                <button class="close-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+        <div class="quick-view-modal" id="quick-view-modal">
+            <div class="quick-view-content">
+                <h2>Quick View</h2>
+                <div id="quick-view-content"></div>
+                <button class="close-btn" onclick="closeQuickView()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
+        const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+        const storeUrl = 'https://tenderfrozen.com';
+        const apiUrl = `${storeUrl}/wp-json/wc/v3/products`;
+
+        // State
+        let products = [];
+        let filteredProducts = [];
+        let currentProduct = null;
+
+        // Utility: Get meta value by key
+        function getMetaValue(metaData, key) {
+            const meta = metaData && Array.isArray(metaData) ? metaData.find(m => m.key === key) : null;
+            return meta ? meta.value || '' : '';
+        }
+
+        // Utility: Show message
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            if (message) {
+                message.textContent = text;
+                message.className = `message ${type}`;
+                message.style.display = 'block';
+                setTimeout(() => message.style.display = 'none', 3000);
+            }
+        }
+
+        // Utility: Update status message
+        function updateStatusMessage(text) {
+            const statusMessage = document.getElementById('status-message');
+            if (statusMessage) {
+                statusMessage.textContent = text;
+            }
+        }
+
+        // Utility: Show/hide loader
+        function showLoader(show) {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.display = show ? 'block' : 'none';
+            }
+            document.querySelectorAll('button').forEach(btn => btn.disabled = show);
+        }
+
+        // Fetch products
+        async function fetchProducts() {
+            showLoader(true);
+            updateStatusMessage('Loading products...');
+            try {
+                const response = await fetch(`${apiUrl}?per_page=100`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    console.error('API Error:', error, 'Status:', response.status);
+                    throw new Error(`Failed to load products: ${error.message || response.status}`);
+                }
+                products = await response.json();
+                console.log('Fetched Products:', products); // Debug: Log raw API response
+                filteredProducts = products;
+                if (products.length === 0) {
+                    updateStatusMessage('No products available.');
+                } else {
+                    updateStatusMessage('');
+                    renderProducts();
+                }
+            } catch (error) {
+                console.error('Fetch Products Error:', error);
+                updateStatusMessage('Error loading products. Please try again.');
+                showMessage('Error fetching products: ' + error.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Render products
+        function renderProducts() {
+            const productGrid = document.getElementById('product-grid');
+            if (!productGrid) {
+                console.error('Product grid element not found');
+                return;
+            }
+            productGrid.innerHTML = '';
+            if (!filteredProducts || filteredProducts.length === 0) {
+                updateStatusMessage('No products match your search.');
+                return;
+            }
+            const fragment = document.createDocumentFragment();
+            filteredProducts.forEach((product, index) => {
+                if (!product || !product.id) {
+                    console.warn('Invalid product at index:', index);
+                    return;
+                }
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const imageSrc = product.images && product.images[0] && product.images[0].src
+                    ? product.images[0].src
+                    : 'https://via.placeholder.com/150?text=No+Image';
+                const price = product.regular_price ? `$${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
+                const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
+                card.innerHTML = `
+                    <img src="${imageSrc}" alt="${product.name || 'Product'}">
+                    <h3>${index + 1}. ${product.name || 'Unnamed Product'}</h3>
+                    <p class="price">${price}</p>
+                    <p class="stock-status">${stockStatus}</p>
+                    <div class="actions">
+                        <button onclick="openModal(filteredProducts[${index}])">Edit</button>
+                        <button onclick="quickView(filteredProducts[${index}])">Quick View</button>
+                    </div>
+                `;
+                fragment.appendChild(card);
+            });
+            productGrid.appendChild(fragment);
+        }
+
+        // Open edit modal
+        function openModal(product) {
+            if (!product) {
+                console.error('No product provided to openModal');
+                return;
+            }
+            currentProduct = product;
+            const editModal = document.getElementById('edit-modal');
+            if (!editModal) {
+                console.error('Edit modal not found');
+                return;
+            }
+            editModal.classList.add('active');
+            document.getElementById('product_id').value = product.id || '';
+            document.getElementById('name').value = product.name || '';
+            document.getElementById('price').value = product.regular_price || '';
+            document.getElementById('stock_status').value = product.stock_status || 'instock';
+
+            // Reset meta fields
+            ['stock_oraby', 'price_oraby', 'min_stock_oraby', 'stock_tagamo3', 'price_tagamo3', 'min_stock_tagamo3',
+             'stock_giza', 'price_giza', 'min_stock_giza', 'stock_lavista', 'price_lavista', 'min_stock_lavista'].forEach(field => {
+                const input = document.getElementById(field);
+                if (input) input.value = '';
+            });
+
+            // Populate meta fields
+            if (product.meta_data && Array.isArray(product.meta_data)) {
+                product.meta_data.forEach(meta => {
+                    if (meta && meta.key) {
+                        if (meta.key === '_stock_oraby') document.getElementById('stock_oraby').value = meta.value || '';
+                        if (meta.key === '_price_oraby') document.getElementById('price_oraby').value = meta.value || '';
+                        if (meta.key === '_min_stock_oraby') document.getElementById('min_stock_oraby').value = meta.value || '';
+                        if (meta.key === '_stock_tagamo3') document.getElementById('stock_tagamo3').value = meta.value || '';
+                        if (meta.key === '_price_tagamo3') document.getElementById('price_tagamo3').value = meta.value || '';
+                        if (meta.key === '_min_stock_tagamo3') document.getElementById('min_stock_tagamo3').value = meta.value || '';
+                        if (meta.key === '_stock_giza') document.getElementById('stock_giza').value = meta.value || '';
+                        if (meta.key === '_price_giza') document.getElementById('price_giza').value = meta.value || '';
+                        if (meta.key === '_min_stock_giza') document.getElementById('min_stock_giza').value = meta.value || '';
+                        if (meta.key === '_stock_lavista') document.getElementById('stock_lavista').value = meta.value || '';
+                        if (meta.key === '_price_lavista') document.getElementById('price_lavista').value = meta.value || '';
+                        if (meta.key === '_min_stock_lavista') document.getElementById('min_stock_lavista').value = meta.value || '';
+                    }
+                });
+            }
+
+            // Initialize tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    const tabContent = document.getElementById(`${tab.dataset.tab}-tab`);
+                    if (tabContent) tabContent.classList.add('active');
+                });
+            });
+        }
+
+        // Quick view
+        function quickView(product) {
+            if (!product) {
+                console.error('No product provided to quickView');
+                return;
+            }
+            const modal = document.getElementById('quick-view-modal');
+            const content = document.getElementById('quick-view-content');
+            if (!modal || !content) {
+                console.error('Quick view modal or content not found');
+                return;
+            }
+            const price = product.regular_price ? `$${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
+            const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
+            const stocks = {
+                Oraby: getMetaValue(product.meta_data, '_stock_oraby') || '0',
+                Tagamo3: getMetaValue(product.meta_data, '_stock_tagamo3') || '0',
+                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0',
+                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0'
+            };
+
+            content.innerHTML = `
+                <p><strong>Name:</strong> ${product.name || 'Unnamed Product'}</p>
+                <p><strong>Price:</strong> ${price}</p>
+                <p><strong>Status:</strong> ${stockStatus}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Warehouse</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Oraby</td><td>${stocks.Oraby}</td></tr>
+                        <tr><td>Tagamo3</td><td>${stocks.Tagamo3}</td></tr>
+                        <tr><td>Giza</td><td>${stocks.Giza}</td></tr>
+                        <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                    </tbody>
+                </table>
+            `;
+            modal.classList.add('active');
+        }
+
+        // Close quick view
+        function closeQuickView() {
+            const modal = document.getElementById('quick-view-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Close edit modal
+        function closeModal() {
+            const editModal = document.getElementById('edit-modal');
+            const message = document.getElementById('message');
+            if (editModal) editModal.classList.remove('active');
+            if (message) message.style.display = 'none';
+        }
+
+        // Reset form
+        function resetForm() {
+            if (currentProduct) openModal(currentProduct);
+        }
+
+        // Update product
+        async function updateProduct() {
+            const productId = document.getElementById('product_id')?.value;
+            if (!productId) {
+                showMessage('Please select a product.', 'error');
+                return;
+            }
+
+            const inputs = {
+                name: document.getElementById('name')?.value,
+                price: document.getElementById('price')?.value,
+                stock_status: document.getElementById('stock_status')?.value,
+                stock_oraby: document.getElementById('stock_oraby')?.value,
+                price_oraby: document.getElementById('price_oraby')?.value,
+                min_stock_oraby: document.getElementById('min_stock_oraby')?.value,
+                stock_tagamo3: document.getElementById('stock_tagamo3')?.value,
+                price_tagamo3: document.getElementById('price_tagamo3')?.value,
+                min_stock_tagamo3: document.getElementById('min_stock_tagamo3')?.value,
+                stock_giza: document.getElementById('stock_giza')?.value,
+                price_giza: document.getElementById('price_giza')?.value,
+                min_stock_giza: document.getElementById('min_stock_giza')?.value,
+                stock_lavista: document.getElementById('stock_lavista')?.value,
+                price_lavista: document.getElementById('price_lavista')?.value,
+                min_stock_lavista: document.getElementById('min_stock_lavista')?.value
+            };
+
+            // Validate inputs
+            for (const [key, value] of Object.entries(inputs)) {
+                if (key.includes('stock') || key.includes('price') || key.includes('min_stock')) {
+                    if (value && parseFloat(value) < 0) {
+                        showMessage(`${key.replace('_', ' ')} cannot be negative.`, 'error');
+                        return;
+                    }
+                }
+            }
+            if (!inputs.name) {
+                showMessage('Product name is required.', 'error');
+                return;
+            }
+
+            const data = {
+                name: inputs.name || undefined,
+                regular_price: inputs.price || undefined,
+                stock_status: inputs.stock_status || undefined,
+                meta_data: [
+                    { key: '_stock_oraby', value: inputs.stock_oraby || undefined },
+                    { key: '_price_oraby', value: inputs.price_oraby || undefined },
+                    { key: '_min_stock_oraby', value: inputs.min_stock_oraby || undefined },
+                    { key: '_stock_tagamo3', value: inputs.stock_tagamo3 || undefined },
+                    { key: '_price_tagamo3', value: inputs.price_tagamo3 || undefined },
+                    { key: '_min_stock_tagamo3', value: inputs.min_stock_tagamo3 || undefined },
+                    { key: '_stock_giza', value: inputs.stock_giza || undefined },
+                    { key: '_price_giza', value: inputs.price_giza || undefined },
+                    { key: '_min_stock_giza', value: inputs.min_stock_giza || undefined },
+                    { key: '_stock_lavista', value: inputs.stock_lavista || undefined },
+                    { key: '_price_lavista', value: inputs.price_lavista || undefined },
+                    { key: '_min_stock_lavista', value: inputs.min_stock_lavista || undefined }
+                ].filter(item => item.value !== undefined && item.value !== '')
+            };
+
+            // Remove undefined fields
+            Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
+
+            showLoader(true);
+            try {
+                const response = await fetch(`${apiUrl}/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showMessage('Product updated successfully!', 'success');
+                    await fetchProducts();
+                    setTimeout(closeModal, 1000);
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    console.error('Update Product Error:', error);
+                    showMessage(`Error: ${error.message || 'Failed to update product'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Update Product Error:', error);
+                showMessage('Failed to update product. Please try again.', 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Filter products
+        function filterProducts() {
+            const searchTerm = document.getElementById('search')?.value.toLowerCase() || '';
+            filteredProducts = products.filter(product =>
+                product && product.name && product.name.toLowerCase().includes(searchTerm)
+            );
+            renderProducts();
+        }
+
+        // Event listeners
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+            searchInput.addEventListener('input', filterProducts);
+        }
+
+        // Initialize
+        fetchProducts();
+    </script>
+</body>
+</html>
