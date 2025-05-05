@@ -702,7 +702,7 @@
     <div id="main-content">
         <div class="container" id="orders-content">
             <header class="header">
-               
+                <h1>Tender Frozen Order Dashboard</h1>
                 <div class="header-actions">
                     <button class="header-btn" onclick="toggleSettings()">
                         <i class="fas fa-sliders-h"></i> Settings
@@ -1324,7 +1324,6 @@
                     const status = order.status || 'Unknown';
 
                     const detailsHtml = generateDetailsHtml(order);
-
                     orderCard.innerHTML = `
                         <div class="order-card-header">
                             <h3>${customerName} (#${order.id || 'N/A'})</h3>
@@ -1403,24 +1402,35 @@
             }
 
             let orderSummaryHtml = '';
-            try {
-                const total = parseFloat(orderData.total || 0);
-                const discountTotal = parseFloat(orderData.discount_total || 0);
-                const feeTotal = orderData.fee_lines?.reduce((sum, fee) => sum + parseFloat(fee.total || 0), 0) || 0;
-                const subtotal = (total + discountTotal - feeTotal).toFixed(2);
-                const coupons = Array.isArray(orderData.coupon_lines) && orderData.coupon_lines.length > 0 ? orderData.coupon_lines.map(c => c.code).join(', ') : null;
-
-                orderSummaryHtml = `
-                    <table class="order-summary-table">
-                        <tr><td>Subtotal</td><td>${subtotal} ${orderData.currency || ''}</td></tr>
-                        ${feesHtml !== '<p>No additional fees.</p>' ? feeLines.map(fee => `<tr><td>${fee.name || 'Fee'}</td><td>${parseFloat(fee.total || 0).toFixed(2)} ${orderData.currency || ''}</td></tr>`).join('') : ''}
-                        ${discountTotal > 0 ? `<tr><td>Discount${coupons ? ` (${coupons})` : ''}</td><td>-${discountTotal.toFixed(2)} ${orderData.currency || ''}</td></tr>` : ''}
-                        <tr><td>Total</td><td>${total.toFixed(2)} ${orderData.currency || ''}</td></tr>
-                    </table>`;
-            } catch (error) {
-                console.error(`Error processing order summary for order ${orderData.id}:`, error);
-                orderSummaryHtml = '<p style="color: var(--danger);">Error loading order summary</p>';
-            }
+try {
+    const total = parseFloat(orderData.total || 0) || 0;
+    const discountTotal = parseFloat(orderData.discount_total || 0) || 0;
+    const currency = orderData.currency || 'Unknown';
+    const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
+    const feeTotal = feeLines.reduce((sum, fee) => sum + (parseFloat(fee.total || 0) || 0), 0) || 0;
+    const subtotal = (total + discountTotal - feeTotal) || 0;
+    const coupons = Array.isArray(orderData.coupon_lines) && orderData.coupon_lines.length > 0 ?
+        orderData.coupon_lines.map(c => c.code || 'Unknown').join(', ') :
+        null;
+    
+    let feesRows = '';
+    if (feeLines.length > 0) {
+        feesRows = feeLines.map(fee =>
+            `<tr><td>${fee.name || 'Fee'}</td><td>${(parseFloat(fee.total || 0) || 0).toFixed(2)} ${currency}</td></tr>`
+        ).join('');
+    }
+    
+    orderSummaryHtml = `
+        <table class="order-summary-table">
+            <tr><td>Subtotal</td><td>${subtotal.toFixed(2)} ${currency}</td></tr>
+            ${feesRows}
+            ${discountTotal > 0 ? `<tr><td>Discount${coupons ? ` (${coupons})` : ''}</td><td>-${discountTotal.toFixed(2)} ${currency}</td></tr>` : ''}
+            <tr><td>Total</td><td>${total.toFixed(2)} ${currency}</td></tr>
+        </table>`;
+} catch (error) {
+    console.error(`Error processing order summary for order ${orderData.id || 'Unknown'}:`, error);
+    orderSummaryHtml = `<p style="color: var(--danger);">Unable to load order summary. Please check order data.</p>`;
+}
 
             const billingInfo = orderData.billing || {};
             const shippingInfo = orderData.shipping || {};
@@ -1481,173 +1491,209 @@
         }
 
         function attachDetailButtonListeners(detailsContainer, order) {
-            detailsContainer.querySelectorAll('.copy-address-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                copyAddress(order);
-            }));
-            detailsContainer.querySelectorAll('.copy-order-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                copyOrder(order);
-            }));
-            detailsContainer.querySelectorAll('.send-address-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sendToWhatsApp(order, 'address');
-            }));
-            detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sendToWhatsApp(order, 'order');
-            }));
-            detailsContainer.querySelectorAll('.send-invoice-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sendInvoiceToCustomer(order);
-            }));
-            detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openStatusModal(order.id, order.status);
-            }));
-            detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openProductsModal(order);
-            }));
-        }
+    detailsContainer.querySelectorAll('.copy-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); copyAddress(order); }));
+    detailsContainer.querySelectorAll('.copy-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); copyOrder(order); }));
+    detailsContainer.querySelectorAll('.send-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'address'); }));
+    detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'order'); }));
+    detailsContainer.querySelectorAll('.send-invoice-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendInvoiceToCustomer(order); }));
+    detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status); }));
+    detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openProductsModal(order.id, order.line_items); }));
+}
 
-        function copyAddress(order) {
-            const billingInfo = order.billing || {};
-            const shippingInfo = order.shipping || {};
-            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
-            const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-            const customerLocationLink = billingInfo.location || shippingInfo.location || '';
-            const addressText = `**Customer Name:** ${customerName}\n**Address:** ${customerAddress}\n${customerLocationLink ? `**Location:** ${customerLocationLink}` : ''}`.trim();
-            navigator.clipboard.writeText(addressText).then(() => {
-                showNotification('Address copied to clipboard', 'success');
-            }).catch(err => {
-                console.error('Error copying address:', err);
-                showNotification('Failed to copy address', 'error');
+function switchTab(sanitizedZone) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    const tabToActivate = document.querySelector(`.tab[data-zone="${sanitizedZone}"]`);
+    const contentToActivate = document.querySelector(`#tab-${sanitizedZone}`);
+    if (tabToActivate) tabToActivate.classList.add('active');
+    if (contentToActivate) contentToActivate.classList.add('active');
+}
+
+function formatForCopySend(text) {
+    return `*${text.trim()}*`;
+}
+
+function getPaymentInfoForCopy(order) {
+    const paymentMethodTitle = order.payment_method_title;
+    const total = parseFloat(order.total || 0).toFixed(2);
+    const currency = order.currency || '';
+    const totalLine = `الاجمالي: ${total} ${currency}`;
+    
+    if (paymentMethodTitle === 'Visa / MasterCard ( On Delivery)') {
+        return { note: 'لا تنسي احضار ماكينة الدفع', totalLine: totalLine };
+    }
+    if (paymentMethodTitle === 'Cash On Delivery') {
+        return { note: '', totalLine: totalLine };
+    }
+    
+    return { note: '', totalLine: totalLine };
+}
+
+function copyAddress(order, forWhatsApp = false) {
+    const billing = order.billing || {};
+    const shipping = order.shipping || {};
+    const paymentInfo = getPaymentInfoForCopy(order);
+    const formattedPhone = formatPhoneNumber(billing.phone || '');
+    const orderSelectTime = order.additional.order_time || '';
+    const orderSelectDate = order.additional.order_date || '';
+    const customerName = `${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}`.trim() || 'غير معروف';
+    const customerAddress = `${billing.address_1 || shipping.address_1 || ''}, ${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+
+    const addressText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
+                       `━━━━━━━━━━━━━━━━━━\n` +
+                       `*العميل:* ${customerName}\n` +
+                       `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
+                       `*العنوان:* ${customerAddress}\n` +
+                       `*اللوكيشن:* ${billing.location || shipping.location || 'Not Found'}\n` +
+                       `*يوم التوصيل:* ${orderSelectDate}\n` +
+                       `*وقت التوصيل:* ${orderSelectTime}\n` +
+                       `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n` +
+                       `*${paymentInfo.totalLine}*\n` +
+                       `━━━━━━━━━━━━━━━━━━`;
+
+    if (!forWhatsApp) {
+        navigator.clipboard.writeText(addressText).then(() => {
+            showNotification('Address copied (bold format)', 'success');
+        }).catch(err => {
+            console.error('Failed to copy address: ', err);
+            navigator.clipboard.writeText(addressText.replace(/\*/g, '')).then(() => {
+                showNotification('Address copied (plain format)', 'success');
+            }).catch(err2 => {
+                console.error('Failed to copy plain address: ', err2);
+                showNotification('Failed to copy address.', 'error');
             });
-        }
+        });
+    }
+    return addressText;
+}
 
-        function copyOrder(order) {
-            const billingInfo = order.billing || {};
-            const shippingInfo = order.shipping || {};
-            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
-            const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-            const customerPhone = billingInfo.phone || shippingInfo.phone || 'N/A';
-            const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
-            const total = parseFloat(order.total || 0).toFixed(2);
-            const currency = order.currency || '';
-            const orderText = `**Order #${order.id || 'N/A'}**\n**Customer:** ${customerName}\n**Phone:** ${customerPhone}\n**Address:** ${customerAddress}\n**Products:**\n${products}\n**Total:** ${total} ${currency}`;
-            navigator.clipboard.writeText(orderText).then(() => {
-                showNotification('Order details copied to clipboard', 'success');
-            }).catch(err => {
-                console.error('Error copying order:', err);
-                showNotification('Failed to copy order', 'error');
+function copyOrder(order, forWhatsApp = false) {
+    const billing = order.billing || {};
+    const shipping = order.shipping || {};
+    const formattedPhone = formatPhoneNumber(billing.phone || '');
+    const orderSelectTime = order.additional.order_time || 'لم يتم التحديد';
+    const orderSelectDate = order.additional.order_date || '';
+    const customerName = `${billing.first_name || shipping.first_name || ''}${billing.last_name || shipping.last_name || ''}`.trim() || 'غير معروف';
+    const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => `- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('\n\n') || '- No products';
+
+    const orderDetailsText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
+                            `━━━━━━━━━━━━━━━━━━\n` +
+                            `*العميل:* ${customerName}\n` +
+                            `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
+                            `*يوم التوصيل:* ${orderSelectDate}\n` +
+                            `*وقت التوصيل:* ${orderSelectTime}\n\n` +
+                            `*المنتجات:*\n${productLines}\n` +
+                            `━━━━━━━━━━━━━━━━━━`;
+
+    if (!forWhatsApp) {
+        navigator.clipboard.writeText(orderDetailsText).then(() => {
+            showNotification('Order copied (bold format)', 'success');
+        }).catch(err => {
+            console.error('Failed to copy order: ', err);
+            navigator.clipboard.writeText(orderDetailsText.replace(/\*/g, '')).then(() => {
+                showNotification('Order copied (plain format)', 'success');
+            }).catch(err2 => {
+                console.error('Failed to copy plain order: ', err2);
+                showNotification('Failed to copy order details.', 'error');
             });
-        }
+        });
+    }
+    return orderDetailsText;
+}
 
-        function generateInvoiceText(order) {
-            const billingInfo = order.billing || {};
-            const shippingInfo = order.shipping || {};
-            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
-            const orderNumber = order.id || 'N/A';
-            const selectedDate = order.additional?.order_date || 'No Selected Date';
-            const selectedTime = order.additional?.order_time || 'No Selected Time';
-            const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
-            const total = parseFloat(order.total || 0).toFixed(2);
-            const currency = order.currency || '';
-            const discountTotal = parseFloat(order.discount_total || 0);
-            const feeLines = Array.isArray(order.fee_lines) ? order.fee_lines : [];
-            const feeTotal = feeLines.reduce((sum, fee) => sum + parseFloat(fee.total || 0), 0) || 0;
-            const subtotal = (total + discountTotal - feeTotal).toFixed(2);
-            const coupons = Array.isArray(order.coupon_lines) && order.coupon_lines.length > 0 ? order.coupon_lines.map(c => c.code).join(', ') : null;
+function generateInvoiceText(order) {
+    const billingInfo = order.billing || {};
+    const shippingInfo = order.shipping || {};
+    const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+    const orderNumber = order.id || 'N/A';
+    const selectedDate = order.additional?.order_date || 'No Selected Date';
+    const selectedTime = order.additional?.order_time || 'No Selected Time';
+    const products = order.line_items?.map(item => `• ${item.name || 'Unknown Product'} × ${item.quantity || 0}`).join('\n\n') || 'No products';
+    const total = parseFloat(order.total || 0).toFixed(2);
+    const currency = order.currency || 'EGP';
+    const discountTotal = parseFloat(order.discount_total || 0) || 0;
+    const feeLines = Array.isArray(order.fee_lines) ? order.fee_lines : [];
+    const feeTotal = feeLines.reduce((sum, fee) => sum + (parseFloat(fee.total || 0) || 0), 0) || 0;
+    const subtotal = (total + discountTotal - feeTotal).toFixed(2);
+    const coupons = Array.isArray(order.coupon_lines) && order.coupon_lines.length > 0 ? order.coupon_lines.map(c => c.code).join(', ') : null;
 
-            let feesText = '';
-            if (feeLines.length > 0) {
-                feesText = feeLines.map(fee => `${fee.name || 'Fee'}: ${parseFloat(fee.total || 0).toFixed(2)} ${currency}`).join('\n');
+    let feesText = '';
+    if (feeLines.length > 0) {
+        feesText = feeLines.map(fee => `${fee.name || 'Fee'}: ${parseFloat(fee.total || 0).toFixed(2)} ${currency}`).join('\n');
+    } else {
+        feesText = 'Delivery Fee: 0.00 EGP';
+    }
+
+    return `*Hello ${customerName},*\n\n` +
+           `We’re happy to inform you that your order is ready and will be delivered on ${selectedDate} at ${selectedTime}.\n\n` +
+           `━━━━━━━━━━━━━━━━━━\n` +
+           `*Order Summary:*\n\n` +
+           `${products}\n\n` +
+           `━━━━━━━━━━━━━━━━━━\n` +
+           `*Subtotal:* ${subtotal} ${currency}\n\n` +
+           (discountTotal > 0 ? `*Discount${coupons ? ` (${coupons})` : ''}:* -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
+           `${feesText}\n\n` +
+           `*Total:* ${total} ${currency}\n` +
+           `━━━━━━━━━━━━━━━━━━\n\n` +
+           `You can explore all our delicious frozen meals anytime at:\n` +
+           `tenderfrozen.com\n\n` +
+           `*Thank you for choosing Tender Frozen!*\n\n` +
+           `We can’t wait to serve you again.`;
+}
+
+function sendInvoiceToCustomer(order) {
+    const billingInfo = order.billing || {};
+    const phone = billingInfo.phone || '';
+    const formattedPhone = formatPhoneNumber(phone);
+    if (!formattedPhone || !formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+        showNotification('Invalid or missing customer phone number.', 'error');
+        return;
+    }
+    const invoiceText = generateInvoiceText(order);
+    const encodedText = encodeURIComponent(invoiceText);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+    showNotification('Opening WhatsApp with invoice...', 'success');
+}
+
+function sendToWhatsApp(order, type) {
+    if (users.length === 0) {
+        showNotification('No users available. Please add users in Settings.', 'warning');
+        return;
+    }
+    const userOptions = users.map(user => `<option value="${user.id}">${user.name} (${user.job || 'N/A'})</option>`).join('');
+    Swal.fire({
+        title: `Send ${type === 'address' ? 'Address' : 'Order'} to WhatsApp`,
+        html: `<select id="swal-user" class="swal2-select"><option value="">Select a user</option>${userOptions}</select>`,
+        showCancelButton: true,
+        confirmButtonText: 'Send',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'var(--success)',
+        cancelButtonColor: 'var(--danger)',
+        preConfirm: () => {
+            const userId = document.getElementById('swal-user').value;
+            if (!userId) {
+                Swal.showValidationMessage('Please select a user');
+                return false;
             }
-
-            return `Invoice for ${customerName}\n\n` +
-                   `Order Number: ${orderNumber}\n\n` +
-                   `Selected Date: ${selectedDate}\n\n` +
-                   `Selected Time: ${selectedTime}\n\n` +
-                   `Products:\n${products}\n\n` +
-                   (feesText ? `Fees:\n${feesText}\n\n` : '') +
-                   `Subtotal: ${subtotal} ${currency}\n\n` +
-                   (discountTotal > 0 ? `Discount${coupons ? ` (${coupons})` : ''}: -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
-                   `Total: ${total} ${currency}`;
+            return userId;
         }
-
-        function sendInvoiceToCustomer(order) {
-            const billingInfo = order.billing || {};
-            const phone = billingInfo.phone || '';
-            const formattedPhone = formatPhoneNumber(phone);
-            if (!formattedPhone || !formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
-                showNotification('Invalid or missing customer phone number.', 'error');
+    }).then(result => {
+        if (result.isConfirmed) {
+            const user = users.find(u => u.id === result.value);
+            if (!user || !user.phone || !user.phone.startsWith(EGYPT_COUNTRY_CODE)) {
+                showNotification('Selected user does not have a valid Egypt phone number starting with +20.', 'error');
                 return;
             }
-            const invoiceText = generateInvoiceText(order);
-            const encodedText = encodeURIComponent(invoiceText);
-            const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedText}`;
+            const message = type === 'address' ? copyAddress(order, true) : copyOrder(order, true);
+            const encodedMessage = encodeURIComponent(message);
+            const phoneNumber = user.phone.replace(/[^0-9+]/g, '');
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
-            showNotification('Opening WhatsApp with invoice...', 'success');
+            showNotification(`${type === 'address' ? 'Address' : 'Order'} prepared for WhatsApp`, 'success');
         }
-
-        function sendToWhatsApp(order, type) {
-            if (users.length === 0) {
-                showNotification('No delivery/prep users available. Please add users in Settings.', 'error');
-                return;
-            }
-            const options = users.map(user => `<option value="${user.phone}">${user.name} (${user.job || 'N/A'}, ${user.zone || 'N/A'})</option>`).join('');
-            Swal.fire({
-                title: `Send ${type === 'address' ? 'Address' : 'Order'} via WhatsApp`,
-                html: `
-                    <select id="swal-user-phone" class="swal2-select">
-                        <option value="" disabled selected>Select a user</option>
-                        ${options}
-                    </select>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Send',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: 'var(--whatsapp)',
-                cancelButtonColor: 'var(--danger)',
-                preConfirm: () => {
-                    const phone = document.getElementById('swal-user-phone').value;
-                    if (!phone) {
-                        Swal.showValidationMessage('Please select a user');
-                        return false;
-                    }
-                    return phone;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const phone = result.value;
-                    let text = '';
-                    if (type === 'address') {
-                        const billingInfo = order.billing || {};
-                        const shippingInfo = order.shipping || {};
-                        const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
-                        const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-                        const customerLocationLink = billingInfo.location || shippingInfo.location || '';
-                        text = `**Customer Name:** ${customerName}\n**Address:** ${customerAddress}\n${customerLocationLink ? `**Location:** ${customerLocationLink}` : ''}`.trim();
-                    } else {
-                        const billingInfo = order.billing || {};
-                        const shippingInfo = order.shipping || {};
-                        const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
-                        const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-                        const customerPhone = billingInfo.phone || shippingInfo.phone || 'N/A';
-                        const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
-                        const total = parseFloat(order.total || 0).toFixed(2);
-                        const currency = order.currency || '';
-                        text = `**Order #${order.id || 'N/A'}**\n**Customer:** ${customerName}\n**Phone:** ${customerPhone}\n**Address:** ${customerAddress}\n**Products:**\n${products}\n**Total:** ${total} ${currency}`;
-                    }
-                    const encodedText = encodeURIComponent(text);
-                    const whatsappUrl = `https://wa.me/${phone}?text=${encodedText}`;
-                    window.open(whatsappUrl, '_blank');
-                    showNotification(`Sent ${type} to WhatsApp`, 'success');
-                }
-            });
-        }
-
+    });
+}
         async function openStatusModal(orderId, currentStatus) {
             const statusOptions = [
                 { value: 'pending', label: 'Pending Payment' },
