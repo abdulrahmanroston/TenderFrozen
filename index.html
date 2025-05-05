@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tender Frozen Order Dashboard</title> <!-- Updated Title -->
+    <title>Tender Frozen Order Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius: 0.75rem; /* 12px */
+            --border-radius: 0.75rem;
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -38,12 +38,13 @@
             overflow-x: hidden;
             width: 100%;
             font-size: 14px;
+            padding-bottom: 60px; /* Space for fixed navbar */
         }
         .container {
             max-width: 100%;
             margin: 0;
             background: var(--card-bg);
-            min-height: 100vh;
+            min-height: calc(100vh - 60px);
         }
         .header {
             background: var(--dark);
@@ -73,7 +74,7 @@
             padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            transition: background 0.3s, transform 0.2s;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
             font-size: 0.875rem;
             display: inline-flex;
             align-items: center;
@@ -85,6 +86,7 @@
         .header-btn:hover {
             background: #4b5563;
             transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
         .search-bar {
             padding: 15px 20px;
@@ -105,8 +107,6 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
         }
-
-        /* Settings Panel Accordion */
         .settings-panel {
             display: none;
             padding: 0;
@@ -157,8 +157,7 @@
             background-color: var(--card-bg);
         }
         .settings-content label,
-        .settings-content h4
-        {
+        .settings-content h4 {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
@@ -243,8 +242,6 @@
         .user-management-section #add-user-btn {
             margin-top: 10px;
         }
-
-        /* Stats */
         .stats {
             padding: 20px;
             display: grid;
@@ -270,7 +267,8 @@
             color: #fff;
             box-shadow: var(--shadow-md);
         }
-        .stat-card.active h3, .stat-card.active p {
+        .stat-card.active h3,
+        .stat-card.active p {
             color: #fff;
         }
         .stat-card h3 {
@@ -284,8 +282,6 @@
             font-size: 1.75rem;
             font-weight: 600;
         }
-
-        /* Tabs - Horizontal Scroll */
         .tabs-container {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
@@ -317,8 +313,14 @@
             border-bottom: 3px solid transparent;
             border-radius: 6px 6px 0 0;
             font-weight: 500;
-            transition: background 0.3s, color 0.3s, border-color 0.3s;
+            transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
             color: var(--text-secondary);
+        }
+        .tab:hover:not(.active) {
+            background: var(--light);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
         }
         .tab.active {
             background: var(--card-bg);
@@ -326,10 +328,7 @@
             border: 1px solid var(--border);
             border-bottom: 3px solid var(--primary);
             font-weight: 600;
-        }
-        .tab:hover:not(.active) {
-            background: var(--light);
-            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
         }
         .tab .count {
             background: var(--secondary);
@@ -343,8 +342,6 @@
         .tab.active .count {
             background: var(--primary);
         }
-
-        /* Tab Content & Order Display (Grid Only) */
         .tab-content {
             display: none;
             padding: 20px;
@@ -398,7 +395,7 @@
             flex-shrink: 0;
         }
         .order-card-details {
-            display: none; /* Collapsed by default */
+            display: none;
             padding: 20px;
             background: var(--card-bg);
             animation: slideDown 0.3s ease-out;
@@ -480,17 +477,39 @@
             font-size: 0.9em;
             line-height: 1;
         }
-        .update-status-btn { background: var(--info); color: #fff; }
-        .update-status-btn:hover { background: #0ea5e9; }
-        .edit-products-btn { background: var(--success); color: #fff; }
-        .edit-products-btn:hover { background: #059669; }
-        .copy-address-btn, .copy-order-btn { background: var(--warning); color: var(--dark); }
-        .copy-address-btn:hover, .copy-order-btn:hover { background: #f59e0b; color: #fff; }
-        .send-address-btn, .send-order-btn {
+        .update-status-btn {
+            background: var(--info);
+            color: #fff;
+        }
+        .update-status-btn:hover {
+            background: #0ea5e9;
+        }
+        .edit-products-btn {
+            background: var(--success);
+            color: #fff;
+        }
+        .edit-products-btn:hover {
+            background: #059669;
+        }
+        .copy-address-btn,
+        .copy-order-btn {
+            background: var(--warning);
+            color: var(--dark);
+        }
+        .copy-address-btn:hover,
+        .copy-order-btn:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
+        .send-address-btn,
+        .send-order-btn,
+        .send-invoice-btn {
             background: var(--whatsapp);
             color: #fff;
         }
-        .send-address-btn:hover, .send-order-btn:hover {
+        .send-address-btn:hover,
+        .send-order-btn:hover,
+        .send-invoice-btn:hover {
             background: #128C7E;
         }
         .no-orders {
@@ -525,6 +544,66 @@
             height: 40px;
             animation: spin 1.0s linear infinite;
         }
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--dark);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+        .navbar li {
+            cursor: pointer;
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s, transform 0.2s, box-shadow 0.2s;
+            border-radius: 6px;
+        }
+        .navbar li:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .navbar li.active {
+            color: var(--primary);
+            background: var(--light);
+            box-shadow: var(--shadow-md);
+        }
+        /* Order Summary Table */
+        .order-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .order-summary-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .order-summary-table td:first-child {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .order-summary-table td:last-child {
+            text-align: right;
+            color: var(--text-secondary);
+        }
+        .order-summary-table tr:last-child td {
+            font-weight: 600;
+            color: var(--primary);
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -533,132 +612,185 @@
             from { transform: translateY(-10px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .container { margin: 0; border-radius: 0; }
-            .header h1 { font-size: 1.2rem; }
-            .header-actions { gap: 5px; }
-            .header-btn { padding: 6px 8px; font-size: 0.8rem; }
-            .settings-content { grid-template-columns: 1fr; gap: 12px; }
-            .stats { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; padding: 15px; }
-            .stat-card p { font-size: 1.5rem; }
-            .tabs-container { padding: 10px 0px 0px 15px; }
-            .tab { padding: 8px 15px; margin-right: 8px; font-size: 0.85rem; }
-            .tab-content { padding: 15px; }
-            .orders-list { gap: 15px; grid-template-columns: 1fr; }
-            .order-card-header { padding: 10px 15px; }
-            .order-card-details { padding: 15px; }
-            .action-btn { font-size: 0.75rem; padding: 6px 10px; margin: 3px; }
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .header-actions {
+                gap: 5px;
+            }
+            .header-btn {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+            .settings-content {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+            .stat-card p {
+                font-size: 1.5rem;
+            }
+            .tabs-container {
+                padding: 10px 0px 0px 15px;
+            }
+            .tab {
+                padding: 8px 15px;
+                margin-right: 8px;
+                font-size: 0.85rem;
+            }
+            .tab-content {
+                padding: 15px;
+            }
+            .orders-list {
+                gap: 15px;
+                grid-template-columns: 1fr;
+            }
+            .order-card-header {
+                padding: 10px 15px;
+            }
+            .order-card-details {
+                padding: 15px;
+            }
+            .action-btn {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                margin: 3px;
+            }
+            .navbar ul {
+                gap: 10px;
+            }
+            .navbar li {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
         }
         @media (min-width: 769px) {
-            .container { max-width: 1600px; margin: 20px auto; border-radius: var(--border-radius); box-shadow: var(--shadow-lg); }
+            .container {
+                max-width: 1600px;
+                margin: 20px auto;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow-lg);
+            }
         }
-
-        /* SweetAlert Customizations */
-        .swal2-input, .swal2-select {
+        .swal2-input,
+        .swal2-select {
             border-radius: 6px !important;
             border: 1px solid var(--border) !important;
             font-size: 0.9rem !important;
             box-shadow: none !important;
         }
-        .swal2-input:focus, .swal2-select:focus {
+        .swal2-input:focus,
+        .swal2-select:focus {
             border-color: var(--primary) !important;
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
         }
-
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
     </div>
-    <div class="container">
-        <header class="header">
-            <div class="header-actions">
-                <button class="header-btn" onclick="toggleSettings()"><i class="fas fa-sliders-h"></i> Settings</button>
-                <button class="header-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
-                <button class="header-btn" onclick="toggleFullScreen()"><i class="fas fa-expand"></i> Full Screen</button>
+    <div id="main-content">
+        <div class="container" id="orders-content">
+            <header class="header">
+                <h1>Tender Frozen Order Dashboard</h1>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="toggleSettings()">
+                        <i class="fas fa-sliders-h"></i> Settings
+                    </button>
+                    <button class="header-btn" onclick="refreshOrders()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="header-btn" onclick="toggleFullScreen()">
+                        <i class="fas fa-expand"></i> Full Screen
+                    </button>
+                </div>
+            </header>
+            <div class="search-bar">
+                <input type="text" id="customer-filter" placeholder="Search by Customer Name, Email, or Phone...">
             </div>
-        </header>
-
-        <div class="search-bar">
-            <input type="text" id="customer-filter" placeholder="Search by Customer Name, Email, or Phone...">
-        </div>
-
-        <!-- Collapsible Settings Panel -->
-        <div class="settings-panel" id="settings-panel">
-            <details class="settings-section" open>
-                <summary>Filters</summary>
-                <div class="settings-content">
-                    <div class="checkbox-group">
-                        <label>Status</label>
-                        <label><input type="checkbox" name="status-filter" value="pending"> Pending Payment</label>
-                        <label><input type="checkbox" name="status-filter" value="processing"> Processing</label>
-                        <label><input type="checkbox" name="status-filter" value="on-hold"> On Hold</label>
-                        <label><input type="checkbox" name="status-filter" value="completed"> Completed</label>
-                        <label><input type="checkbox" name="status-filter" value="cancelled"> Cancelled</label>
-                        <label><input type="checkbox" name="status-filter" value="refunded"> Refunded</label>
-                        <label><input type="checkbox" name="status-filter" value="failed"> Failed</label>
+            <div class="settings-panel" id="settings-panel">
+                <details class="settings-section">
+                    <summary>Filters</summary>
+                    <div class="settings-content">
+                        <div class="checkbox-group">
+                            <label>Status</label>
+                            <label><input type="checkbox" name="status-filter" value="pending"> Pending Payment</label>
+                            <label><input type="checkbox" name="status-filter" value="processing"> Processing</label>
+                            <label><input type="checkbox" name="status-filter" value="on-hold"> On Hold</label>
+                            <label><input type="checkbox" name="status-filter" value="completed"> Completed</label>
+                            <label><input type="checkbox" name="status-filter" value="cancelled"> Cancelled</label>
+                            <label><input type="checkbox" name="status-filter" value="refunded"> Refunded</label>
+                            <label><input type="checkbox" name="status-filter" value="failed"> Failed</label>
+                        </div>
+                        <div>
+                            <label for="date-from">Date From</label>
+                            <input type="date" id="date-from">
+                        </div>
+                        <div>
+                            <label for="date-to">Date To</label>
+                            <input type="date" id="date-to">
+                        </div>
                     </div>
-                    <div>
-                        <label for="date-from">Date From</label>
-                        <input type="date" id="date-from">
+                </details>
+                <details class="settings-section">
+                    <summary>Display Options</summary>
+                    <div class="settings-content">
+                        <div>
+                            <label for="per-page">Orders per page</label>
+                            <input type="number" id="per-page" placeholder="e.g., 20" min="1" max="100" value="20">
+                        </div>
+                        <div>
+                            <label for="sort-by">Sort By</label>
+                            <select id="sort-by">
+                                <option value="date-desc">Date (Newest First)</option>
+                                <option value="date-asc">Date (Oldest First)</option>
+                                <option value="total-desc">Total (High to Low)</option>
+                                <option value="total-asc">Total (Low to High)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label for="date-to">Date To</label>
-                        <input type="date" id="date-to">
+                </details>
+                <details class="settings-section">
+                    <summary>Delivery & Order Preparation Users</summary>
+                    <div class="settings-content user-management-section" id="user-management-section">
+                        <button id="add-user-btn" style="background: var(--success); grid-column: 1 / -1;">
+                            <i class="fas fa-plus"></i> Add User
+                        </button>
                     </div>
-                </div>
-            </details>
-
-            <details class="settings-section">
-                <summary>Display Options</summary>
-                <div class="settings-content">
-                    <div>
-                        <label for="per-page">Orders per page</label>
-                        <input type="number" id="per-page" placeholder="e.g., 20" min="1" max="100" value="20">
+                </details>
+                <details class="settings-section" open>
+                    <summary>Actions</summary>
+                    <div class="settings-content">
+                        <button id="save-settings-btn">
+                            <i class="fas fa-check"></i> Apply Filters & Settings
+                        </button>
+                        <button id="clear-filters-btn" style="background: var(--secondary);">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
                     </div>
-                    <div>
-                        <label for="sort-by">Sort By</label>
-                        <select id="sort-by">
-                            <option value="date-desc">Date (Newest First)</option>
-                            <option value="date-asc">Date (Oldest First)</option>
-                            <option value="total-desc">Total (High to Low)</option>
-                            <option value="total-asc">Total (Low to High)</option>
-                        </select>
-                    </div>
-                </div>
-            </details>
-
-            <details class="settings-section">
-                <summary>Delivery & Order Preparation Users</summary>
-                <div class="settings-content user-management-section" id="user-management-section">
-                    <button id="add-user-btn" style="background: var(--success); grid-column: 1 / -1;"><i class="fas fa-plus"></i> Add User</button>
-                    <!-- User items will be added here by JS -->
-                </div>
-            </details>
-
-             <details class="settings-section">
-                <summary>Actions</summary>
-                <div class="settings-content">
-                     <button id="save-settings-btn"><i class="fas fa-check"></i> Apply Filters & Settings</button>
-                     <button id="clear-filters-btn" style="background: var(--secondary);"><i class="fas fa-times"></i> Clear Filters</button>
-                </div>
-            </details>
-        </div>
-
-        <div class="stats" id="stats"></div>
-
-        <div class="tabs-container" id="zone-tabs-container">
-            <!-- Tabs will be added here -->
-        </div>
-
-        <div id="tab-contents">
-            <!-- Tab content will be added here -->
+                </details>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div class="tabs-container" id="warehouse-tabs-container"></div>
+            <div id="tab-contents"></div>
         </div>
     </div>
-
+    <nav class="navbar">
+        <ul>
+            <li data-page="orders" class="active">Orders</li>
+            <li data-page="products.html">Products</li>
+        </ul>
+    </nav>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
@@ -670,26 +802,44 @@
         let currentOrders = [];
         let productsCache = null;
 
-        // --- User Management (Updated formatPhoneNumber) --- 
+        // User Management
         function formatPhoneNumber(phone) {
             if (!phone) return '';
-            // Remove spaces first, then other non-digit/plus characters
-            let cleaned = phone.trim().replace(/\s+/g, '').replace(/[^0-9+]/g, ''); 
-            if (cleaned.startsWith(EGYPT_COUNTRY_CODE)) { return cleaned; }
-            if (cleaned.startsWith('0')) { if (cleaned.length === 11) { return EGYPT_COUNTRY_CODE + cleaned.substring(1); } }
-            if (cleaned.length === 10) { return EGYPT_COUNTRY_CODE + cleaned; }
-            if (cleaned.startsWith('+') && cleaned.length > 11) { return cleaned; }
+            let cleaned = phone.trim().replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+            if (cleaned.startsWith(EGYPT_COUNTRY_CODE)) return cleaned;
+            if (cleaned.startsWith('0')) if (cleaned.length === 11) return EGYPT_COUNTRY_CODE + cleaned.substring(1);
+            if (cleaned.length === 10) return EGYPT_COUNTRY_CODE + cleaned;
+            if (cleaned.startsWith('+') && cleaned.length > 11) return cleaned;
             console.warn(`Phone number "${phone}" could not be automatically formatted. Using cleaned value: ${cleaned}`);
             return cleaned;
         }
+
         function loadUsers() {
             const storedUsers = localStorage.getItem(USERS_KEY);
-            if (storedUsers) { try { users = JSON.parse(storedUsers); console.log('Delivery/Prep users loaded:', users.length); } catch (e) { console.error('Error parsing users:', e); users = []; localStorage.removeItem(USERS_KEY); } } else { users = []; }
+            if (storedUsers) {
+                try {
+                    users = JSON.parse(storedUsers);
+                    console.log('Delivery/Prep users loaded:', users.length);
+                } catch (e) {
+                    console.error('Error parsing users:', e);
+                    users = [];
+                    localStorage.removeItem(USERS_KEY);
+                }
+            } else {
+                users = [];
+            }
             displayUsers();
         }
+
         function saveUsers() {
-            try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { console.error('Error saving users:', e); showNotification('Error saving user data. Local storage might be full.', 'error'); }
+            try {
+                localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            } catch (e) {
+                console.error('Error saving users:', e);
+                showNotification('Error saving user data. Local storage might be full.', 'error');
+            }
         }
+
         function displayUsers() {
             const container = document.getElementById('user-management-section');
             const userItems = container.querySelectorAll('.user-item');
@@ -697,11 +847,21 @@
             const noUsersP = container.querySelector('p.no-users-msg');
             const addUserBtn = container.querySelector('#add-user-btn');
             if (users.length === 0) {
-                if (!noUsersP) { const p = document.createElement('p'); p.textContent = 'No users found.'; p.classList.add('no-users-msg'); p.style.textAlign = 'center'; p.style.color = 'var(--text-secondary)'; p.style.gridColumn = '1 / -1'; container.insertBefore(p, addUserBtn); }
+                if (!noUsersP) {
+                    const p = document.createElement('p');
+                    p.textContent = 'No users found.';
+                    p.classList.add('no-users-msg');
+                    p.style.textAlign = 'center';
+                    p.style.color = 'var(--text-secondary)';
+                    p.style.gridColumn = '1 / -1';
+                    container.insertBefore(p, addUserBtn);
+                }
             } else {
                 if (noUsersP) noUsersP.remove();
                 users.forEach(user => {
-                    const userItem = document.createElement('div'); userItem.classList.add('user-item'); userItem.dataset.id = user.id;
+                    const userItem = document.createElement('div');
+                    userItem.classList.add('user-item');
+                    userItem.dataset.id = user.id;
                     userItem.innerHTML = `
                         <div class="user-info">
                             <strong>${user.name || 'N/A'}</strong>
@@ -718,29 +878,140 @@
                 });
             }
         }
+
         function addUser() {
-            Swal.fire({ title: 'Add New User', html: `<input id="swal-user-name" class="swal2-input" placeholder="Full Name"><input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., 01xxxxxxxxx)"><input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)"><input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)">`, showCancelButton: true, confirmButtonText: 'Add', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', preConfirm: () => { const name = document.getElementById('swal-user-name').value; const phoneInput = document.getElementById('swal-user-phone').value; const job = document.getElementById('swal-user-job').value; const zone = document.getElementById('swal-user-zone').value; if (!name || !phoneInput) { Swal.showValidationMessage('Name and Phone Number are required'); return false; } const formattedPhone = formatPhoneNumber(phoneInput); if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) { Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)'); return false; } return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' }; } }).then((result) => { if (result.isConfirmed) { const newUser = { id: Date.now().toString(), name: result.value.name, phone: result.value.phone, job: result.value.job, zone: result.value.zone }; users.push(newUser); saveUsers(); displayUsers(); showNotification('User added successfully', 'success'); } });
+            Swal.fire({
+                title: 'Add New User',
+                html: `
+                    <input id="swal-user-name" class="swal2-input" placeholder="Full Name">
+                    <input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., 01xxxxxxxxx)">
+                    <input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)">
+                    <input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Add',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: 'var(--success)',
+                cancelButtonColor: 'var(--danger)',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-user-name').value;
+                    const phoneInput = document.getElementById('swal-user-phone').value;
+                    const job = document.getElementById('swal-user-job').value;
+                    const zone = document.getElementById('swal-user-zone').value;
+                    if (!name || !phoneInput) {
+                        Swal.showValidationMessage('Name and Phone Number are required');
+                        return false;
+                    }
+                    const formattedPhone = formatPhoneNumber(phoneInput);
+                    if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+                        Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)');
+                        return false;
+                    }
+                    return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const newUser = { id: Date.now().toString(), ...result.value };
+                    users.push(newUser);
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User added successfully', 'success');
+                }
+            });
         }
+
         function editUser(userId) {
-            const userIndex = users.findIndex(u => u.id === userId); if (userIndex === -1) { showNotification('User not found for editing.', 'error'); return; } const user = users[userIndex];
-            Swal.fire({ title: 'Edit User', html: `<input id="swal-user-name" class="swal2-input" placeholder="Full Name" value="${user.name || ''}"><input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., +20...)" value="${user.phone || ''}"><input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)" value="${user.job || ''}"><input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)" value="${user.zone || ''}">`, showCancelButton: true, confirmButtonText: 'Save Changes', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', preConfirm: () => { const name = document.getElementById('swal-user-name').value; const phoneInput = document.getElementById('swal-user-phone').value; const job = document.getElementById('swal-user-job').value; const zone = document.getElementById('swal-user-zone').value; if (!name || !phoneInput) { Swal.showValidationMessage('Name and Phone Number are required'); return false; } const formattedPhone = formatPhoneNumber(phoneInput); if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) { Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)'); return false; } return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' }; } }).then((result) => { if (result.isConfirmed) { users[userIndex] = { ...user, name: result.value.name, phone: result.value.phone, job: result.value.job, zone: result.value.zone }; saveUsers(); displayUsers(); showNotification('User updated successfully', 'success'); } });
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) {
+                showNotification('User not found for editing.', 'error');
+                return;
+            }
+            const user = users[userIndex];
+            Swal.fire({
+                title: 'Edit User',
+                html: `
+                    <input id="swal-user-name" class="swal2-input" placeholder="Full Name" value="${user.name || ''}">
+                    <input id="swal-user-phone" class="swal2-input" placeholder="Phone Number (e.g., +20...)" value="${user.phone || ''}">
+                    <input id="swal-user-job" class="swal2-input" placeholder="Job/Role (e.g., Delivery)" value="${user.job || ''}">
+                    <input id="swal-user-zone" class="swal2-input" placeholder="Zone (e.g., Maadi)" value="${user.zone || ''}">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Save Changes',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: 'var(--success)',
+                cancelButtonColor: 'var(--danger)',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-user-name').value;
+                    const phoneInput = document.getElementById('swal-user-phone').value;
+                    const job = document.getElementById('swal-user-job').value;
+                    const zone = document.getElementById('swal-user-zone').value;
+                    if (!name || !phoneInput) {
+                        Swal.showValidationMessage('Name and Phone Number are required');
+                        return false;
+                    }
+                    const formattedPhone = formatPhoneNumber(phoneInput);
+                    if (!formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+                        Swal.showValidationMessage('Please enter a valid Egypt phone number (e.g., 01xxxxxxxxx or +201xxxxxxxxx)');
+                        return false;
+                    }
+                    return { name, phone: formattedPhone, job: job || 'N/A', zone: zone || 'N/A' };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    users[userIndex] = { ...user, ...result.value };
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User updated successfully', 'success');
+                }
+            });
         }
+
         function deleteUser(userId) {
-            const userIndex = users.findIndex(u => u.id === userId); if (userIndex === -1) { showNotification('User not found for deletion.', 'error'); return; } const user = users[userIndex];
-            Swal.fire({ title: 'Are you sure?', text: `Delete user "${user.name}"? This cannot be undone.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--danger)', cancelButtonColor: 'var(--secondary)' }).then((result) => { if (result.isConfirmed) { users.splice(userIndex, 1); saveUsers(); displayUsers(); showNotification('User deleted successfully', 'success'); } });
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) {
+                showNotification('User not found for deletion.', 'error');
+                return;
+            }
+            const user = users[userIndex];
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `Delete user "${user.name}"? This cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: 'var(--danger)',
+                cancelButtonColor: 'var(--secondary)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    users.splice(userIndex, 1);
+                    saveUsers();
+                    displayUsers();
+                    showNotification('User deleted successfully', 'success');
+                }
+            });
         }
-        // --- End User Management ---
 
-        function sanitizeZoneName(zone) {
-            return zone?.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') || 'unspecified';
+        // Utility Functions
+        function sanitizeWarehouseName(warehouse) {
+            return warehouse?.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') || 'unspecified';
         }
 
-        function showLoading() { document.getElementById('loading-overlay').classList.add('active'); }
-        function hideLoading() { requestAnimationFrame(() => { document.getElementById('loading-overlay').classList.remove('active'); }); }
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            requestAnimationFrame(() => {
+                document.getElementById('loading-overlay').classList.remove('active');
+            });
+        }
 
         function loadSettings() {
             const statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
-            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => { checkbox.checked = statuses.includes(checkbox.value); });
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
+                checkbox.checked = statuses.includes(checkbox.value);
+            });
             document.getElementById('date-from').value = localStorage.getItem('date-from') || '';
             document.getElementById('date-to').value = localStorage.getItem('date-to') || '';
             document.getElementById('customer-filter').value = localStorage.getItem('customer-filter') || '';
@@ -761,7 +1032,9 @@
         }
 
         function clearFiltersAndFetch() {
-            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => { checkbox.checked = false; });
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
             document.getElementById('date-from').value = '';
             document.getElementById('date-to').value = '';
             document.getElementById('customer-filter').value = '';
@@ -775,15 +1048,43 @@
         }
 
         function showNotification(message, type) {
-            Swal.fire({ title: type.charAt(0).toUpperCase() + type.slice(1), text: message, icon: type, toast: true, position: 'top-end', showConfirmButton: false, timer: type === 'error' ? 4000 : 2500, timerProgressBar: true });
+            Swal.fire({
+                title: type.charAt(0).toUpperCase() + type.slice(1),
+                text: message,
+                icon: type,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: type === 'error' ? 4000 : 2500,
+                timerProgressBar: true
+            });
         }
 
-        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('active'); }
-        function toggleFullScreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { console.error('Error entering fullscreen:', err); showNotification('Could not enter fullscreen mode.', 'error'); }); } else { document.exitFullscreen(); } }
+        function toggleSettings() {
+            document.getElementById('settings-panel').classList.toggle('active');
+        }
 
-        const debounce = (func, delay) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => func.apply(this, a), delay); } };
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Error entering fullscreen:', err);
+                    showNotification('Could not enter fullscreen mode.', 'error');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        const debounce = (func, delay) => {
+            let t;
+            return (...a) => {
+                clearTimeout(t);
+                t = setTimeout(() => func.apply(this, a), delay);
+            };
+        };
         const debouncedSaveSettingsAndFetch = debounce(saveSettingsAndFetch, 800);
 
+        // Fetch Orders
         async function fetchOrders(statusFilter = null) {
             showLoading();
             const statuses = statusFilter ? [statusFilter] : JSON.parse(localStorage.getItem('status-filter') || '[]');
@@ -793,10 +1094,12 @@
             const perPage = localStorage.getItem('per-page') || '20';
             const sortBy = localStorage.getItem('sort-by') || 'date-desc';
             const perPageNum = parseInt(perPage) || 20;
-            const tabsContainer = document.getElementById('zone-tabs-container');
+            const tabsContainer = document.getElementById('warehouse-tabs-container');
             const contentsContainer = document.getElementById('tab-contents');
             const statsContainer = document.getElementById('stats');
-            tabsContainer.innerHTML = ''; contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>'; statsContainer.innerHTML = '';
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
+            statsContainer.innerHTML = '';
             currentOrders = [];
             let url = '';
 
@@ -810,105 +1113,202 @@
                 url += `&orderby=${orderBy}&order=${order}`;
 
                 console.log('Fetching orders from URL:', url);
-                const response = await fetch(url, { headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`) } });
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                    }
+                });
                 const contentType = response.headers.get('content-type');
                 console.log('Fetch response status:', response.status);
                 console.log('Fetch response content-type:', contentType);
 
-                if (!response.ok) { 
-                    let errorText = `HTTP error! status: ${response.status}`; 
-                    try { const errorJson = await response.json(); console.error('API Error Response:', errorJson); errorText += `, message: ${errorJson.message || 'Unknown API error'}`; } catch(e) { const bodyText = await response.text(); console.error('API Non-JSON Error Response:', bodyText); errorText += `, body: ${bodyText}`; } 
-                    throw new Error(errorText); 
+                if (!response.ok) {
+                    let errorText = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorJson = await response.json();
+                        console.error('API Error Response:', errorJson);
+                        errorText += `, message: ${errorJson.message || 'Unknown API error'}`;
+                    } catch (e) {
+                        const bodyText = await response.text();
+                        console.error('API Non-JSON Error Response:', bodyText);
+                        errorText += `, body: ${bodyText}`;
+                    }
+                    throw new Error(errorText);
                 }
-                if (!contentType || !contentType.includes('application/json')) { 
-                    const bodyText = await response.text(); console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText); throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`); 
+                if (!contentType || !contentType.includes('application/json')) {
+                    const bodyText = await response.text();
+                    console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText);
+                    throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`);
                 }
-                
+
                 currentOrders = await response.json();
                 console.log('Orders fetched successfully:', currentOrders.length);
                 displayStats(currentOrders);
-                if (currentOrders.length > 0) { groupAndDisplayOrders(currentOrders); } else { contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>'; }
+                if (currentOrders.length > 0) {
+                    groupAndDisplayOrders(currentOrders);
+                } else {
+                    contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
+                }
             } catch (error) {
-                console.error('Detailed error fetching orders:', error); console.error('Error Name:', error.name); console.error('Error Message:', error.message); console.error('Error Stack:', error.stack); console.error('URL attempted:', url);
+                console.error('Detailed error fetching orders:', error);
+                console.error('Error Name:', error.name);
+                console.error('Error Message:', error.message);
+                console.error('Error Stack:', error.stack);
+                console.error('URL attempted:', url);
                 let displayMessage = `Error loading orders: ${error.message}`;
-                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) { displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint. Please check the browser console and network tab for more details.'; }
-                contentsContainer.innerHTML = `<div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;"><p><strong>Error loading orders:</strong></p><p>${error.message}</p><p><small>Check browser console (F12) for more details.</small></p><button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;"><i class="fas fa-sync-alt"></i> Retry</button></div>`;
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint. Please check the browser console and network tab for more details.';
+                }
+                contentsContainer.innerHTML = `
+                    <div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;">
+                        <p><strong>Error loading orders:</strong></p>
+                        <p>${error.message}</p>
+                        <p><small>Check browser console (F12) for more details.</small></p>
+                        <button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>`;
                 showNotification(displayMessage, 'error');
-            } finally { hideLoading(); }
+            } finally {
+                hideLoading();
+            }
         }
 
-        function refreshOrders() { localStorage.removeItem('active-status-filter'); fetchOrders(); showNotification('Refreshing orders...', 'info'); }
+        function refreshOrders() {
+            localStorage.removeItem('active-status-filter');
+            fetchOrders();
+            showNotification('Refreshing orders...', 'info');
+        }
 
+        // Display Stats
         function displayStats(orders) {
-            const statsContainer = document.getElementById('stats'); statsContainer.innerHTML = '';
-            const statusConfig = { pending: { name: 'Pending', color: '#f59e0b' }, processing: { name: 'Processing', color: '#3b82f6' }, 'on-hold': { name: 'On Hold', color: '#f97316' }, completed: { name: 'Completed', color: '#10b981' }, cancelled: { name: 'Cancelled', color: '#ef4444' }, refunded: { name: 'Refunded', color: '#6b7280' }, failed: { name: 'Failed', color: '#991b1b' } };
+            const statsContainer = document.getElementById('stats');
+            statsContainer.innerHTML = '';
+            const statusConfig = {
+                pending: { name: 'Pending', color: '#f59e0b' },
+                processing: { name: 'Processing', color: '#3b82f6' },
+                'on-hold': { name: 'On Hold', color: '#f97316' },
+                completed: { name: 'Completed', color: '#10b981' },
+                cancelled: { name: 'Cancelled', color: '#ef4444' },
+                refunded: { name: 'Refunded', color: '#6b7280' },
+                failed: { name: 'Failed', color: '#991b1b' }
+            };
             let activeStatus = localStorage.getItem('active-status-filter') || null;
-            let statusCounts = {}; orders.forEach(order => { statusCounts[order.status] = (statusCounts[order.status] || 0) + 1; });
+            let statusCounts = {};
+            orders.forEach(order => {
+                statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+            });
             Object.keys(statusConfig).forEach(status => {
                 const count = statusCounts[status] || 0;
                 if (count > 0) {
-                    const config = statusConfig[status]; const statCard = document.createElement('div'); statCard.classList.add('stat-card');
-                    statCard.style.backgroundColor = config.color + '20'; statCard.style.borderColor = config.color;
+                    const config = statusConfig[status];
+                    const statCard = document.createElement('div');
+                    statCard.classList.add('stat-card');
+                    statCard.style.backgroundColor = config.color + '20';
+                    statCard.style.borderColor = config.color;
                     statCard.innerHTML = `<h3 style="color: ${config.color};">${config.name}</h3><p style="color: ${config.color};">${count}</p>`;
                     if (activeStatus === status) {
-                         statCard.classList.add('active'); statCard.style.backgroundColor = config.color; statCard.style.borderColor = config.color;
-                         statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
+                        statCard.classList.add('active');
+                        statCard.style.backgroundColor = config.color;
+                        statCard.style.borderColor = config.color;
+                        statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
                     }
-                    statCard.addEventListener('click', () => { if (activeStatus === status) { localStorage.removeItem('active-status-filter'); fetchOrders(); } else { localStorage.setItem('active-status-filter', status); fetchOrders(status); } });
+                    statCard.addEventListener('click', () => {
+                        if (activeStatus === status) {
+                            localStorage.removeItem('active-status-filter');
+                            fetchOrders();
+                        } else {
+                            localStorage.setItem('active-status-filter', status);
+                            fetchOrders(status);
+                        }
+                    });
                     statsContainer.appendChild(statCard);
                 }
             });
-            if (statsContainer.children.length === 0 && orders.length > 0) { statsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">Stats reflect displayed orders.</p>'; }
+            if (statsContainer.children.length === 0 && orders.length > 0) {
+                statsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">Stats reflect displayed orders.</p>';
+            }
         }
 
-        function groupOrdersByZone(orders) {
+        // Group Orders by Warehouse
+        function groupOrdersByWarehouse(orders) {
             const groupedOrders = { 'all': orders };
-            orders.forEach(order => { const zone = order.billing?.zone_name || order.shipping?.zone_name || 'Unspecified'; if (!groupedOrders[zone]) groupedOrders[zone] = []; groupedOrders[zone].push(order); });
+            orders.forEach(order => {
+                const warehouseMeta = order.meta_data?.find(meta => meta.key === '_selected_warehouse');
+                const warehouse = warehouseMeta ? warehouseMeta.value : 'Unspecified';
+                if (!groupedOrders[warehouse]) groupedOrders[warehouse] = [];
+                groupedOrders[warehouse].push(order);
+            });
             return groupedOrders;
         }
 
         function groupAndDisplayOrders(orders) {
-            const grouped = groupOrdersByZone(orders);
-            const tabsContainer = document.getElementById('zone-tabs-container');
+            const grouped = groupOrdersByWarehouse(orders);
+            const tabsContainer = document.getElementById('warehouse-tabs-container');
             const contentsContainer = document.getElementById('tab-contents');
-            tabsContainer.innerHTML = ''; contentsContainer.innerHTML = '';
-            const zones = Object.keys(grouped).sort((a, b) => a === 'all' ? -1 : b === 'all' ? 1 : a.localeCompare(b));
-            if (zones.length === 0) { contentsContainer.innerHTML = '<p class="no-orders">No orders found.</p>'; return; }
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '';
+            const warehouses = Object.keys(grouped).sort((a, b) => a === 'all' ? -1 : b === 'all' ? 1 : a.localeCompare(b));
+            if (warehouses.length === 0) {
+                contentsContainer.innerHTML = '<p class="no-orders">No orders found.</p>';
+                return;
+            }
 
-            zones.forEach((zone) => {
-                const isAllTab = zone === 'all';
-                const zoneDisplayName = isAllTab ? 'All Orders' : zone;
-                const sanitizedZone = isAllTab ? 'all' : sanitizeZoneName(zone);
-                const zoneOrders = grouped[zone];
-                
-                let tab = document.createElement('div'); tab.classList.add('tab'); tab.dataset.zone = sanitizedZone;
-                tab.innerHTML = `${zoneDisplayName} <span class="count">${zoneOrders.length}</span>`;
-                tab.addEventListener('click', () => switchTab(sanitizedZone));
+            warehouses.forEach((warehouse) => {
+                const isAllTab = warehouse === 'all';
+                const warehouseDisplayName = isAllTab ? 'All Orders' : warehouse;
+                const sanitizedWarehouse = isAllTab ? 'all' : sanitizeWarehouseName(warehouse);
+                const warehouseOrders = grouped[warehouse];
+
+                let tab = document.createElement('div');
+                tab.classList.add('tab');
+                tab.dataset.warehouse = sanitizedWarehouse;
+                tab.innerHTML = `${warehouseDisplayName} <span class="count">${warehouseOrders.length}</span>`;
+                tab.addEventListener('click', () => switchTab(sanitizedWarehouse));
                 tabsContainer.appendChild(tab);
 
-                let content = document.createElement('div'); content.classList.add('tab-content'); content.id = `tab-${sanitizedZone}`;
-                content.innerHTML = `<div class="orders-list" id="orders-${sanitizedZone}"></div>`;
+                let content = document.createElement('div');
+                content.classList.add('tab-content');
+                content.id = `tab-${sanitizedWarehouse}`;
+                content.innerHTML = `<div class="orders-list" id="orders-${sanitizedWarehouse}"></div>`;
                 contentsContainer.appendChild(content);
 
-                displayOrdersForZone(zoneOrders, `orders-${sanitizedZone}`);
-                
-                if (isAllTab) { tab.classList.add('active'); content.classList.add('active'); }
+                displayOrdersForWarehouse(warehouseOrders, `orders-${sanitizedWarehouse}`);
+
+                if (isAllTab) {
+                    tab.classList.add('active');
+                    content.classList.add('active');
+                }
             });
         }
 
-        // --- Restored displayOrdersForZone from v4 logic --- 
-        function displayOrdersForZone(orders, containerId) {
+        function switchTab(warehouse) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab[data-warehouse="${warehouse}"]`)?.classList.add('active');
+            document.getElementById(`tab-${warehouse}`)?.classList.add('active');
+        }
+
+        function displayOrdersForWarehouse(orders, containerId) {
             const ordersList = document.getElementById(containerId);
             if (!ordersList) {
                 console.error(`Container with ID ${containerId} not found.`);
                 return;
             }
-            ordersList.innerHTML = ''; // Clear previous orders
+            ordersList.innerHTML = '';
             const fragment = document.createDocumentFragment();
-            const statusColors = { pending: '#f59e0b', processing: '#3b82f6', 'on-hold': '#f97316', completed: '#10b981', cancelled: '#ef4444', refunded: '#6b7280', failed: '#991b1b' };
+            const statusColors = {
+                pending: '#f59e0b',
+                processing: '#3b82f6',
+                'on-hold': '#f97316',
+                completed: '#10b981',
+                cancelled: '#ef4444',
+                refunded: '#6b7280',
+                failed: '#991b1b'
+            };
 
             if (orders.length === 0) {
-                ordersList.innerHTML = '<p class="no-orders">No orders in this zone/status.</p>';
+                ordersList.innerHTML = '<p class="no-orders">No orders in this warehouse/status.</p>';
                 return;
             }
 
@@ -923,27 +1323,23 @@
                     const customerName = `${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}`.trim() || 'Unknown Customer';
                     const status = order.status || 'Unknown';
 
-                    // Generate details HTML upfront (like v4)
                     const detailsHtml = generateDetailsHtml(order);
 
-                    // Grid view HTML structure with details pre-rendered
                     orderCard.innerHTML = `
                         <div class="order-card-header">
                             <h3>${customerName} (#${order.id || 'N/A'})</h3>
                             <span class="status" style="background-color: ${statusColors[status] || '#6b7280'};">${status}</span>
                         </div>
                         <div class="order-card-details" id="details-${order.id}">
-                           ${detailsHtml} 
+                            ${detailsHtml}
                         </div>
                     `;
 
                     const headerDiv = orderCard.querySelector('.order-card-header');
                     const detailsDiv = orderCard.querySelector('.order-card-details');
 
-                    // Attach listeners for buttons inside the details section NOW
                     attachDetailButtonListeners(detailsDiv, order);
 
-                    // Click header to toggle details visibility
                     if (headerDiv && detailsDiv) {
                         headerDiv.addEventListener('click', () => {
                             detailsDiv.classList.toggle('active');
@@ -955,18 +1351,24 @@
                     console.error(`Error rendering order ${order.id}:`, error, error.stack);
                     const errorCard = document.createElement('div');
                     errorCard.classList.add('order-card', 'animate__animated', 'animate__fadeIn');
-                    errorCard.innerHTML = `<div class="order-card-header"><h3>Error Loading Order #${order.id || 'Unknown'}</h3><span class="status" style="background-color: #991b1b">Error</span></div><div class="order-card-details active"><p style="color: var(--danger);">Unable to display order details: ${error.message}.</p><p><small>Check console.</small></p></div>`;
+                    errorCard.innerHTML = `
+                        <div class="order-card-header">
+                            <h3>Error Loading Order #${order.id || 'Unknown'}</h3>
+                            <span class="status" style="background-color: #991b1b">Error</span>
+                        </div>
+                        <div class="order-card-details active">
+                            <p style="color: var(--danger);">Unable to display order details: ${error.message}.</p>
+                            <p><small>Check console.</small></p>
+                        </div>`;
                     fragment.appendChild(errorCard);
                 }
             });
 
-            // Append all cards at once
             requestAnimationFrame(() => {
                 ordersList.appendChild(fragment);
             });
         }
 
-        // Helper function to generate details HTML (separated for clarity - same as before)
         function generateDetailsHtml(orderData) {
             let productItemsHtml = '';
             try {
@@ -976,263 +1378,539 @@
                     const imageAlt = item.name || 'Product';
                     const itemName = item.name || 'Unknown Product';
                     const itemQuantity = item.quantity || 0;
-                    return `<div class="product-item">
-                                ${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" />` : '<div style="width: 40px; height: 40px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; flex-shrink: 0;"><i class="fas fa-image"></i></div>'}
-                                <div>
-                                    <span class="name">${itemName}</span>
-                                    <span class="details"> × ${itemQuantity}</span>
-                                </div>
-                            </div>`;
+                    return `
+                        <div class="product-item">
+                            ${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" />` : '<div style="width: 40px; height: 40px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; flex-shrink: 0;"><i class="fas fa-image"></i></div>'}
+                            <div>
+                                <span class="name">${itemName}</span>
+                                <span class="details"> × ${itemQuantity}</span>
+                            </div>
+                        </div>`;
                 }).join('');
-            } catch (error) { console.error(`Error processing line items for order ${orderData.id}:`, error); productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>'; }
-            console.log(orderData)
+            } catch (error) {
+                console.error(`Error processing line items for order ${orderData.id}:`, error);
+                productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>';
+            }
+
+            let feesHtml = '';
+            try {
+                const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
+                feesHtml = feeLines.map(fee => `<p><strong>${fee.name || 'Fee'}:</strong> ${parseFloat(fee.total || 0).toFixed(2)} ${orderData.currency || ''}</p>`).join('');
+                if (feeLines.length === 0) feesHtml = '<p>No additional fees.</p>';
+            } catch (error) {
+                console.error(`Error processing fee lines for order ${orderData.id}:`, error);
+                feesHtml = '<p style="color: var(--danger);">Error loading fees</p>';
+            }
+
+            let orderSummaryHtml = '';
+            try {
+                const total = parseFloat(orderData.total || 0);
+                const discountTotal = parseFloat(orderData.discount_total || 0);
+                const feeTotal = orderData.fee_lines?.reduce((sum, fee) => sum + parseFloat(fee.total || 0), 0) || 0;
+                const subtotal = (total + discountTotal - feeTotal).toFixed(2);
+                const coupons = Array.isArray(orderData.coupon_lines) && orderData.coupon_lines.length > 0 ? orderData.coupon_lines.map(c => c.code).join(', ') : null;
+
+                orderSummaryHtml = `
+                    <table class="order-summary-table">
+                        <tr><td>Subtotal</td><td>${subtotal} ${orderData.currency || ''}</td></tr>
+                        ${feesHtml !== '<p>No additional fees.</p>' ? feeLines.map(fee => `<tr><td>${fee.name || 'Fee'}</td><td>${parseFloat(fee.total || 0).toFixed(2)} ${orderData.currency || ''}</td></tr>`).join('') : ''}
+                        ${discountTotal > 0 ? `<tr><td>Discount${coupons ? ` (${coupons})` : ''}</td><td>-${discountTotal.toFixed(2)} ${orderData.currency || ''}</td></tr>` : ''}
+                        <tr><td>Total</td><td>${total.toFixed(2)} ${orderData.currency || ''}</td></tr>
+                    </table>`;
+            } catch (error) {
+                console.error(`Error processing order summary for order ${orderData.id}:`, error);
+                orderSummaryHtml = '<p style="color: var(--danger);">Error loading order summary</p>';
+            }
+
             const billingInfo = orderData.billing || {};
             const shippingInfo = orderData.shipping || {};
             const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
             const customerLocationLink = billingInfo.location || shippingInfo.location || '#';
-            const customerZoneName = billingInfo.zone_name || shippingInfo.zone_name || 'Unspecified';
+            const warehouseMeta = orderData.meta_data?.find(meta => meta.key === '_selected_warehouse');
+            const warehouseName = warehouseMeta ? warehouseMeta.value : 'Unspecified';
             const dateCreated = orderData.date_created ? new Date(orderData.date_created).toLocaleString() : 'N/A';
             const total = parseFloat(orderData.total || 0).toFixed(2);
             const currency = orderData.currency || '';
             const paymentMethod = orderData.payment_method_title || 'N/A';
             const email = billingInfo.email || 'N/A';
             const phone = billingInfo.phone || 'N/A';
-            const orderSelectTime = orderData.additional.order_time || 'No Selected Time';
-            const orderSelectDate = orderData.additional.order_date || 'No Selected Time';
+            const orderSelectTime = orderData.additional?.order_time || 'No Selected Time';
+            const orderSelectDate = orderData.additional?.order_date || 'No Selected Date';
+
             return `
-                <div class="section"><h4>Order Details</h4><p><strong>Date:</strong> ${dateCreated}</p><p><strong>Total:</strong> ${total} ${currency}</p><p><strong>Payment:</strong> ${paymentMethod}</p>
-                <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
-                <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
+                <div class="section">
+                    <h4>Order Details</h4>
+                    <p><strong>Date:</strong> ${dateCreated}</p>
+                    <p><strong>Payment:</strong> ${paymentMethod}</p>
+                    <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
+                    <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
                 </div>
-                <div class="section"><h4>Customer</h4><p><strong>Email:</strong> ${email}</p><p><strong>Phone:</strong> ${phone}</p></div>
-                <div class="section"><h4>Address</h4><p><strong>Address:</strong> ${customerAddress || 'N/A'}</p><p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p><p><strong>Zone:</strong> ${customerZoneName}</p></div>
-                <div class="section"><h4>Products (${(orderData.line_items || []).length})</h4>${productItemsHtml || '<p>No products</p>'}</div>
+                <div class="section">
+                    <h4>Customer</h4>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Phone:</strong> ${phone}</p>
+                </div>
+                <div class="section">
+                    <h4>Address</h4>
+                    <p><strong>Address:</strong> ${customerAddress || 'N/A'}</p>
+                    <p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p>
+                    <p><strong>Warehouse:</strong> ${warehouseName}</p>
+                </div>
+                <div class="section">
+                    <h4>Products (${(orderData.line_items || []).length})</h4>
+                    ${productItemsHtml || '<p>No products</p>'}
+                </div>
+                <div class="section">
+                    <h4>Fees</h4>
+                    ${feesHtml}
+                </div>
+                <div class="section">
+                    <h4>Order Summary</h4>
+                    ${orderSummaryHtml}
+                </div>
                 <div class="section action-buttons">
                     <button class="action-btn copy-address-btn"><i class="fas fa-map-marker-alt"></i> Copy Address</button>
                     <button class="action-btn copy-order-btn"><i class="fas fa-receipt"></i> Copy Order</button>
                     <button class="action-btn send-address-btn"><i class="fab fa-whatsapp"></i> Send Address</button>
                     <button class="action-btn send-order-btn"><i class="fab fa-whatsapp"></i> Send Order</button>
+                    <button class="action-btn send-invoice-btn"><i class="fab fa-whatsapp"></i> Send Invoice</button>
                     <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Status</button>
                     <button class="action-btn edit-products-btn"><i class="fas fa-edit"></i> Products</button>
                 </div>
             `;
         }
 
-        // Helper function to attach listeners to buttons within the details section (same as before)
         function attachDetailButtonListeners(detailsContainer, order) {
-            detailsContainer.querySelectorAll('.copy-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); copyAddress(order); }));
-            detailsContainer.querySelectorAll('.copy-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); copyOrder(order); }));
-            detailsContainer.querySelectorAll('.send-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'address'); }));
-            detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'order'); }));
-            detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status); }));
-            detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openProductsModal(order.id, order.line_items); }));
-            console.log(order.payment_method_title)
-        }
-        // --- END Restored displayOrdersForZone --- 
-        
-        function switchTab(sanitizedZone) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            const tabToActivate = document.querySelector(`.tab[data-zone="${sanitizedZone}"]`);
-            const contentToActivate = document.querySelector(`#tab-${sanitizedZone}`);
-            if (tabToActivate) tabToActivate.classList.add('active');
-            if (contentToActivate) contentToActivate.classList.add('active');
+            detailsContainer.querySelectorAll('.copy-address-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyAddress(order);
+            }));
+            detailsContainer.querySelectorAll('.copy-order-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyOrder(order);
+            }));
+            detailsContainer.querySelectorAll('.send-address-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sendToWhatsApp(order, 'address');
+            }));
+            detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sendToWhatsApp(order, 'order');
+            }));
+            detailsContainer.querySelectorAll('.send-invoice-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sendInvoiceToCustomer(order);
+            }));
+            detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openStatusModal(order.id, order.status);
+            }));
+            detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openProductsModal(order);
+            }));
         }
 
-        // --- Copy/Send/Status/Product Functions (Updated copyAddress) ---
-        function formatForCopySend(text) { return `*${text.trim()}*`; }
+        function copyAddress(order) {
+            const billingInfo = order.billing || {};
+            const shippingInfo = order.shipping || {};
+            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+            const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+            const customerLocationLink = billingInfo.location || shippingInfo.location || '';
+            const addressText = `**Customer Name:** ${customerName}\n**Address:** ${customerAddress}\n${customerLocationLink ? `**Location:** ${customerLocationLink}` : ''}`.trim();
+            navigator.clipboard.writeText(addressText).then(() => {
+                showNotification('Address copied to clipboard', 'success');
+            }).catch(err => {
+                console.error('Error copying address:', err);
+                showNotification('Failed to copy address', 'error');
+            });
+        }
 
-        // Refactored copyAddress function with clearer logic
-        function getPaymentInfoForCopy(order) {
-    const paymentMethodTitle = order.payment_method_title ;
-    const total = parseFloat(order.total || 0).toFixed(2);
-    const currency = order.currency || '';
-    const totalLine = `الاجمالي: ${total} ${currency}`;
-    
-    if (paymentMethodTitle === 'Visa / MasterCard ( On Delivery)') {
-        return { note: 'لا تنسي احضار ماكينة الدفع', totalLine: totalLine };
+        function copyOrder(order) {
+            const billingInfo = order.billing || {};
+            const shippingInfo = order.shipping || {};
+            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+            const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+            const customerPhone = billingInfo.phone || shippingInfo.phone || 'N/A';
+            const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
+            const total = parseFloat(order.total || 0).toFixed(2);
+            const currency = order.currency || '';
+            const orderText = `**Order #${order.id || 'N/A'}**\n**Customer:** ${customerName}\n**Phone:** ${customerPhone}\n**Address:** ${customerAddress}\n**Products:**\n${products}\n**Total:** ${total} ${currency}`;
+            navigator.clipboard.writeText(orderText).then(() => {
+                showNotification('Order details copied to clipboard', 'success');
+            }).catch(err => {
+                console.error('Error copying order:', err);
+                showNotification('Failed to copy order', 'error');
+            });
+        }
+
+        function generateInvoiceText(order) {
+            const billingInfo = order.billing || {};
+            const shippingInfo = order.shipping || {};
+            const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+            const orderNumber = order.id || 'N/A';
+            const selectedDate = order.additional?.order_date || 'No Selected Date';
+            const selectedTime = order.additional?.order_time || 'No Selected Time';
+            const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
+            const total = parseFloat(order.total || 0).toFixed(2);
+            const currency = order.currency || '';
+            const discountTotal = parseFloat(order.discount_total || 0);
+            const feeLines = Array.isArray(order.fee_lines) ? order.fee_lines : [];
+            const feeTotal = feeLines.reduce((sum, fee) => sum + parseFloat(fee.total || 0), 0) || 0;
+            const subtotal = (total + discountTotal - feeTotal).toFixed(2);
+            const coupons = Array.isArray(order.coupon_lines) && order.coupon_lines.length > 0 ? order.coupon_lines.map(c => c.code).join(', ') : null;
+
+            let feesText = '';
+            if (feeLines.length > 0) {
+                feesText = feeLines.map(fee => `${fee.name || 'Fee'}: ${parseFloat(fee.total || 0).toFixed(2)} ${currency}`).join('\n');
+            }
+
+            return `Invoice for ${customerName}\n\n` +
+                   `Order Number: ${orderNumber}\n\n` +
+                   `Selected Date: ${selectedDate}\n\n` +
+                   `Selected Time: ${selectedTime}\n\n` +
+                   `Products:\n${products}\n\n` +
+                   (feesText ? `Fees:\n${feesText}\n\n` : '') +
+                   `Subtotal: ${subtotal} ${currency}\n\n` +
+                   (discountTotal > 0 ? `Discount${coupons ? ` (${coupons})` : ''}: -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
+                   `Total: ${total} ${currency}`;
+        }
+
+        function sendInvoiceToCustomer(order) {
+            const billingInfo = order.billing || {};
+            const phone = billingInfo.phone || '';
+            const formattedPhone = formatPhoneNumber(phone);
+            if (!formattedPhone || !formattedPhone.startsWith(EGYPT_COUNTRY_CODE)) {
+                showNotification('Invalid or missing customer phone number.', 'error');
+                return;
+            }
+            const invoiceText = generateInvoiceText(order);
+            const encodedText = encodeURIComponent(invoiceText);
+            const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedText}`;
+            window.open(whatsappUrl, '_blank');
+            showNotification('Opening WhatsApp with invoice...', 'success');
+        }
+
+        function sendToWhatsApp(order, type) {
+            if (users.length === 0) {
+                showNotification('No delivery/prep users available. Please add users in Settings.', 'error');
+                return;
+            }
+            const options = users.map(user => `<option value="${user.phone}">${user.name} (${user.job || 'N/A'}, ${user.zone || 'N/A'})</option>`).join('');
+            Swal.fire({
+                title: `Send ${type === 'address' ? 'Address' : 'Order'} via WhatsApp`,
+                html: `
+                    <select id="swal-user-phone" class="swal2-select">
+                        <option value="" disabled selected>Select a user</option>
+                        ${options}
+                    </select>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Send',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: 'var(--whatsapp)',
+                cancelButtonColor: 'var(--danger)',
+                preConfirm: () => {
+                    const phone = document.getElementById('swal-user-phone').value;
+                    if (!phone) {
+                        Swal.showValidationMessage('Please select a user');
+                        return false;
+                    }
+                    return phone;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const phone = result.value;
+                    let text = '';
+                    if (type === 'address') {
+                        const billingInfo = order.billing || {};
+                        const shippingInfo = order.shipping || {};
+                        const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+                        const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+                        const customerLocationLink = billingInfo.location || shippingInfo.location || '';
+                        text = `**Customer Name:** ${customerName}\n**Address:** ${customerAddress}\n${customerLocationLink ? `**Location:** ${customerLocationLink}` : ''}`.trim();
+                    } else {
+                        const billingInfo = order.billing || {};
+                        const shippingInfo = order.shipping || {};
+                        const customerName = `${billingInfo.first_name || shippingInfo.first_name || ''} ${billingInfo.last_name || shippingInfo.last_name || ''}`.trim() || 'Unknown Customer';
+                        const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+                        const customerPhone = billingInfo.phone || shippingInfo.phone || 'N/A';
+                        const products = order.line_items?.map(item => `${item.name || 'Unknown Product'} x ${item.quantity || 0}`).join('\n') || 'No products';
+                        const total = parseFloat(order.total || 0).toFixed(2);
+                        const currency = order.currency || '';
+                        text = `**Order #${order.id || 'N/A'}**\n**Customer:** ${customerName}\n**Phone:** ${customerPhone}\n**Address:** ${customerAddress}\n**Products:**\n${products}\n**Total:** ${total} ${currency}`;
+                    }
+                    const encodedText = encodeURIComponent(text);
+                    const whatsappUrl = `https://wa.me/${phone}?text=${encodedText}`;
+                    window.open(whatsappUrl, '_blank');
+                    showNotification(`Sent ${type} to WhatsApp`, 'success');
+                }
+            });
+        }
+
+        async function openStatusModal(orderId, currentStatus) {
+            const statusOptions = [
+                { value: 'pending', label: 'Pending Payment' },
+                { value: 'processing', label: 'Processing' },
+                { value: 'on-hold', label: 'On Hold' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' },
+                { value: 'refunded', label: 'Refunded' },
+                { value: 'failed', label: 'Failed' }
+            ];
+            const options = statusOptions.map(opt =>
+    `<option value="${opt.value}" ${opt.value === currentStatus ? 'selected' : ''}>${opt.label}</option>`
+).join('');
+
+Swal.fire({
+    title: 'Update Order Status',
+    html: `
+        <select id="swal-status" class="swal2-select">
+            ${options}
+        </select>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Update',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: 'var(--success)',
+    cancelButtonColor: 'var(--danger)',
+    preConfirm: () => {
+        const status = document.getElementById('swal-status').value;
+        if (!status) {
+            Swal.showValidationMessage('Please select a status');
+            return false;
+        }
+        return status;
     }
-    if (paymentMethodTitle === 'Cash On Delivery') {
-        return { note: '', totalLine: totalLine };
+}).then(async (result) => {
+    if (result.isConfirmed) {
+        const newStatus = result.value;
+        await updateOrderStatus(orderId, newStatus);
     }
-    
-    // Default for other methods
-    return { note: '', totalLine: totalLine };
+});
 }
 
-        function copyAddress(order, forWhatsApp = false) {
-            const billing = order.billing || {}; 
-            const shipping = order.shipping || {};
-            const paymentInfo = getPaymentInfoForCopy(order);
-            const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
-            const orderSelectTime = order.additional.order_time || '' ;
-            const orderSelectDate = order.additional.order_date || '' ;
-
-            const addressText = `
-رقم الطلب: #${order.id || 'N/A'}
-
-العميل: ${billing.first_name || shipping.first_name || ''} ${billing.last_name || shipping.last_name || ''}
-
-رقم الهاتف: ${formattedPhone || 'N/A'}
-
-العنوان: ${billing.address_1 || shipping.address_1 || ''}, ${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}
-
-اللوكيشن: ${billing.location || shipping.location || 'Not Found'}
-
-يوم التوصيل : ${orderSelectDate}
-
-وقت التوصيل : ${orderSelectTime}
-
-${paymentInfo.note ? `\n${paymentInfo.note}` : ''}
-
-${paymentInfo.totalLine}
-            `.trim().replace(/\n{2,}/g, '\n');
-            
-            const formattedText = formatForCopySend(addressText);
-            
-            if (!forWhatsApp) {
-                navigator.clipboard.writeText(formattedText).then(() => {
-                    showNotification('Address copied (bold format)', 'success');
-                }).catch(err => {
-                    console.error('Failed to copy address: ', err);
-                    // Fallback to plain text if bold fails
-                    navigator.clipboard.writeText(addressText).then(() => {
-                        showNotification('Address copied (plain format)', 'success');
-                    }).catch(err2 => {
-                        console.error('Failed to copy plain address: ', err2);
-                        showNotification('Failed to copy address.', 'error');
-                    });
-                });
-            }
-            return formattedText;
-        }
-
-        function copyOrder(order, forWhatsApp = false) {
-            const billing = order.billing || {}; const shipping = order.shipping || {};
-            const formattedPhone = formatPhoneNumber(billing.phone || ''); // Format phone here
-            const orderSelectTime = order.additional.order_time || 'لم يتم التحديد' ;
-            const orderSelectDate = order.additional.order_date || '' ;
-            const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => `- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('\n') || '- No products';
-            const orderDetailsText = `
-رقم الطلب: #${order.id || 'N/A'}
-
-العميل: ${billing.first_name || shipping.first_name || ''}${billing.last_name || shipping.last_name || ''}
-
-رقم الهاتف: ${formattedPhone || 'N/A'}
-
-يوم التوصيل : ${orderSelectDate}
-
-وقت التوصيل : ${orderSelectTime}
-
-المنتجات:
-
-${productLines}
-
-            `.trim().replace(/\n{2,}/g, '\n');
-            const formattedText = formatForCopySend(orderDetailsText);
-            if (!forWhatsApp) { navigator.clipboard.writeText(formattedText).then(() => { showNotification('Order copied (bold format)', 'success'); }).catch(err => { console.error('Failed to copy order: ', err); navigator.clipboard.writeText(orderDetailsText).then(() => { showNotification('Order copied (plain format)', 'success'); }).catch(err2 => { console.error('Failed to copy plain order: ', err2); showNotification('Failed to copy order details.', 'error'); }); }); }
-            return formattedText;
-        }
-        function sendToWhatsApp(order, type) {
-            if (users.length === 0) { showNotification('No users available. Please add users in Settings.', 'warning'); return; }
-            const userOptions = users.map(user => `<option value="${user.id}">${user.name} (${user.job || 'N/A'})</option>`).join('');
-            Swal.fire({ title: `Send ${type === 'address' ? 'Address' : 'Order'} to WhatsApp`, html: `<select id="swal-user" class="swal2-select"><option value="">Select a user</option>${userOptions}</select>`, showCancelButton: true, confirmButtonText: 'Send', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', preConfirm: () => { const userId = document.getElementById('swal-user').value; if (!userId) { Swal.showValidationMessage('Please select a user'); return false; } return userId; } }).then(result => {
-                if (result.isConfirmed) {
-                    const user = users.find(u => u.id === result.value);
-                    if (!user || !user.phone || !user.phone.startsWith(EGYPT_COUNTRY_CODE)) { showNotification('Selected user does not have a valid Egypt phone number starting with +20.', 'error'); return; }
-                    const message = type === 'address' ? copyAddress(order, true) : copyOrder(order, true);
-                    const encodedMessage = encodeURIComponent(message); 
-                    const phoneNumber = user.phone.replace(/[^0-9+]/g, '');
-                    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-                    window.open(whatsappUrl, '_blank');
-                    showNotification(`${type === 'address' ? 'Address' : 'Order'} prepared for WhatsApp`, 'success');
-                }
-            });
-        }
-        function openStatusModal(orderId, currentStatus) {
-            Swal.fire({ title: `Update Status for Order #${orderId}`, html: `<select id="swal-status" class="swal2-select"><option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>Pending Payment</option><option value="processing" ${currentStatus === 'processing' ? 'selected' : ''}>Processing</option><option value="on-hold" ${currentStatus === 'on-hold' ? 'selected' : ''}>On Hold</option><option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>Completed</option><option value="cancelled" ${currentStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="refunded" ${currentStatus === 'refunded' ? 'selected' : ''}>Refunded</option><option value="failed" ${currentStatus === 'failed' ? 'selected' : ''}>Failed</option></select>`, showCancelButton: true, confirmButtonText: 'Save', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', preConfirm: () => document.getElementById('swal-status').value }).then(async (result) => { if (result.isConfirmed) { await updateStatus(orderId, result.value); } });
-        }
-        async function updateStatus(orderId, newStatus) {
-            showLoading();
-            try {
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, { method: 'PUT', headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`), 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
-                if (!response.ok) { const errorData = await response.json(); throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`); }
-                const orderIndex = currentOrders.findIndex(o => o.id === orderId);
-                if (orderIndex > -1) { currentOrders[orderIndex].status = newStatus; }
-                groupAndDisplayOrders(currentOrders);
-                showNotification('Status updated successfully', 'success');
-            } catch (error) { console.error('Error updating status:', error); showNotification(`Error updating status: ${error.message}`, 'error'); } finally { hideLoading(); }
-        }
-        async function fetchProductsCached() {
-            if (productsCache) return productsCache;
-            showLoading();
-            try {
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100&status=publish&stock_status=instock`, { headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`) } });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status} fetching products`);
-                productsCache = await response.json(); 
-                console.log('Products fetched and cached:', productsCache.length);
-                return productsCache;
-            } catch (error) { console.error('Error fetching products:', error); showNotification('Error fetching products list', 'error'); return []; } finally { hideLoading(); }
-        }
-        async function openProductsModal(orderId, lineItems) {
-            let currentProducts = JSON.parse(JSON.stringify(lineItems || [])); 
-            let allStoreProducts = await fetchProductsCached();
-            if (!allStoreProducts || allStoreProducts.length === 0) { showNotification('Retrying product list fetch...', 'info'); allStoreProducts = await fetchProductsCached(); if (!allStoreProducts || allStoreProducts.length === 0) { showNotification('Could not load product list after retry.', 'error'); return; } }
-            function generateProductFields(item, index) { const productDetail = allStoreProducts.find(p => p.id === item.product_id) || {}; const imageSrc = item.image?.src || productDetail.images?.[0]?.src || ''; const imageAlt = item.name || productDetail.name || 'Product'; return `<div class="product-item modal-product-item" data-index="${index}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #eee;">${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" loading="lazy" />` : '<div style="width: 50px; height: 50px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #aaa; flex-shrink: 0;"><i class="fas fa-image"></i></div>'}<div style="flex: 1;"><strong>${item.name || 'Unknown Product'}</strong> (ID: ${item.product_id || item.id})<div><label>Quantity:</label><input type="number" value="${item.quantity || 0}" id="quantity-${index}" min="0" style="width: 70px; margin-left: 8px; padding: 6px; border: 1px solid #ccc; border-radius: 6px;"></div></div><button class="remove-product-btn" data-index="${index}" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;" title="Remove Product"><i class="fas fa-trash"></i></button></div>`; }
-            const generateProductList = () => currentProducts.map((item, index) => generateProductFields(item, index)).join('') || '<p style="text-align: center; color: grey;">No products.</p>';
-            function updateProductListUI(formElement) { formElement.innerHTML = generateProductList(); }
-            async function addProduct() {
-                if (!allStoreProducts || allStoreProducts.length === 0) { showNotification('Product list not available. Cannot add product.', 'error'); return; }
-                const productOptions = allStoreProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(product => `<option value="${product.id}">${product.name || 'Unknown Product'} (ID: ${product.id})</option>`).join('');
-                Swal.fire({ title: 'Add Product', html: `<select id="swal-product-id" class="swal2-select" style="width: 100%; margin-bottom: 10px;"><option value="">Select product</option>${productOptions}</select><input type="number" id="swal-quantity" placeholder="Quantity" min="1" value="1" class="swal2-input" style="width: 100%;">`, showCancelButton: true, confirmButtonText: 'Add', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', didOpen: () => { document.getElementById('swal-product-id').focus(); }, preConfirm: () => { const productId = document.getElementById('swal-product-id').value; const quantity = parseInt(document.getElementById('swal-quantity').value) || 1; if (!productId) { Swal.showValidationMessage('Select product'); return false; } if (quantity <= 0) { Swal.showValidationMessage('Quantity >= 1'); return false; } const selectedProduct = allStoreProducts.find(p => p.id == productId); if (!selectedProduct) { Swal.showValidationMessage('Product not found'); return false; } const existingProductIndex = currentProducts.findIndex(p => p.product_id == productId); if (existingProductIndex > -1) { currentProducts[existingProductIndex].quantity += quantity; return { updatedExisting: true }; } else { return { product_id: selectedProduct.id, name: selectedProduct.name || 'Unknown Product', quantity: quantity, price: selectedProduct.price || 0, image: selectedProduct.images?.[0] || null }; } } }).then(result => { if (result.isConfirmed) { if (result.value && !result.value.updatedExisting) { currentProducts.push(result.value); } const form = document.getElementById('edit-products-form'); if (form) { updateProductListUI(form); } } });
-            }
-            const { value: finalProductsToSave } = await Swal.fire({ title: `Edit Products for Order #${orderId}`, html: `<div id="edit-products-form" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; margin-bottom: 15px; padding: 10px; text-align: left;">${generateProductList()}</div><button id="add-product-btn-swal" type="button" style="background: var(--success); color: #fff; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer;"><i class="fas fa-plus"></i> Add Product</button>`, showCancelButton: true, confirmButtonText: 'Save Changes', cancelButtonText: 'Cancel', confirmButtonColor: 'var(--success)', cancelButtonColor: 'var(--danger)', width: '80%', didOpen: () => { const form = Swal.getPopup().querySelector('#edit-products-form'); const addButton = Swal.getPopup().querySelector('#add-product-btn-swal'); form.addEventListener('click', (e) => { const removeButton = e.target.closest('.remove-product-btn'); if (removeButton) { const index = parseInt(removeButton.getAttribute('data-index')); if (!isNaN(index) && index >= 0 && index < currentProducts.length) { currentProducts.splice(index, 1); updateProductListUI(form); } } }); addButton.addEventListener('click', addProduct); }, preConfirm: () => { const updatedProducts = currentProducts.map((item, index) => { const quantityInput = Swal.getPopup().querySelector(`#quantity-${index}`); const newQuantity = quantityInput ? (parseInt(quantityInput.value) || 0) : item.quantity; const productId = item.product_id || item.id; return { ...item, product_id: productId, quantity: newQuantity }; }); return updatedProducts.filter(item => item.quantity > 0); } });
-            if (finalProductsToSave) { await saveProducts(orderId, finalProductsToSave); }
-        }
-        async function saveProducts(orderId, productsToSave) {
-            showLoading();
-            try {
-                const updatedLineItems = productsToSave.map(item => ({ id: item.id || 0, product_id: item.product_id, quantity: item.quantity }));
-                console.log('Saving line items:', updatedLineItems);
-                const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, { method: 'PUT', headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`), 'Content-Type': 'application/json' }, body: JSON.stringify({ line_items: updatedLineItems }) });
-                if (!response.ok) { const errorData = await response.json(); console.error('API Error Data:', errorData); throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Failed to update line items'}`); }
-                const orderIndex = currentOrders.findIndex(o => o.id === orderId);
-                if (orderIndex > -1) { 
-                    const updatedOrderResponse = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, { headers: { 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`) } });
-                    if (updatedOrderResponse.ok) { currentOrders[orderIndex] = await updatedOrderResponse.json(); } else { currentOrders[orderIndex].line_items = productsToSave.map(savedItem => { const originalItem = lineItems.find(li => li.product_id === savedItem.product_id); return {...originalItem, ...savedItem }; }); }
-                }
-                groupAndDisplayOrders(currentOrders);
-                showNotification('Order products updated successfully', 'success');
-            } catch (error) { console.error('Error saving products:', error); showNotification(`Error saving products: ${error.message}`, 'error'); } finally { hideLoading(); }
-        }
-        // --- End Copy/Send/Status/Product Functions ---
-
-        // --- Initialization --- 
-        document.addEventListener('DOMContentLoaded', () => {
-            const customerFilterInput = document.getElementById('customer-filter');
-            if (customerFilterInput) customerFilterInput.addEventListener('input', debounce(() => { localStorage.setItem('customer-filter', customerFilterInput.value); debouncedSaveSettingsAndFetch(); }, 800));
-            const saveSettingsButton = document.getElementById('save-settings-btn');
-            if (saveSettingsButton) { saveSettingsButton.addEventListener('click', () => { saveSettingsAndFetch(); toggleSettings(); showNotification('Filters & Settings applied', 'success'); }); }
-            const clearFiltersButton = document.getElementById('clear-filters-btn');
-            if (clearFiltersButton) clearFiltersButton.addEventListener('click', clearFiltersAndFetch);
-            const addUserButton = document.getElementById('add-user-btn');
-            if (addUserButton) addUserButton.addEventListener('click', addUser);
-            const statusCheckboxes = document.querySelectorAll('input[name="status-filter"]');
-            statusCheckboxes.forEach(checkbox => checkbox.addEventListener('change', debouncedSaveSettingsAndFetch));
-            ['date-from', 'date-to', 'per-page', 'sort-by'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.addEventListener('change', debouncedSaveSettingsAndFetch);
-            });
-            initialize();
+async function updateOrderStatus(orderId, newStatus) {
+    showLoading();
+    try {
+        const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
         });
-
-        async function initialize() {
-            showLoading();
-            loadSettings();
-            loadUsers();
-            await fetchOrders(localStorage.getItem('active-status-filter'));
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update status');
         }
+        const updatedOrder = await response.json();
+        console.log('Order status updated:', updatedOrder);
+        showNotification('Order status updated successfully', 'success');
+        fetchOrders();
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        showNotification(`Failed to update status: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
 
-    </script>
-</body>
+async function fetchProducts() {
+    if (productsCache) return productsCache;
+    showLoading();
+    try {
+        const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100`, {
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+            }
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch products');
+        }
+        productsCache = await response.json();
+        console.log('Products fetched:', productsCache.length);
+        return productsCache;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        showNotification(`Failed to fetch products: ${error.message}`, 'error');
+        return [];
+    } finally {
+        hideLoading();
+    }
+}
+
+async function openProductsModal(order) {
+    const products = await fetchProducts();
+    if (!products || products.length === 0) {
+        showNotification('No products available to edit.', 'error');
+        return;
+    }
+    const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
+    const itemsHtml = lineItems.map(item => {
+        const product = products.find(p => p.id === item.product_id) || {};
+        return `
+        <div class="product-item" data-item-id="${item.id}">
+            <input type="text" value="${item.name || ''}" disabled style="width: 60%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
+            <input type="number" class="item-quantity" value="${item.quantity || 0}" min="0" style="width: 20%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
+            <button class="action-btn remove-item-btn" style="background: var(--danger); color: #fff; padding: 8px;"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
+    }).join('');
+    const productsOptions = products.map(p => `<option value="${p.id}">${p.name || 'Unknown Product'}</option>`).join('');
+    
+    Swal.fire({
+        title: 'Edit Order Products',
+        html: `
+        <div id="products-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+            ${itemsHtml || '<p>No products in this order.</p>'}
+        </div>
+        <div style="margin-top: 15px;">
+            <select id="swal-add-product" class="swal2-select" style="width: 70%;">
+                <option value="" disabled selected>Add a product</option>
+                ${productsOptions}
+            </select>
+            <button id="swal-add-product-btn" class="action-btn" style="background: var(--success); color: #fff; margin-left: 10px;">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+    `,
+        showCancelButton: true,
+        confirmButtonText: 'Save Changes',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'var(--success)',
+        cancelButtonColor: 'var(--danger)',
+        width: '600px',
+        didOpen: () => {
+            const addBtn = document.getElementById('swal-add-product-btn');
+            addBtn.addEventListener('click', () => {
+                const select = document.getElementById('swal-add-product');
+                const productId = select.value;
+                if (!productId) {
+                    Swal.showValidationMessage('Please select a product to add');
+                    return;
+                }
+                const product = products.find(p => p.id == productId);
+                if (!product) return;
+                const productsList = document.getElementById('products-list');
+                const newItem = document.createElement('div');
+                newItem.classList.add('product-item');
+                newItem.dataset.itemId = `new-${Date.now()}`;
+                newItem.innerHTML = `
+                <input type="text" value="${product.name || ''}" disabled style="width: 60%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
+                <input type="number" class="item-quantity" value="1" min="0" style="width: 20%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
+                <button class="action-btn remove-item-btn" style="background: var(--danger); color: #fff; padding: 8px;"><i class="fas fa-trash"></i></button>
+            `;
+                productsList.appendChild(newItem);
+                newItem.querySelector('.remove-item-btn').addEventListener('click', () => newItem.remove());
+                select.value = '';
+            });
+            document.querySelectorAll('.remove-item-btn').forEach(btn => {
+                btn.addEventListener('click', () => btn.closest('.product-item').remove());
+            });
+        },
+        preConfirm: () => {
+            const items = [];
+            document.querySelectorAll('.product-item').forEach(item => {
+                const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
+                const itemId = item.dataset.itemId;
+                if (quantity > 0) {
+                    if (itemId.startsWith('new-')) {
+                        const productName = item.querySelector('input[type="text"]').value;
+                        const product = products.find(p => p.name === productName);
+                        if (product) {
+                            items.push({ product_id: product.id, quantity });
+                        }
+                    } else {
+                        items.push({ id: parseInt(itemId), quantity });
+                    }
+                }
+            });
+            return items;
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const updatedItems = result.value;
+            await updateOrderProducts(order.id, updatedItems);
+        }
+    });
+}
+
+async function updateOrderProducts(orderId, updatedItems) {
+    showLoading();
+    try {
+        const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                line_items: updatedItems.map(item => ({
+                    id: item.id || undefined,
+                    product_id: item.product_id || undefined,
+                    quantity: item.quantity
+                }))
+            })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update products');
+        }
+        const updatedOrder = await response.json();
+        console.log('Order products updated:', updatedOrder);
+        showNotification('Order products updated successfully', 'success');
+        productsCache = null; // Clear cache to refresh products
+        fetchOrders();
+    } catch (error) {
+        console.error('Error updating order products:', error);
+        showNotification(`Failed to update products: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Navbar Navigation
+function initializeNavbar() {
+    const navbarItems = document.querySelectorAll('.navbar li');
+    navbarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const page = item.dataset.page;
+            if (page) {
+                navbarItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                if (page === 'orders') {
+                    document.getElementById('orders-content').style.display = 'block';
+                    fetchOrders(); // Refresh orders when navigating back
+                } else {
+                    window.location.href = page; // Navigate to products.html or other pages
+                }
+            }
+        });
+    });
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers();
+    loadSettings();
+    fetchOrders();
+    initializeNavbar();
+    document.getElementById('save-settings-btn').addEventListener('click', saveSettingsAndFetch);
+    document.getElementById('clear-filters-btn').addEventListener('click', clearFiltersAndFetch);
+    document.getElementById('add-user-btn').addEventListener('click', addUser);
+    document.getElementById('customer-filter').addEventListener('input', debouncedSaveSettingsAndFetch);
+    document.getElementById('per-page').addEventListener('input', debouncedSaveSettingsAndFetch);
+    document.getElementById('sort-by').addEventListener('change', debouncedSaveSettingsAndFetch);
+    document.getElementById('date-from').addEventListener('change', debouncedSaveSettingsAndFetch);
+    document.getElementById('date-to').addEventListener('change', debouncedSaveSettingsAndFetch);
+    document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
+        checkbox.addEventListener('change', debouncedSaveSettingsAndFetch);
+    });
+});
+
+</script> 
+</body> 
 </html>
