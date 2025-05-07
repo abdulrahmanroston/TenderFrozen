@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point of Sale (POS)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --danger: #c62828;
+            --warning: #f57c00;
+            --success: #2e7d32;
+            --background: #f4f7fa;
+            --card-bg: #ffffff;
+            --border: #e0e4e8;
+            --text: #333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --hover-bg: #f0f2f5;
+            --accent: #e8f0fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            padding: 15px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: clamp(1.8rem, 5vw, 2rem);
+            font-weight: 700;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+        }
+        
+        .products-section  {
+            min-height: 80vh;
+        }
+
+        .warehouse-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .warehouse-btn {
+            min-width: 100px;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+        }
+
+        .warehouse-btn.active {
+            background: var(--primary);
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+
+        .warehouse-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text);
+            transform: scale(1.03);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-bar {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-bar i {
+            color: var(--primary);
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: box-shadow 0.3s;
+        }
+
+        .search-bar input:focus {
+            box-shadow: 0 0 0 2px var(--primary);
+            outline: none;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+        }
+
+        .category-tab {
+            padding: 10px 20px;
+            background: var(--hover-bg);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s, transform 0.2s;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .category-tab.active {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .category-tab:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            min-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+            scrollbar-width: thin;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border);
+            max-height: 210px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .product-card h3 {
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .product-card .stock {
+            font-size: 0.85rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .order-details {
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .order-table th, .order-table td {
+            padding: 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .order-table th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .order-table td {
+            background: #fff;
+        }
+
+        .order-table .remove-btn {
+            color: var(--danger);
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        .order-table .remove-btn:hover {
+            color: #b71c1c;
+            transform: scale(1.2);
+        }
+
+        .customer-search {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .customer-search i {
+            color: var(--primary);
+        }
+
+        .customer-search input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .customer-search input:focus {
+            outline: none;
+        }
+
+        .customer-orders {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f9f9f9;
+            scrollbar-width: thin;
+        }
+
+        .customer-orders .no-matching-orders {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .customer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .customer-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-item .customer-info {
+            flex: 1;
+        }
+
+        .customer-item .customer-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .customer-item .customer-info .name {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .customer-item .customer-info .email,
+        .customer-item .customer-info .phone,
+        .customer-item .customer-info .order-info {
+            color: #555;
+        }
+
+        .reorder-btn {
+            width: 100px;
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .reorder-btn:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+        }
+
+        .load-more-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            margin: 10px auto;
+            width: 200px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .load-more-btn:hover {
+            background: #1557b0;
+            transform: scale(1.02);
+        }
+
+        .customer-data {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin: 15px 0;
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group > * {
+            width: 100%;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+            outline: none;
+        }
+
+        .form-group .required::after {
+            content: '*';
+            color: var(--danger);
+            margin-left: 5px;
+        }
+
+        .payment-methods {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .payment-methods label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .fee-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .fee-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .fee-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .fee-item .remove-fee {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        .fee-item .remove-fee:hover {
+            color: #b71c1c;
+            transform: scale(1.2);
+        }
+
+        .add-fee-btn {
+            margin: 15px auto;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .add-fee-btn:hover {
+            background: #1557b0;
+            transform: scale(1.02);
+        }
+
+        .coupon-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--hover-bg);
+            border-radius: 8px;
+        }
+
+        .coupon-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .coupon-item {
+            padding: 8px 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .coupon-item:hover {
+            background: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .coupon-item.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #1557b0;
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .clear-btn {
+            background: var(--warning);
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            background: #e65100;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            margin-top: 10px;
+        }
+
+        .whatsapp-btn:hover {
+            background: #1DA851;
+        }
+
+        .summary {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--hover-bg);
+            border-radius: 8px;
+        }
+
+        .summary p {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .summary p strong {
+            color: var(--text);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .swal2-toast {
+            font-size: 0.9rem;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-height: 400px;
+            }
+
+            .form-group {
+                width: 48%;
+            }
+
+            .warehouse-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .warehouse-btn {
+                width: 48%;
+            }
+
+            .order-table th, .order-table td {
+                font-size: 0.85rem;
+                padding: 8px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .product-card img {
+                height: 80px;
+            }
+
+            .product-card h3 {
+                font-size: 0.85rem;
+            }
+
+            .product-card .stock {
+                font-size: 0.8rem;
+            }
+
+            .customer-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .reorder-btn {
+                width: 80px;
+                text-align: center;
+            }
+
+            button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+
+            .form-group input, .form-group select, .form-group textarea {
+                font-size: 0.9rem;
+            }
+
+            .warehouse-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section products-section">
+            <h1><i class="fas fa-cash-register"></i> Master POS</h1>
+            <div class="warehouse-buttons" id="warehouse-buttons">
+                <button class="warehouse-btn" data-warehouse="oraby"><i class="fas fa-warehouse"></i> Oraby</button>
+                <button class="warehouse-btn" data-warehouse="tagamo3"><i class="fas fa-warehouse"></i> Tagamo3</button>
+                <button class="warehouse-btn" data-warehouse="giza"><i class="fas fa-warehouse"></i> Giza</button>
+                <button class="warehouse-btn" data-warehouse="lavista"><i class="fas fa-warehouse"></i> Lavista</button>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Search products..." oninput="filterProducts()">
+            </div>
+            <div class="category-tabs" id="category-tabs">
+                <div class="category-tab active" data-category="all">All</div>
+            </div>
+            <div id="loader" class="loader"></div>
+            <div class="product-grid" id="product-grid"></div>
+        </div>
+        <div class="section">
+            <h2><i class="fas fa-shopping-cart"></i> Cart</h2>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="order-items"></tbody>
+            </table>
+        </div>
+        <div class="section order-details">
+            <h2><i class="fas fa-user"></i> Customer & Order Details</h2>
+            <div class="customer-search">
+                <i class="fas fa-user"></i>
+                <input type="text" id="customer-search" placeholder="Search by name, email, or phone..." oninput="debounce(searchCustomer, 500)()">
+            </div>
+            <div class="customer-orders" id="customer-orders"></div>
+            <div class="coupon-section" id="coupon-section" style="display: none;">
+                <h3><i class="fas fa-ticket-alt"></i> Available Coupons</h3>
+                <div class="coupon-list" id="coupon-list"></div>
+            </div>
+            <div class="customer-data">
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-user"></i> Customer Name</label>
+                    <input type="text" id="customer_name" placeholder="Enter customer name" required>
+                </div>
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="email" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-phone"></i> Phone</label>
+                    <input type="text" id="phone" placeholder="Enter phone" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone-alt"></i> Location Phone</label>
+                    <input type="text" id="location_phone" placeholder="Enter location phone">
+                </div>
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-map-marker-alt"></i> Address</label>
+                    <input type="text" id="address_1" placeholder="Enter address" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map"></i> Location (Map URL)</label>
+                    <input type="url" id="location" placeholder="Enter map URL">
+                </div>
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-globe"></i> Zone</label>
+                    <input type="text" id="zone_name" placeholder="Enter zone" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Delivery Date</label>
+                    <input type="date" id="order_date">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Delivery Time</label>
+                    <select  id="order_time">
+                        <option value="12:00PM To 2:00PM">12:00PM - 2:00PM</option>
+                        <option value="2:00PM To 4:00PM">2:00PM - 4:00PM</option>
+                        <option value="4:00PM To 6:00PM">4:00PM - 6:00PM</option>
+                        <option value="6:00PM To 8:00PM">6:00PM - 8:00PM</option>
+                        <option value="8:00PM To 10:00PM">8:00PM - 10:00PM</option>
+                        <option value="10:00PM To 12:00AM">10:00PM - 12:00AM</option>
+                    </select>
+                </div>
+                   <div class="form-group">
+                    <label><i class="fas fa-sticky-note"></i> Notes</label>
+                    <textarea id="order_note" placeholder="Enter any additional notes"></textarea>
+                </div>
+             <div class="form-group">
+                <label><i class="fas fa-truck"></i> Delivery Fee</label>
+                <input required type="number" id="delivery_fee" value="80" step="0.01">
+            </div>
+                <div class="form-group">
+                    <label><i class="fas fa-money-check"></i> Payment Method</label>
+                    <div class="payment-methods" id="payment-methods"></div>
+                </div>
+             
+            </div>
+            <div class="fee-group" id="fee-group"></div>
+            <div class="add-fee-btn" onclick="addFeeField()"><i class="fas fa-plus"></i> Add Fee</div>
+            <div class="summary">
+                <p><strong>Subtotal:</strong> <span id="order-subtotal">0.00</span></p>
+                <div id="fee-summary"></div>
+                <p><strong>Discount:</strong> <span id="order-discount">0.00</span></p>
+                <p><strong>Total:</strong> <span id="order-total">0.00</span></p>
+            </div>
+            <button onclick="createOrder()"><i class="fas fa-check"></i> Create Order</button>
+            <button class="clear-btn" onclick="clearOrder()"><i class="fas fa-trash-alt"></i> Clear Order</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.getElementById('order_time').selectedIndex = -1;
+        const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
+        const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+        const storeUrl = 'https://tenderfrozen.com';
+        const apiUrl = `${storeUrl}/wp-json/wc/v3`;
+
+        let products = [];
+        let filteredProducts = [];
+        let categories = [];
+        let orderItems = [];
+        let selectedCustomer = null;
+        let lastOrder = null;
+        let selectedWarehouse = '';
+        let additionalFees = [];
+        let coupons = [];
+        let selectedCoupon = null;
+        let paymentMethods = [];
+        let currentCustomerPage = 1;
+        let totalCustomerPages = 1;
+
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'block' : 'none';
+            document.querySelectorAll('button').forEach(btn => btn.disabled = show);
+        }
+
+        function getMetaValue(metaData, key) {
+            const meta = metaData?.find(m => m.key === key);
+            return meta ? meta.value || '' : '';
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function getProductPrice(product, warehouse) {
+            const warehousePrice = parseFloat(getMetaValue(product.meta_data, `_price_${warehouse}`)) || 0;
+            return warehousePrice > 0 ? warehousePrice : parseFloat(product.regular_price) || 0;
+        }
+
+        function updateOrderSummary() {
+            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+            let discount = 0;
+            if (selectedCoupon) {
+                if (selectedCoupon.discount_type === 'fixed_cart') {
+                    discount = parseFloat(selectedCoupon.amount) || 0;
+                } else if (selectedCoupon.discount_type === 'percent') {
+                    discount = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
+                }
+            }
+
+            document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('order-discount').textContent = discount.toFixed(2);
+            document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - discount).toFixed(2);
+
+            const feeSummary = document.getElementById('fee-summary');
+            feeSummary.innerHTML = '';
+            if (deliveryFee > 0) {
+                feeSummary.innerHTML += `<p><strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}</p>`;
+            }
+            additionalFees.forEach(fee => {
+                if (fee.amount > 0) {
+                    feeSummary.innerHTML += `<p><strong>${fee.name}:</strong> ${parseFloat(fee.amount).toFixed(2)}</p>`;
+                }
+            });
+        }
+
+        function addFeeField() {
+            const feeGroup = document.getElementById('fee-group');
+            const feeId = Date.now();
+            const feeItem = document.createElement('div');
+            feeItem.className = 'fee-item';
+            feeItem.innerHTML = `
+                <input type="text" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${feeId}, 'name', this.value)">
+                <input type="number" placeholder="Amount" step="0.01" oninput="updateFee(${feeId}, 'amount', this.value)">
+                <i class="fas fa-trash remove-fee" onclick="removeFee(${feeId})"></i>
+            `;
+            feeGroup.appendChild(feeItem);
+            additionalFees.push({ id: feeId, name: '', amount: 0 });
+            updateOrderSummary();
+        }
+
+        function updateFee(id, field, value) {
+            const fee = additionalFees.find(f => f.id === id);
+            if (fee) {
+                fee[field] = value;
+                updateOrderSummary();
+            }
+        }
+
+        function removeFee(id) {
+            additionalFees = additionalFees.filter(f => f.id !== id);
+            const feeGroup = document.getElementById('fee-group');
+            feeGroup.innerHTML = '';
+            additionalFees.forEach(fee => {
+                const feeItem = document.createElement('div');
+                feeItem.className = 'fee-item';
+                feeItem.innerHTML = `
+                    <input type="text" value="${fee.name}" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${fee.id}, 'name', this.value)">
+                    <input type="number" value="${fee.amount}" placeholder="Amount" step="0.01" oninput="updateFee(${fee.id}, 'amount', this.value)">
+                    <i class="fas fa-trash remove-fee" onclick="removeFee(${fee.id})"></i>
+                `;
+                feeGroup.appendChild(feeItem);
+            });
+            updateOrderSummary();
+        }
+
+        async function fetchPaymentMethods() {
+            try {
+                const response = await fetch(`${apiUrl}/payment_gateways`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) throw new Error('Failed to load payment methods');
+                const methods = await response.json();
+                paymentMethods = methods.filter(method => method.enabled);
+                renderPaymentMethods();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+
+        function renderPaymentMethods() {
+            const paymentMethodsContainer = document.getElementById('payment-methods');
+            paymentMethodsContainer.innerHTML = '';
+            paymentMethods.forEach(method => {
+                const label = document.createElement('label');
+                label.innerHTML = `
+                    <input type="checkbox" name="payment_method" value="${method.id}" onchange="updatePaymentMethod(this)">
+                    ${method.title}
+                `;
+                paymentMethodsContainer.appendChild(label);
+            });
+        }
+
+        function updatePaymentMethod(checkbox) {
+            document.querySelectorAll('input[name="payment_method"]').forEach(cb => {
+                if (cb !== checkbox) cb.checked = false;
+            });
+        }
+
+        async function fetchCoupons() {
+            try {
+                const response = await fetch(`${apiUrl}/coupons?per_page=100`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) throw new Error('Failed to load coupons');
+                const allCoupons = await response.json();
+                const currentDate = new Date();
+                coupons = allCoupons.filter(coupon => {
+                    const expiryDate = coupon.date_expires ? new Date(coupon.date_expires) : null;
+                    const isNotExpired = !expiryDate || expiryDate >= currentDate;
+                    const isNotMaxUsed = coupon.maximum_uses === 0 || coupon.usage_count < coupon.maximum_uses;
+                    return isNotExpired && isNotMaxUsed;
+                });
+                renderCoupons();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+
+        function renderCoupons() {
+            const couponSection = document.getElementById('coupon-section');
+            const couponList = document.getElementById('coupon-list');
+            couponList.innerHTML = '';
+            if (coupons.length === 0) {
+                couponSection.style.display = 'none';
+                return;
+            }
+            couponSection.style.display = 'block';
+            coupons.forEach(coupon => {
+                const item = document.createElement('div');
+                item.className = `coupon-item ${selectedCoupon?.id === coupon.id ? 'active' : ''}`;
+                item.textContent = `${coupon.code} (${coupon.discount_type === 'percent' ? `${coupon.amount}%` : `EGP ${coupon.amount}`})`;
+                item.onclick = () => {
+                    selectedCoupon = coupon;
+                    document.querySelectorAll('.coupon-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Coupon Applied',
+                        text: `Coupon ${coupon.code} applied.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    updateOrderSummary();
+                };
+                couponList.appendChild(item);
+            });
+        }
+
+        async function fetchProducts(warehouse) {
+            if (!warehouse) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select a warehouse.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            selectedWarehouse = warehouse;
+            document.querySelectorAll('.warehouse-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.warehouse === warehouse);
+            });
+            showLoader(true);
+            try {
+                const response = await fetch(`${apiUrl}/products?per_page=100`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) throw new Error('Failed to load products');
+                products = await response.json();
+                orderItems = orderItems.filter(item => {
+                    const product = products.find(p => p.id === item.product_id);
+                    if (!product) return false;
+                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0;
+                    return stock >= item.quantity;
+                });
+                orderItems.forEach(item => {
+                    const product = products.find(p => p.id === item.product_id);
+                    if (product) {
+                        item.price = getProductPrice(product, warehouse);
+                    }
+                });
+                localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+                categories = [];
+                products.forEach(p => {
+                    const secondCategory = p.categories?.[1];
+                    const secondCategoryId = secondCategory?.id || 'other';
+                    const categoryName = secondCategory?.name || 'Other';
+                    if (!categories.find(c => c.id === secondCategoryId)) {
+                        categories.push({ id: secondCategoryId, name: categoryName });
+                    }
+                });
+                filteredProducts = products.filter(p => {
+                    const stock = getMetaValue(p.meta_data, `_stock_${warehouse}`);
+                    return stock && parseInt(stock) > 0;
+                });
+                if (filteredProducts.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Info',
+                        text: 'No products available in this warehouse.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+                renderCategoryTabs();
+                filterProducts();
+                fetchCoupons();
+                fetchPaymentMethods();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function renderCategoryTabs() {
+    const categoryTabs = document.getElementById('category-tabs');
+    categoryTabs.innerHTML = '<div class="category-tab active" data-category="all">All</div>';
+    
+
+    const allTab = categoryTabs.firstChild;
+    
+    categories.forEach(category => {
+        const tab = document.createElement('div');
+        tab.className = 'category-tab';
+        tab.dataset.category = category.id;
+        tab.textContent = category.name;
+        tab.onclick = () => {
+            document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            filterProducts();
+        };
+        categoryTabs.appendChild(tab);
+    });
+    
+
+    allTab.onclick = () => {
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        allTab.classList.add('active');
+        filterProducts();
+    };
+}
+        function filterProducts() {
+            const searchTerm = document.getElementById('product-search').value.toLowerCase();
+            const selectedCategory = document.querySelector('.category-tab.active').dataset.category;
+
+            filteredProducts = products.filter(p => {
+                const stock = getMetaValue(p.meta_data, `_stock_${selectedWarehouse}`);
+                return stock && parseInt(stock) > 0;
+            });
+
+            if (selectedCategory !== 'all') {
+                filteredProducts = filteredProducts.filter(p => {
+                    const secondCategoryId = p.categories?.[1]?.id?.toString() || 'other';
+                    return secondCategoryId === selectedCategory;
+                });
+            }
+
+            if (searchTerm) {
+                filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
+            }
+
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const productGrid = document.getElementById('product-grid');
+            productGrid.innerHTML = '';
+            if (filteredProducts.length === 0) {
+                productGrid.innerHTML = '<p>No products available.</p>';
+                return;
+            }
+            filteredProducts.forEach(product => {
+                const stock = getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`);
+                const price = getProductPrice(product, selectedWarehouse);
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.images?.[0]?.src || 'https://via.placeholder.com/150'}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p class="stock">${stock} In Stock</p>
+                    <p>EGP ${price.toFixed(2)}</p>
+                `;
+                card.onclick = () => addToOrder(product, price, stock);
+                productGrid.appendChild(card);
+            });
+        }
+
+        function addToOrder(product, price, stock) {
+            const availableStock = parseInt(stock);
+            if (availableStock <= 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Out of Stock',
+                    text: `${product.name} is out of stock.`,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            const existingItem = orderItems.find(item => item.product_id === product.id);
+            const cartQuantity = existingItem ? existingItem.quantity : 0;
+            if (cartQuantity >= availableStock) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Insufficient Stock',
+                    text: `Only ${availableStock} units available for ${product.name}.`,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            let newQuantity;
+            if (existingItem) {
+                existingItem.quantity += 1;
+                existingItem.price = price;
+                newQuantity = existingItem.quantity;
+            } else {
+                orderItems.push({
+                    product_id: product.id,
+                    name: product.name,
+                    quantity: 1,
+                    price: price,
+                    warehouse: selectedWarehouse
+                });
+                newQuantity = 1;
+            }
+            localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+            renderOrderItems();
+            filterProducts();
+            Swal.fire({
+                icon: 'success',
+                title: `${product.name} Added`,
+                text: `Total Quantity in Cart: ${newQuantity}`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        async function updateProductStock(productId, quantity) {
+            const product = products.find(p => p.id === productId);
+            const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`)) || 0;
+            const newStock = currentStock - quantity;
+            try {
+                const response = await fetch(`${apiUrl}/products/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+                    },
+                    body: JSON.stringify({
+                        meta_data: [
+                            { key: `_stock_${selectedWarehouse}`, value: newStock.toString() }
+                        ]
+                    })
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(`Failed to update stock for ${product.name}: ${error.message}`);
+                }
+                product.meta_data = product.meta_data.map(meta =>
+                    meta.key === `_stock_${selectedWarehouse}` ? { ...meta, value: newStock.toString() } : meta
+                );
+                filterProducts();
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Stock Update Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+
+        function renderOrderItems() {
+            const orderItemsBody = document.getElementById('order-items');
+            orderItemsBody.innerHTML = '';
+            orderItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>EGP ${item.price.toFixed(2)}</td>
+                    <td>EGP ${(item.quantity * item.price).toFixed(2)}</td>
+                    <td><i class="fas fa-trash remove-btn" onclick="removeItem(${index})"></i></td>
+                `;
+                orderItemsBody.appendChild(row);
+            });
+            updateOrderSummary();
+        }
+
+        function removeItem(index) {
+            orderItems.splice(index, 1);
+            localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+            renderOrderItems();
+            filterProducts();
+        }
+
+        async function searchCustomer() {
+            const searchTerm = document.getElementById('customer-search').value.trim();
+            if (searchTerm.length < 3) {
+                document.getElementById('customer-orders').innerHTML = '';
+                currentCustomerPage = 1;
+                totalCustomerPages = 1;
+                return;
+            }
+            showLoader(true);
+            try {
+                const response = await fetch(`${apiUrl}/orders?search=${encodeURIComponent(searchTerm)}&per_page=10&page=${currentCustomerPage}`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) throw new Error('Failed to search orders');
+                const orders = await response.json();
+                const total = parseInt(response.headers.get('X-WP-Total') || '0');
+                totalCustomerPages = Math.min(Math.ceil(total / 10), 5);
+                const customerOrders = document.getElementById('customer-orders');
+                if (currentCustomerPage === 1) {
+                    customerOrders.innerHTML = '';
+                }
+                if (orders.length === 0) {
+                    customerOrders.innerHTML = '<p class="no-matching-orders">No matching orders found. Enter details manually.</p>';
+                    return;
+                }
+                orders.forEach(order => {
+                    const div = document.createElement('div');
+                    div.className = 'customer-item';
+                    div.innerHTML = `
+                        <div class="customer-info">
+                            <p class="name"><i class="fas fa-user"></i> ${order.billing.first_name} ${order.billing.last_name}</p>
+                            <p class="email"><i class="fas fa-envelope"></i> ${order.billing.email}</p>
+                            <p class="phone"><i class="fas fa-phone"></i> ${order.billing.phone || 'N/A'}</p>
+                            <p class="order-info"><i class="fas fa-shopping-cart"></i> Order #${order.id} - ${new Date(order.date_created).toLocaleDateString()}</p>
+                        </div>
+                        <button class="reorder-btn" onclick="reorder(${order.id})"><i class="fas fa-redo"></i> Re Order</button>
+                    `;
+                    div.onclick = (e) => {
+                        if (!e.target.closest('.reorder-btn')) selectCustomer(order);
+                    };
+                    customerOrders.appendChild(div);
+                });
+                customerOrders.querySelectorAll('.load-more-btn').forEach(btn => btn.remove());
+                if (currentCustomerPage < totalCustomerPages) {
+                    const loadMoreBtn = document.createElement('div');
+                    loadMoreBtn.className = 'load-more-btn';
+                    loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Load More';
+                    loadMoreBtn.onclick = () => {
+                        currentCustomerPage++;
+                        searchCustomer();
+                    };
+                    customerOrders.appendChild(loadMoreBtn);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function selectCustomer(order) {
+            selectedCustomer = order.customer_id || 0;
+            document.getElementById('customer_name').value = `${order.billing.first_name} ${order.billing.last_name}`.trim() || '';
+            document.getElementById('email').value = order.billing.email || '';
+            document.getElementById('phone').value = order.billing.phone || '';
+            document.getElementById('location_phone').value = getMetaValue(order.meta_data, 'location_phone') || '';
+            document.getElementById('address_1').value = order.billing.address_1 || '';
+            document.getElementById('location').value = getMetaValue(order.meta_data, 'location') || '';
+            document.getElementById('zone_name').value = getMetaValue(order.meta_data, 'zone_name') || '';
+            document.getElementById('order_date').value = getMetaValue(order.meta_data, 'order_date') || '';
+            document.getElementById('order_time').value = getMetaValue(order.meta_data, 'order_time') || '12:00PM To 2:00PM';
+            document.getElementById('order_note').value = getMetaValue(order.meta_data, 'note') || '';
+            const deliveryFee = order.fee_lines.find(fee => fee.name === 'Delivery Fee')?.total || '80';
+            document.getElementById('delivery_fee').value = deliveryFee;
+            const paymentMethod = order.payment_method;
+            const checkbox = document.querySelector(`input[name="payment_method"][value="${paymentMethod}"]`);
+            if (checkbox) {
+                document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
+                checkbox.checked = true;
+            }
+            document.getElementById('customer-orders').innerHTML = '';
+            Swal.fire({
+                icon: 'success',
+                title: 'Customer Selected',
+                text: 'Details loaded from last order.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        async function reorder(orderId) {
+            if (!selectedWarehouse) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select a warehouse first.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            showLoader(true);
+            try {
+                const response = await fetch(`${apiUrl}/orders/${orderId}`, {
+                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+                });
+                if (!response.ok) throw new Error('Failed to fetch order');
+                const order = await response.json();
+                selectCustomer(order);
+                const unavailableItems = [];
+                const adjustedItems = [];
+                order.line_items.forEach(item => {
+                    const product = products.find(p => p.id === item.product_id);
+                    if (!product) {
+                        unavailableItems.push(item.name);
+                        return;
+                    }
+                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
+                    if (stock === 0) {
+                        unavailableItems.push(item.name);
+                        return;
+                    }
+                    const price = getProductPrice(product, selectedWarehouse);
+                    const quantity = Math.min(item.quantity, stock);
+                    if (quantity < item.quantity) {
+                        adjustedItems.push({ name: item.name, available: quantity });
+                    }
+                    const existingItem = orderItems.find(i => i.product_id === item.product_id);
+                    if (existingItem) {
+                        existingItem.quantity = Math.min(existingItem.quantity + quantity, stock);
+                        existingItem.price = price;
+                        existingItem.warehouse = selectedWarehouse;
+                    } else {
+                        orderItems.push({
+                            product_id: item.product_id,
+                            name: item.name,
+                            quantity: quantity,
+                            price: price,
+                            warehouse: selectedWarehouse
+                        });
+                    }
+                });
+                localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+                renderOrderItems();
+                filterProducts();
+                document.getElementById('customer-orders').innerHTML = '';
+                if (unavailableItems.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Items Unavailable',
+                        text: `Removed: ${unavailableItems.join(', ')} (out of stock).`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000
+                    });
+                }
+                if (adjustedItems.length > 0) {
+                    const messages = adjustedItems.map(item => `${item.name}: Only ${item.available} available.`);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Adjusted Quantities',
+                        text: messages.join('\n'),
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000
+                    });
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reordered',
+                    text: 'Order items and customer details loaded.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function createOrder() {
+            if (!selectedWarehouse) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select a warehouse.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            if (orderItems.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please add products to the order.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            const requiredFields = ['customer_name', 'email', 'phone', 'address_1', 'zone_name'];
+            for (const field of requiredFields) {
+                if (!document.getElementById(field).value.trim()) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: `${field.replace('_', ' ')} is required.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    return;
+                }
+            }
+            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!selectedPaymentMethod) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select a payment method.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+            const paymentMethodId = selectedPaymentMethod.value;
+            const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
+            for (const item of orderItems) {
+                const product = products.find(p => p.id === item.product_id);
+                const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
+                if (item.quantity > currentStock) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Insufficient Stock',
+                        text: `Only ${currentStock} units available for ${item.name}.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    return;
+                }
+            }
+            if (selectedCoupon) {
+                const currentDate = new Date();
+                const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
+                if (expiryDate && expiryDate < currentDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Coupon',
+                        text: `Coupon ${selectedCoupon.code} has expired.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    return;
+                }
+                if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Coupon',
+                        text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    return;
+                }
+            }
+            const customerName = document.getElementById('customer_name').value;
+            const email = document.getElementById('email').value;
+            const orderData = {
+                customer_id: selectedCustomer || 0,
+                status: 'processing',
+                payment_method: paymentMethodId,
+                payment_method_title: paymentMethod.title,
+                billing: {
+                    first_name: customerName.split(' ')[0],
+                    last_name: customerName.split(' ').slice(1).join(' '),
+                    email: email,
+                    phone: document.getElementById('phone').value,
+                    address_1: document.getElementById('address_1').value
+                },
+                shipping: {
+                    address_1: document.getElementById('address_1').value,
+                    phone: document.getElementById('phone').value
+                },
+                line_items: orderItems.map(item => ({
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    meta_data: [
+                        { key: '_warehouse', value: item.warehouse || selectedWarehouse },
+                        { key: '_reduced_stock', value: item.quantity.toString() }
+                    ]
+                })),
+                fee_lines: [
+                    {
+                        name: 'Delivery Fee',
+                        total: document.getElementById('delivery_fee').value,
+                        tax_status: 'taxable'
+                    },
+                    ...additionalFees.filter(fee => fee.amount > 0).map(fee => ({
+                        name: fee.name || 'Additional Fee',
+                        total: fee.amount.toString(),
+                        tax_status: 'taxable'
+                    }))
+                ],
+                coupon_lines: selectedCoupon ? [{ code: selectedCoupon.code }] : [],
+                meta_data: [
+                    { key: '_selected_warehouse', value: selectedWarehouse },
+                    { key: 'order_date', value: document.getElementById('order_date').value },
+                    { key: 'order_time', value: document.getElementById('order_time').value },
+                    { key: 'location', value: document.getElementById('location').value },
+                    { key: 'location_phone', value: document.getElementById('location_phone').value },
+                    { key: 'zone_name', value: document.getElementById('zone_name').value },
+                    { key: 'note', value: document.getElementById('order_note').value }
+                ]
+            };
+            console.log('Order Data:', JSON.stringify(orderData, null, 2));
+            showLoader(true);
+            try {
+                const orderResponse = await fetch(`${apiUrl}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                if (!orderResponse.ok) {
+                    const error = await orderResponse.json();
+                    throw new Error(error.message);
+                }
+                const order = await orderResponse.json();
+                lastOrder = { ...orderData, id: order.id };
+                for (const item of orderItems) {
+                    await updateProductStock(item.product_id, item.quantity);
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Order Created',
+                    text: 'Order created and stock updated successfully!',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Send Invoice to WhatsApp',
+                    confirmButtonColor: '#25D366',
+                    showCancelButton: true,
+                    cancelButtonText: 'Close',
+                    cancelButtonColor: '#c62828'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        sendInvoice();
+                    }
+                    clearOrder();
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function sendInvoice() {
+            if (!lastOrder) return;
+            const customerName = document.getElementById('customer_name').value;
+            const selectedDate = document.getElementById('order_date').value;
+            const selectedTime = document.getElementById('order_time').value;
+            const currency = 'EGP';
+            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            let discountTotal = 0;
+            let couponCode = '';
+            if (selectedCoupon) {
+                couponCode = selectedCoupon.code;
+                if (selectedCoupon.discount_type === 'fixed_cart') {
+                    discountTotal = parseFloat(selectedCoupon.amount) || 0;
+                } else if (selectedCoupon.discount_type === 'percent') {
+                    discountTotal = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
+                }
+            }
+            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+            const feesText = [
+                `*Delivery Fee:* ${deliveryFee.toFixed(2)} ${currency}`,
+                ...additionalFees.filter(fee => fee.amount > 0).map(fee => `*${fee.name}:* ${parseFloat(fee.amount).toFixed(2)} ${currency}`)
+            ].join('\n');
+            const total = subtotal + deliveryFee + feeTotal - discountTotal;
+            const products = orderItems.map(item => `${item.name} x${item.quantity} - ${item.price.toFixed(2)} ${currency}`).join('\n');
+            const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
+            const message = `*Hello ${customerName},*\n\n` +
+                           `We’re happy to inform you that your order is ready and will be delivered on ${formattedDate} at ${selectedTime || 'Not specified'}.\n\n` +
+                           `━━━━━━━━━━━━━━━━━━\n` +
+                           `*Order Summary:*\n\n` +
+                           `${products}\n\n` +
+                           `━━━━━━━━━━━━━━━━━━\n` +
+                           `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
+                           (discountTotal > 0 ? `*Discount${couponCode ? ` (${couponCode})` : ''}:* -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
+                           `${feesText}\n\n` +
+                           `*Total:* ${total.toFixed(2)} ${currency}\n` +
+                           `━━━━━━━━━━━━━━━━━━\n\n` +
+                           `You can explore all our delicious frozen meals anytime at:\n` +
+                           `https://tenderfrozen.com\n\n` +
+                           `*Thank you for choosing Tender Frozen!*\n\n` +
+                           `We can’t wait to serve you again.`;
+            let phone = document.getElementById('phone').value.replace(/\D/g, '');
+            if (!phone.startsWith('+20')) {
+                phone = `+20${phone}`;
+            }
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function clearOrder() {
+            orderItems = [];
+            selectedCustomer = null;
+            selectedCoupon = null;
+            additionalFees = [];
+            document.getElementById('customer_name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('location_phone').value = '';
+            document.getElementById('address_1').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('zone_name').value = '';
+            document.getElementById('order_date').value = '';
+            document.getElementById('order_time').value = '12:00PM To 2:00PM';
+            document.getElementById('order_note').value = '';
+            document.getElementById('delivery_fee').value = '80';
+            document.getElementById('fee-group').innerHTML = '';
+            document.getElementById('customer-search').value = '';
+            document.getElementById('customer-orders').innerHTML = '';
+            document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
+            document.getElementById('coupon-section').style.display = 'none';
+            localStorage.removeItem('posOrderItems');
+            currentCustomerPage = 1;
+            totalCustomerPages = 1;
+            renderOrderItems();
+            filterProducts();
+            Swal.fire({
+                icon: 'success',
+                title: 'Order Cleared',
+                text: 'All order details have been reset.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        function init() {
+            const savedOrderItems = localStorage.getItem('posOrderItems');
+            if (savedOrderItems) {
+                orderItems = JSON.parse(savedOrderItems);
+                renderOrderItems();
+            }
+            document.querySelectorAll('.warehouse-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const warehouse = button.dataset.warehouse;
+                    fetchProducts(warehouse);
+                });
+            });
+            const defaultWarehouse = 'oraby';
+            fetchProducts(defaultWarehouse);
+        }
+
+        init();
+    </script>
+</body>
+</html>
