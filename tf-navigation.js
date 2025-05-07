@@ -5,7 +5,7 @@ const navConfig = {
     { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', path: '/TenderFrozen/products.html' },
     { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', path: '/TenderFrozen/pos.html' },
   ],
-  menuTitle: ' Frozen Dashboard',
+  menuTitle: 'Frozen Dashboard',
 };
 
 // Function to get the relative path of the current page
@@ -13,8 +13,9 @@ function getRelativePath() {
   let path = window.location.pathname;
   // Remove leading and trailing slashes for consistency
   path = path.replace(/^\/+|\/+$/g, '');
-  // If path is empty or just 'TenderFrozen', return '/TenderFrozen'
-  if (!path || path === 'TenderFrozen') return '/TenderFrozen';
+  // If path is empty, assume it's the root page
+  if (!path) return '/TenderFrozen';
+  // Normalize the path by adding leading slash
   return `/${path}`;
 }
 
@@ -97,8 +98,12 @@ function createNavigation() {
 // Function to navigate to a page
 function navigateToPage(pageId, url, path) {
   const currentPath = getRelativePath();
-  console.log(`Navigating: currentPath=${currentPath}, targetPath=${path}`); // Debugging
-  if (currentPath === path) {
+  // Normalize paths for comparison
+  const normalizedCurrentPath = currentPath.replace(/^\/+|\/+$/g, '');
+  const normalizedTargetPath = path.replace(/^\/+|\/+$/g, '');
+  
+  console.log(`Navigating: currentPath=${normalizedCurrentPath}, targetPath=${normalizedTargetPath}`); // Debugging
+  if (normalizedCurrentPath === normalizedTargetPath) {
     showToast('You are already on this page', 'error', 'fas fa-exclamation-circle');
     return;
   }
