@@ -10,14 +10,21 @@ const navConfig = {
 
 // Function to get the relative path of the current page
 function getRelativePath() {
-  const currentUrl = window.location.pathname;
-  return currentUrl.endsWith('/') ? currentUrl : currentUrl.replace(/\/$/, '');
+  let path = window.location.pathname;
+  // Remove leading and trailing slashes for consistency
+  path = path.replace(/^\/+|\/+$/g, '');
+  // If path is empty or just 'TenderFrozen', return '/TenderFrozen'
+  if (!path || path === 'TenderFrozen') return '/TenderFrozen';
+  return `/${path}`;
 }
 
 // Function to create the navigation
 function createNavigation() {
   const container = document.getElementById('tf-navigation');
-  if (!container) return;
+  if (!container) {
+    console.warn('Navigation container (#tf-navigation) not found.');
+    return;
+  }
   
   // Create FAB (Floating Action Button)
   const fab = document.createElement('div');
@@ -43,14 +50,16 @@ function createNavigation() {
   const ul = document.createElement('ul');
   ul.className = 'tf-nav-list';
   const currentPath = getRelativePath();
+  console.log('Current path:', currentPath); // Debugging: Log the current path
   navConfig.pages.forEach(page => {
     const li = document.createElement('li');
     li.className = 'tf-nav-item';
     li.setAttribute('data-page', page.id);
     li.innerHTML = `<i class="${page.icon}"></i> ${page.name}`;
     
-    // Check if current page path matches the page's path
-    if (currentPath === page.path || (currentPath + '/' === page.path)) {
+    // Check if current page path matches the page's path exactly
+    console.log(`Comparing: currentPath=${currentPath} with page.path=${page.path}`); // Debugging
+    if (currentPath === page.path) {
       li.classList.add('active');
     }
     
