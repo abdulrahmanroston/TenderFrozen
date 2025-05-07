@@ -1,12 +1,18 @@
 // Navigation configuration
 const navConfig = {
   pages: [
-    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen' },
-    { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html' },
-    { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html' },
+    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen', path: '/TenderFrozen' },
+    { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', path: '/TenderFrozen/products.html' },
+    { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', path: '/TenderFrozen/pos.html' },
   ],
-  menuTitle: 'Frozen Dashboard',
+  menuTitle: ' Frozen Dashboard',
 };
+
+// Function to get the relative path of the current page
+function getRelativePath() {
+  const currentUrl = window.location.pathname;
+  return currentUrl.endsWith('/') ? currentUrl : currentUrl.replace(/\/$/, '');
+}
 
 // Function to create the navigation
 function createNavigation() {
@@ -36,15 +42,15 @@ function createNavigation() {
   // Create menu items
   const ul = document.createElement('ul');
   ul.className = 'tf-nav-list';
+  const currentPath = getRelativePath();
   navConfig.pages.forEach(page => {
     const li = document.createElement('li');
     li.className = 'tf-nav-item';
     li.setAttribute('data-page', page.id);
     li.innerHTML = `<i class="${page.icon}"></i> ${page.name}`;
     
-    // Check if current page URL matches
-    const currentUrl = window.location.href;
-    if (currentUrl === page.url || currentUrl.includes(page.url)) {
+    // Check if current page path matches the page's path
+    if (currentPath === page.path || (currentPath + '/' === page.path)) {
       li.classList.add('active');
     }
     
