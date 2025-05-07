@@ -120,7 +120,7 @@
         .menu-content ul li {
             padding: 12px;
             margin: 5px 0;
-            cursorics: pointer;
+            cursor: pointer;
             border-radius: 8px;
             transition: background 0.2s;
             display: flex;
@@ -262,6 +262,13 @@
             color: var(--danger);
         }
 
+        .product-card .stock-quantity {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+
         .product-card .actions {
             display: flex;
             gap: 10px;
@@ -398,6 +405,29 @@
         }
 
         .transfer-history th {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .available-stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .available-stock-table th, .available-stock-table td {
+            padding: 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.9rem;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .available-stock-table th {
             background: var(--primary);
             color: #fff;
         }
@@ -619,7 +649,6 @@
         }
 
         .toast {
-            
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -631,7 +660,6 @@
             display: none;
             box-shadow: var(--shadow);
             max-width: 300px;
-            
             align-items: center;
             gap: 10px;
             font-family: 'Roboto', sans-serif;
@@ -730,6 +758,8 @@
             </div>
             <div class="filter-tabs" id="category-filter"></div>
             <div class="filter-tabs" id="stock-filter"></div>
+            <div class="filter-tabs" id="warehouse-filter"></div>
+            <div class="filter-tabs" id="stock-availability-filter" style="display: none;"></div>
             <div id="status-message" class="status-message">Loading products...</div>
             <div id="loader" class="loader"></div>
             <div id="category-sections"></div>
@@ -740,6 +770,7 @@
                 <div class="form-group">
                     <label><i class="fas fa-box"></i> Select Product</label>
                     <select id="transfer-product"></select>
+                    <div id="available-stock" style="margin-top: 10px;"></div>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-warehouse"></i> From Warehouse</label>
@@ -799,7 +830,7 @@
     <div class="modal" id="edit-modal">
         <div class="modal-content">
             <h2 id="edit-product-title">Edit Product</h2>
-            <div id="message" class="message"></div>
+            <div id=" Accredited by="message" class="message"></div>
             <div class="tabs">
                 <div class="tab active" data-tab="general">General</div>
                 <div class="tab" data-tab="oraby">Oraby</div>
@@ -929,7 +960,7 @@
             <button class="close-btn" onclick="closeErrorModal()">Close</button>
         </div>
     </div>
-        <div id="tf-navigation"></div>
+    <div id="tf-navigation"></div>
     <!-- Navigation JavaScript -->
     <script src="tf-navigation.js"></script>
     <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span></span></div>
@@ -947,6 +978,8 @@
         let currentProduct = null;
         let currentCategory = 'all';
         let currentStockFilter = 'all';
+        let currentWarehouseFilter = 'all';
+        let currentStockAvailabilityFilter = 'all';
         let transferHistory = JSON.parse(localStorage.getItem('transferHistory')) || [];
 
         // Utility: Get meta value by key
@@ -1009,6 +1042,8 @@
                     updateStatusMessage('');
                     renderCategoryFilter();
                     renderStockFilter();
+                    renderWarehouseFilter();
+                    renderStockAvailabilityFilter();
                     renderProducts();
                     renderTransferProducts();
                 }
@@ -1078,6 +1113,65 @@
             });
         }
 
+        // Render warehouse filter (buttons)
+        function renderWarehouseFilter() {
+            const warehouseFilter = document.getElementById('warehouse-filter');
+            warehouseFilter.innerHTML = '';
+            const warehouses = [
+                { value: 'all', label: 'All', icon: 'fa-warehouse' },
+                { value: 'oraby', label: 'Oraby', icon: 'fa-warehouse' },
+                { value: 'tagamo3', label: 'Tagamo3', icon: 'fa-warehouse' },
+                { value: 'giza', label: 'Giza', icon: 'fa-warehouse' },
+                { value: 'lavista', label: 'Lavista', icon: 'fa-warehouse' }
+            ];
+
+            warehouses.forEach(warehouse => {
+                const button = document.createElement('button');
+                button.innerHTML = `<i class="fas ${warehouse.icon}"></i> ${warehouse.label}`;
+                button.dataset.warehouse = warehouse.value;
+                button.className = currentWarehouseFilter === warehouse.value ? 'active' : '';
+                button.addEventListener('click', () => {
+                    currentWarehouseFilter = warehouse.value;
+                    currentStockAvailabilityFilter = 'all'; // Reset availability filter
+                    document.querySelectorAll('#warehouse-filter button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    // Show/hide stock availability filter
+                    const stockAvailabilityFilter = document.getElementById('stock-availability-filter');
+                    stockAvailabilityFilter.style.display = currentWarehouseFilter === 'all' ? 'none' : 'flex';
+                    renderStockAvailabilityFilter();
+                    filterProducts();
+                });
+                warehouseFilter.appendChild(button);
+            });
+        }
+
+        // Render stock availability filter (buttons)
+        function renderStockAvailabilityFilter() {
+            const stockAvailabilityFilter = document.getElementById('stock-availability-filter');
+            stockAvailabilityFilter.innerHTML = '';
+            if (currentWarehouseFilter === 'all') return;
+
+            const statuses = [
+                { value: 'all', label: 'All', icon: 'fa-circle' },
+                { value: 'available', label: 'Available', icon: 'fa-check-circle' },
+                { value: 'not_available', label: 'Not Available', icon: 'fa-times-circle' }
+            ];
+
+            statuses.forEach(status => {
+                const button = document.createElement('button');
+                button.innerHTML = `<i class="fas ${status.icon}"></i> ${status.label}`;
+                button.dataset.status = status.value;
+                button.className = currentStockAvailabilityFilter === status.value ? 'active' : '';
+                button.addEventListener('click', () => {
+                    currentStockAvailabilityFilter = status.value;
+                    document.querySelectorAll('#stock-availability-filter button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterProducts();
+                });
+                stockAvailabilityFilter.appendChild(button);
+            });
+        }
+
         // Render products by categories
         function renderProducts() {
             const categorySections = document.getElementById('category-sections');
@@ -1091,6 +1185,17 @@
             }
             if (currentStockFilter !== 'all') {
                 filtered = filtered.filter(product => product.stock_status === currentStockFilter);
+            }
+            if (currentWarehouseFilter !== 'all') {
+                filtered = filtered.filter(product => {
+                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                    if (currentStockAvailabilityFilter === 'available') {
+                        return stock > 0;
+                    } else if (currentStockAvailabilityFilter === 'not_available') {
+                        return stock === 0;
+                    }
+                    return true; // 'all'
+                });
             }
 
             if (filtered.length === 0) {
@@ -1118,11 +1223,23 @@
                     const price = product.regular_price ? `EGP ${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
                     const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
                     const stockClass = product.stock_status === 'instock' ? 'instock' : 'outofstock';
+                    // Calculate stock for display
+                    let stockDisplay = '';
+                    if (currentWarehouseFilter === 'all') {
+                        const totalStock = ['oraby', 'tagamo3', 'giza', 'lavista'].reduce((sum, warehouse) => {
+                            return sum + (parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0);
+                        }, 0);
+                        stockDisplay = `Total Stock: ${totalStock}`;
+                    } else {
+                        const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                        stockDisplay = `${currentWarehouseFilter.charAt(0).toUpperCase() + currentWarehouseFilter.slice(1)} Stock: ${stock}`;
+                    }
                     card.innerHTML = `
                         <img src="${imageSrc}" alt="${product.name || 'Product'}" loading="lazy">
                         <h3>${product.name || 'Unnamed Product'}</h3>
                         <p class="price">${price}</p>
                         <p class="stock-status ${stockClass}">${stockStatus}</p>
+                        <p class="stock-quantity">${stockDisplay}</p>
                         <div class="actions">
                             <button onclick="openModal(${product.id})">Edit</button>
                             <button onclick="quickView(${product.id})">Quick View</button>
@@ -1145,6 +1262,51 @@
                 option.textContent = product.name || 'Unnamed Product';
                 transferProduct.appendChild(option);
             });
+
+            // Add event listener to show available stock
+            transferProduct.addEventListener('change', () => {
+                const productId = transferProduct.value;
+                renderAvailableStock(productId);
+            });
+
+            // Initialize with empty stock display
+            renderAvailableStock('');
+        }
+
+        // Render available stock for selected product
+        function renderAvailableStock(productId) {
+            const availableStockDiv = document.getElementById('available-stock');
+            availableStockDiv.innerHTML = '';
+
+            if (!productId) return;
+
+            const product = products.find(p => p.id == productId);
+            if (!product) return;
+
+            const stocks = {
+                Oraby: getMetaValue(product.meta_data, '_stock_oraby') || '0',
+                Tagamo3: getMetaValue(product.meta_data, '_stock_tagamo3') || '0',
+                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0',
+                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0'
+            };
+
+            const table = document.createElement('table');
+            table.className = 'available-stock-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Warehouse</th>
+                        <th>Stock</th>
+                    </tr>
+                </(pair>
+                <tbody>
+                    <tr><td>Oraby</td><td>${stocks.Oraby}</td></tr>
+                    <tr><td>Tagamo3</td><td>${stocks.Tagamo3}</td></tr>
+                    <tr><td>Giza</td><td>${stocks.Giza}</td></tr>
+                    <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                </tbody>
+            `;
+            availableStockDiv.appendChild(table);
         }
 
         // Render transfer history
