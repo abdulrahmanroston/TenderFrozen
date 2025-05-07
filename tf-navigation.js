@@ -1,22 +1,30 @@
 // Navigation configuration
 const navConfig = {
   pages: [
-    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen', path: '/TenderFrozen' },
-    { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', path: '/TenderFrozen/products.html' },
-    { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', path: '/TenderFrozen/pos.html' },
+    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen', relativePath: '' },
+    { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', relativePath: 'products.html' },
+    { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', relativePath: 'pos.html' },
   ],
-  menuTitle: 'Frozen Dashboard',
+  menuTitle: ' Frozen Dashboard',
 };
 
-// Function to get the relative path of the current page
+// Function to get the relative path segment after /TenderFrozen/
 function getRelativePath() {
   let path = window.location.pathname;
-  // Remove leading and trailing slashes for consistency
+  // Remove leading and trailing slashes
   path = path.replace(/^\/+|\/+$/g, '');
-  // If path is empty, assume it's the root page
-  if (!path) return '/TenderFrozen';
-  // Normalize the path by adding leading slash
-  return `/${path}`;
+  // Remove the base path '/TenderFrozen'
+  const basePath = 'TenderFrozen';
+  if (path === basePath || path === '') {
+    return ''; // Orders page
+  }
+  // Return the part after /TenderFrozen/
+  if (path.startsWith(basePath + '/')) {
+    return path.substring(basePath.length + 1);
+  }
+  // If path doesn't match expected structure, log warning and return empty
+  console.warn(`Unexpected path structure: ${path}`);
+  return '';
 }
 
 // Function to create the navigation
@@ -50,22 +58,22 @@ function createNavigation() {
   // Create menu items
   const ul = document.createElement('ul');
   ul.className = 'tf-nav-list';
-  const currentPath = getRelativePath();
-  console.log('Current path:', currentPath); // Debugging: Log the current path
+  const currentRelativePath = getRelativePath();
+  console.log('Current relative path:', currentRelativePath); // Debugging: Log the current relative path
   navConfig.pages.forEach(page => {
     const li = document.createElement('li');
     li.className = 'tf-nav-item';
     li.setAttribute('data-page', page.id);
     li.innerHTML = `<i class="${page.icon}"></i> ${page.name}`;
     
-    // Check if current page path matches the page's path exactly
-    console.log(`Comparing: currentPath=${currentPath} with page.path=${page.path}`); // Debugging
-    if (currentPath === page.path) {
+    // Check if current relative path matches the page's relativePath
+    console.log(`Comparing: currentRelativePath=${currentRelativePath} with page.relativePath=${page.relativePath}`); // Debugging
+    if (currentRelativePath === page.relativePath) {
       li.classList.add('active');
     }
     
     // Add click event for navigation
-    li.addEventListener('click', () => navigateToPage(page.id, page.url, page.path));
+    li.addEventListener('click', () => navigateToPage(page.id, page.url, page.relativePath));
     ul.appendChild(li);
   });
   menu.appendChild(ul);
@@ -96,14 +104,10 @@ function createNavigation() {
 }
 
 // Function to navigate to a page
-function navigateToPage(pageId, url, path) {
-  const currentPath = getRelativePath();
-  // Normalize paths for comparison
-  const normalizedCurrentPath = currentPath.replace(/^\/+|\/+$/g, '');
-  const normalizedTargetPath = path.replace(/^\/+|\/+$/g, '');
-  
-  console.log(`Navigating: currentPath=${normalizedCurrentPath}, targetPath=${normalizedTargetPath}`); // Debugging
-  if (normalizedCurrentPath === normalizedTargetPath) {
+function navigateToPage(pageId, url, relativePath) {
+  const currentRelativePath = getRelativePath();
+  console.log(`Navigating: currentRelativePath=${currentRelativePath}, targetRelativePath=${relativePath}`); // Debugging
+  if (currentRelativePath === relativePath) {
     showToast('You are already on this page', 'error', 'fas fa-exclamation-circle');
     return;
   }
