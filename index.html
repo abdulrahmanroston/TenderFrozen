@@ -544,44 +544,6 @@
             height: 40px;
             animation: spin 1.0s linear infinite;
         }
-        /* Navbar Styles */
-        .navbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--dark);
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .navbar ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-        }
-        .navbar li {
-            cursor: pointer;
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            transition: color 0.3s, transform 0.2s, box-shadow 0.2s;
-            border-radius: 6px;
-        }
-        .navbar li:hover {
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-        .navbar li.active {
-            color: var(--primary);
-            background: var(--light);
-            box-shadow: var(--shadow-md);
-        }
         /* Order Summary Table */
         .order-summary-table {
             width: 100%;
@@ -664,13 +626,6 @@
                 font-size: 0.75rem;
                 padding: 6px 10px;
                 margin: 3px;
-            }
-            .navbar ul {
-                gap: 10px;
-            }
-            .navbar li {
-                padding: 8px 15px;
-                font-size: 0.85rem;
             }
         }
         @media (min-width: 769px) {
@@ -785,12 +740,6 @@
             <div id="tab-contents"></div>
         </div>
     </div>
-    <nav class="navbar">
-        <ul>
-            <li data-page="orders" class="active">Orders</li>
-            <li data-page="products.html">Products</li>
-        </ul>
-    </nav>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
@@ -1918,32 +1867,12 @@ async function updateOrderProducts(orderId, updatedItems) {
     }
 }
 
-// Navbar Navigation
-function initializeNavbar() {
-    const navbarItems = document.querySelectorAll('.navbar li');
-    navbarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const page = item.dataset.page;
-            if (page) {
-                navbarItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                if (page === 'orders') {
-                    document.getElementById('orders-content').style.display = 'block';
-                    fetchOrders(); // Refresh orders when navigating back
-                } else {
-                    window.location.href = page; // Navigate to products.html or other pages
-                }
-            }
-        });
-    });
-}
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadUsers();
     loadSettings();
     fetchOrders();
-    initializeNavbar();
     document.getElementById('save-settings-btn').addEventListener('click', saveSettingsAndFetch);
     document.getElementById('clear-filters-btn').addEventListener('click', clearFiltersAndFetch);
     document.getElementById('add-user-btn').addEventListener('click', addUser);
