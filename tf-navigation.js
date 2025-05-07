@@ -64,7 +64,7 @@ function createNavigation() {
     }
     
     // Add click event for navigation
-    li.addEventListener('click', () => navigateToPage(page.id, page.url));
+    li.addEventListener('click', () => navigateToPage(page.id, page.url, page.path));
     ul.appendChild(li);
   });
   menu.appendChild(ul);
@@ -95,9 +95,10 @@ function createNavigation() {
 }
 
 // Function to navigate to a page
-function navigateToPage(pageId, url) {
-  const currentUrl = window.location.href;
-  if (currentUrl === url || currentUrl.includes(url)) {
+function navigateToPage(pageId, url, path) {
+  const currentPath = getRelativePath();
+  console.log(`Navigating: currentPath=${currentPath}, targetPath=${path}`); // Debugging
+  if (currentPath === path) {
     showToast('You are already on this page', 'error', 'fas fa-exclamation-circle');
     return;
   }
