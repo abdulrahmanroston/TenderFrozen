@@ -20,6 +20,7 @@
             --text: #1f2937;
             --border: #d1d5db;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --out-of-stock-bg: rgba(255, 0, 0, 0.1); /* خلفية حمراء خفيفة */
         }
 
         * {
@@ -214,6 +215,11 @@
             box-shadow: var(--shadow);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
+            width: calc(25% - 15px);
+        }
+
+        .product-card.out-of-stock {
+            background: var(--out-of-stock-bg);
         }
 
         .product-card:hover {
@@ -756,10 +762,9 @@
             <div class="filter-bar">
                 <input type="text" id="search" placeholder="Search products or categories...">
             </div>
-            <div class="filter-tabs" id="category-filter"></div>
             <div class="filter-tabs" id="stock-filter"></div>
+            <div class="filter-tabs" id="category-filter"></div>
             <div class="filter-tabs" id="warehouse-filter"></div>
-            <div class="filter-tabs" id="stock-availability-filter" style="display: none;"></div>
             <div id="status-message" class="status-message">Loading products...</div>
             <div id="loader" class="loader"></div>
             <div id="category-sections"></div>
@@ -830,7 +835,7 @@
     <div class="modal" id="edit-modal">
         <div class="modal-content">
             <h2 id="edit-product-title">Edit Product</h2>
-            <div id=" Accredited by="message" class="message"></div>
+            <div id="message" class="message"></div>
             <div class="tabs">
                 <div class="tab active" data-tab="general">General</div>
                 <div class="tab" data-tab="oraby">Oraby</div>
@@ -979,7 +984,6 @@
         let currentCategory = 'all';
         let currentStockFilter = 'all';
         let currentWarehouseFilter = 'all';
-        let currentStockAvailabilityFilter = 'all';
         let transferHistory = JSON.parse(localStorage.getItem('transferHistory')) || [];
 
         // Utility: Get meta value by key
@@ -1040,10 +1044,9 @@
                     updateStatusMessage('No products available.');
                 } else {
                     updateStatusMessage('');
-                    renderCategoryFilter();
                     renderStockFilter();
+                    renderCategoryFilter();
                     renderWarehouseFilter();
-                    renderStockAvailabilityFilter();
                     renderProducts();
                     renderTransferProducts();
                 }
@@ -1132,43 +1135,11 @@
                 button.className = currentWarehouseFilter === warehouse.value ? 'active' : '';
                 button.addEventListener('click', () => {
                     currentWarehouseFilter = warehouse.value;
-                    currentStockAvailabilityFilter = 'all'; // Reset availability filter
                     document.querySelectorAll('#warehouse-filter button').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    // Show/hide stock availability filter
-                    const stockAvailabilityFilter = document.getElementById('stock-availability-filter');
-                    stockAvailabilityFilter.style.display = currentWarehouseFilter === 'all' ? 'none' : 'flex';
-                    renderStockAvailabilityFilter();
                     filterProducts();
                 });
                 warehouseFilter.appendChild(button);
-            });
-        }
-
-        // Render stock availability filter (buttons)
-        function renderStockAvailabilityFilter() {
-            const stockAvailabilityFilter = document.getElementById('stock-availability-filter');
-            stockAvailabilityFilter.innerHTML = '';
-            if (currentWarehouseFilter === 'all') return;
-
-            const statuses = [
-                { value: 'all', label: 'All', icon: 'fa-circle' },
-                { value: 'available', label: 'Available', icon: 'fa-check-circle' },
-                { value: 'not_available', label: 'Not Available', icon: 'fa-times-circle' }
-            ];
-
-            statuses.forEach(status => {
-                const button = document.createElement('button');
-                button.innerHTML = `<i class="fas ${status.icon}"></i> ${status.label}`;
-                button.dataset.status = status.value;
-                button.className = currentStockAvailabilityFilter === status.value ? 'active' : '';
-                button.addEventListener('click', () => {
-                    currentStockAvailabilityFilter = status.value;
-                    document.querySelectorAll('#stock-availability-filter button').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    filterProducts();
-                });
-                stockAvailabilityFilter.appendChild(button);
             });
         }
 
@@ -1184,18 +1155,15 @@
                 );
             }
             if (currentStockFilter !== 'all') {
-                filtered = filtered.filter(product => product.stock_status === currentStockFilter);
-            }
-            if (currentWarehouseFilter !== 'all') {
-                filtered = filtered.filter(product => {
-                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
-                    if (currentStockAvailabilityFilter === 'available') {
-                        return stock > 0;
-                    } else if (currentStockAvailabilityFilter === 'not_available') {
-                        return stock === 0;
-                    }
-                    return true; // 'all'
-                });
+                if (currentWarehouseFilter === 'all') {
+                    filtered = filtered.filter(product => product.stock_status === currentStockFilter);
+                } else {
+                    filtered = filtered.filter(product => {
+                        const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                        return (currentStockFilter === 'instock' && stock > 0) || 
+                               (currentStockFilter === 'outofstock' && stock === 0);
+                    });
+                }
             }
 
             if (filtered.length === 0) {
@@ -1218,22 +1186,28 @@
                 grid.className = 'product-grid';
                 groupedByCategory[category].forEach(product => {
                     const card = document.createElement('div');
-                    card.className = 'product-card';
                     const imageSrc = product.images?.[0]?.src || 'https://via.placeholder.com/150?text=No+Image';
                     const price = product.regular_price ? `EGP ${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
-                    const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
-                    const stockClass = product.stock_status === 'instock' ? 'instock' : 'outofstock';
-                    // Calculate stock for display
-                    let stockDisplay = '';
+                    let stockStatus, stockClass, stockDisplay;
+                    let isOutOfStock = false;
+
                     if (currentWarehouseFilter === 'all') {
+                        stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
+                        stockClass = product.stock_status === 'instock' ? 'instock' : 'outofstock';
                         const totalStock = ['oraby', 'tagamo3', 'giza', 'lavista'].reduce((sum, warehouse) => {
                             return sum + (parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0);
                         }, 0);
                         stockDisplay = `Total Stock: ${totalStock}`;
+                        isOutOfStock = totalStock === 0; // Apply out-of-stock class if total stock is 0
                     } else {
                         const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                        stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
+                        stockClass = stock > 0 ? 'instock' : 'outofstock';
                         stockDisplay = `${currentWarehouseFilter.charAt(0).toUpperCase() + currentWarehouseFilter.slice(1)} Stock: ${stock}`;
+                        isOutOfStock = stock === 0;
                     }
+
+                    card.className = `product-card ${isOutOfStock ? 'out-of-stock' : ''}`;
                     card.innerHTML = `
                         <img src="${imageSrc}" alt="${product.name || 'Product'}" loading="lazy">
                         <h3>${product.name || 'Unnamed Product'}</h3>
@@ -1298,7 +1272,7 @@
                         <th>Warehouse</th>
                         <th>Stock</th>
                     </tr>
-                </(pair>
+                </thead>
                 <tbody>
                     <tr><td>Oraby</td><td>${stocks.Oraby}</td></tr>
                     <tr><td>Tagamo3</td><td>${stocks.Tagamo3}</td></tr>
@@ -1494,11 +1468,19 @@
 
             const data = {
                 name: inputs.name,
-                regular_price: inputs.price,
                 stock_status: inputs.stock_status,
                 meta_data: []
             };
 
+            // Only include regular_price if it has changed
+            const currentRegularPrice = currentProduct.regular_price || '';
+            const inputPrice = inputs.price.trim();
+            const parsedInputPrice = inputPrice === '' ? '0' : parseFloat(inputPrice).toString();
+            if (parsedInputPrice !== currentRegularPrice) {
+                data.regular_price = parsedInputPrice;
+            }
+
+            // Handle warehouse prices (set empty to '0')
             warehouses.forEach(warehouse => {
                 const adjustStock = inputs[`adjust_stock_${warehouse}`];
                 const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
@@ -1508,12 +1490,12 @@
                         value: (currentStock + parseInt(adjustStock)).toString()
                     });
                 }
-                if (inputs[`price_${warehouse}`]) {
-                    data.meta_data.push({
-                        key: `_price_${warehouse}`,
-                        value: inputs[`price_${warehouse}`]
-                    });
-                }
+                const warehousePrice = inputs[`price_${warehouse}`].trim();
+                const parsedWarehousePrice = warehousePrice === '' ? '0' : warehousePrice;
+                data.meta_data.push({
+                    key: `_price_${warehouse}`,
+                    value: parsedWarehousePrice
+                });
                 if (inputs[`min_stock_${warehouse}`]) {
                     data.meta_data.push({
                         key: `_min_stock_${warehouse}`,
@@ -1536,6 +1518,7 @@
                 if (response.ok) {
                     showToast('Product updated successfully!', 'success');
                     await fetchProducts();
+                    closeModal();
                 } else {
                     const error = await response.json();
                     showErrorModal(`Error: ${error.message || 'Failed to update product'}`);
