@@ -826,309 +826,323 @@
     <!-- Navigation JavaScript -->
     <script src="tf-navigation.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    document.getElementById('order_time').selectedIndex = -1;
-        const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
-        const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
-        const storeUrl = 'https://tenderfrozen.com';
-        const apiUrl = `${storeUrl}/wp-json/wc/v3`;
+   <script>
+document.getElementById('order_time').selectedIndex = -1;
+const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
+const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+const storeUrl = 'https://tenderfrozen.com';
+const apiUrl = `${storeUrl}/wp-json/wc/v3`;
 
-        let products = [];
-        let filteredProducts = [];
-        let categories = [];
-        let orderItems = [];
-        let selectedCustomer = null;
-        let lastOrder = null;
-        let selectedWarehouse = '';
-        let additionalFees = [];
-        let coupons = [];
-        let selectedCoupon = null;
-        let paymentMethods = [];
-        let currentCustomerPage = 1;
-        let totalCustomerPages = 1;
+let products = [];
+let filteredProducts = [];
+let categories = [];
+let orderItems = [];
+let selectedCustomer = null;
+let lastOrder = null;
+let selectedWarehouse = '';
+let additionalFees = [];
+let coupons = [];
+let selectedCoupon = null;
+let paymentMethods = [];
+let currentCustomerPage = 1;
+let totalCustomerPages = 1;
 
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
-            document.querySelectorAll('button').forEach(btn => btn.disabled = show);
+function showLoader(show) {
+    document.getElementById('loader').style.display = show ? 'block' : 'none';
+    document.querySelectorAll('button').forEach(btn => btn.disabled = show);
+}
+
+function getMetaValue(metaData, key) {
+    const meta = metaData?.find(m => m.key === key);
+    return meta ? meta.value || '' : '';
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function getProductPrice(product, warehouse) {
+    const warehousePrice = parseFloat(getMetaValue(product.meta_data, `_price_${warehouse}`)) || 0;
+    return warehousePrice > 0 ? warehousePrice : parseFloat(product.regular_price) || 0;
+}
+
+function updateOrderSummary() {
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+    const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+    let discount = 0;
+    if (selectedCoupon) {
+        if (selectedCoupon.discount_type === 'fixed_cart') {
+            discount = parseFloat(selectedCoupon.amount) || 0;
+        } else if (selectedCoupon.discount_type === 'percent') {
+            discount = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
         }
+    }
 
-        function getMetaValue(metaData, key) {
-            const meta = metaData?.find(m => m.key === key);
-            return meta ? meta.value || '' : '';
+    document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('order-discount').textContent = discount.toFixed(2);
+    document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - discount).toFixed(2);
+
+    const feeSummary = document.getElementById('fee-summary');
+    feeSummary.innerHTML = '';
+    if (deliveryFee > 0) {
+        feeSummary.innerHTML += `<p><strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}</p>`;
+    }
+    additionalFees.forEach(fee => {
+        if (fee.amount > 0) {
+            feeSummary.innerHTML += `<p><strong>${fee.name}:</strong> ${parseFloat(fee.amount).toFixed(2)}</p>`;
         }
+    });
+}
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
+function addFeeField() {
+    const feeGroup = document.getElementById('fee-group');
+    const feeId = Date.now();
+    const feeItem = document.createElement('div');
+    feeItem.className = 'fee-item';
+    feeItem.innerHTML = `
+        <input type="text" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${feeId}, 'name', this.value)">
+        <input type="number" placeholder="Amount" step="0.01" oninput="updateFee(${feeId}, 'amount', this.value)">
+        <i class="fas fa-trash remove-fee" onclick="removeFee(${feeId})"></i>
+    `;
+    feeGroup.appendChild(feeItem);
+    additionalFees.push({ id: feeId, name: '', amount: 0 });
+    updateOrderSummary();
+}
 
-        function getProductPrice(product, warehouse) {
-            const warehousePrice = parseFloat(getMetaValue(product.meta_data, `_price_${warehouse}`)) || 0;
-            return warehousePrice > 0 ? warehousePrice : parseFloat(product.regular_price) || 0;
-        }
+function updateFee(id, field, value) {
+    const fee = additionalFees.find(f => f.id === id);
+    if (fee) {
+        fee[field] = value;
+        updateOrderSummary();
+    }
+}
 
-        function updateOrderSummary() {
-            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
-            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-            let discount = 0;
-            if (selectedCoupon) {
-                if (selectedCoupon.discount_type === 'fixed_cart') {
-                    discount = parseFloat(selectedCoupon.amount) || 0;
-                } else if (selectedCoupon.discount_type === 'percent') {
-                    discount = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
-                }
-            }
+function removeFee(id) {
+    additionalFees = additionalFees.filter(f => f.id !== id);
+    const feeGroup = document.getElementById('fee-group');
+    feeGroup.innerHTML = '';
+    additionalFees.forEach(fee => {
+        const feeItem = document.createElement('div');
+        feeItem.className = 'fee-item';
+        feeItem.innerHTML = `
+            <input type="text" value="${fee.name}" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${fee.id}, 'name', this.value)">
+            <input type="number" value="${fee.amount}" placeholder="Amount" step="0.01" oninput="updateFee(${fee.id}, 'amount', this.value)">
+            <i class="fas fa-trash remove-fee" onclick="removeFee(${fee.id})"></i>
+        `;
+        feeGroup.appendChild(feeItem);
+    });
+    updateOrderSummary();
+}
 
-            document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
-            document.getElementById('order-discount').textContent = discount.toFixed(2);
-            document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - discount).toFixed(2);
+async function fetchPaymentMethods() {
+    try {
+        const response = await fetch(`${apiUrl}/payment_gateways`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to load payment methods');
+        const methods = await response.json();
+        paymentMethods = methods.filter(method => method.enabled);
+        renderPaymentMethods();
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+}
 
-            const feeSummary = document.getElementById('fee-summary');
-            feeSummary.innerHTML = '';
-            if (deliveryFee > 0) {
-                feeSummary.innerHTML += `<p><strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}</p>`;
-            }
-            additionalFees.forEach(fee => {
-                if (fee.amount > 0) {
-                    feeSummary.innerHTML += `<p><strong>${fee.name}:</strong> ${parseFloat(fee.amount).toFixed(2)}</p>`;
-                }
+function renderPaymentMethods() {
+    const paymentMethodsContainer = document.getElementById('payment-methods');
+    paymentMethodsContainer.innerHTML = '';
+    paymentMethods.forEach(method => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="checkbox" name="payment_method" value="${method.id}" onchange="updatePaymentMethod(this)">
+            ${method.title}
+        `;
+        paymentMethodsContainer.appendChild(label);
+    });
+}
+
+function updatePaymentMethod(checkbox) {
+    document.querySelectorAll('input[name="payment_method"]').forEach(cb => {
+        if (cb !== checkbox) cb.checked = false;
+    });
+}
+
+async function fetchCoupons() {
+    try {
+        const response = await fetch(`${apiUrl}/coupons?per_page=100`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to load coupons');
+        const allCoupons = await response.json();
+        const currentDate = new Date();
+        coupons = allCoupons.filter(coupon => {
+            const expiryDate = coupon.date_expires ? new Date(coupon.date_expires) : null;
+            const isNotExpired = !expiryDate || expiryDate >= currentDate;
+            const isNotMaxUsed = coupon.maximum_uses === 0 || coupon.usage_count < coupon.maximum_uses;
+            return isNotExpired && isNotMaxUsed;
+        });
+        renderCoupons();
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+}
+
+function renderCoupons() {
+    const couponSection = document.getElementById('coupon-section');
+    const couponList = document.getElementById('coupon-list');
+    couponList.innerHTML = '';
+    if (coupons.length === 0) {
+        couponSection.style.display = 'none';
+        return;
+    }
+    couponSection.style.display = 'block';
+    coupons.forEach(coupon => {
+        const item = document.createElement('div');
+        item.className = `coupon-item ${selectedCoupon?.id === coupon.id ? 'active' : ''}`;
+        item.textContent = `${coupon.code} (${coupon.discount_type === 'percent' ? `${coupon.amount}%` : `EGP ${coupon.amount}`})`;
+        item.onclick = () => {
+            selectedCoupon = coupon;
+            document.querySelectorAll('.coupon-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            Swal.fire({
+                icon: 'success',
+                title: 'Coupon Applied',
+                text: `Coupon ${coupon.code} applied.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
             });
-        }
-
-        function addFeeField() {
-            const feeGroup = document.getElementById('fee-group');
-            const feeId = Date.now();
-            const feeItem = document.createElement('div');
-            feeItem.className = 'fee-item';
-            feeItem.innerHTML = `
-                <input type="text" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${feeId}, 'name', this.value)">
-                <input type="number" placeholder="Amount" step="0.01" oninput="updateFee(${feeId}, 'amount', this.value)">
-                <i class="fas fa-trash remove-fee" onclick="removeFee(${feeId})"></i>
-            `;
-            feeGroup.appendChild(feeItem);
-            additionalFees.push({ id: feeId, name: '', amount: 0 });
             updateOrderSummary();
-        }
+        };
+        couponList.appendChild(item);
+    });
+}
 
-        function updateFee(id, field, value) {
-            const fee = additionalFees.find(f => f.id === id);
-            if (fee) {
-                fee[field] = value;
-                updateOrderSummary();
+async function fetchProducts(warehouse) {
+    if (!warehouse) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a warehouse.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    // Clear cart if there are items and warehouse is changed
+    if (orderItems.length > 0 && selectedWarehouse !== warehouse) {
+        orderItems = [];
+        localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+        renderOrderItems();
+        Swal.fire({
+            icon: 'info',
+            title: 'Cart Cleared',
+            text: 'Cart has been cleared due to warehouse change.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+    selectedWarehouse = warehouse;
+    document.querySelectorAll('.warehouse-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.warehouse === warehouse);
+    });
+    showLoader(true);
+    try {
+        const response = await fetch(`${apiUrl}/products?per_page=100`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to load products');
+        products = await response.json();
+        orderItems = orderItems.filter(item => {
+            const product = products.find(p => p.id === item.product_id);
+            if (!product) return false;
+            const stock = parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0;
+            return stock >= item.quantity;
+        });
+        orderItems.forEach(item => {
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+                item.price = getProductPrice(product, warehouse);
             }
-        }
-
-        function removeFee(id) {
-            additionalFees = additionalFees.filter(f => f.id !== id);
-            const feeGroup = document.getElementById('fee-group');
-            feeGroup.innerHTML = '';
-            additionalFees.forEach(fee => {
-                const feeItem = document.createElement('div');
-                feeItem.className = 'fee-item';
-                feeItem.innerHTML = `
-                    <input type="text" value="${fee.name}" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${fee.id}, 'name', this.value)">
-                    <input type="number" value="${fee.amount}" placeholder="Amount" step="0.01" oninput="updateFee(${fee.id}, 'amount', this.value)">
-                    <i class="fas fa-trash remove-fee" onclick="removeFee(${fee.id})"></i>
-                `;
-                feeGroup.appendChild(feeItem);
-            });
-            updateOrderSummary();
-        }
-
-        async function fetchPaymentMethods() {
-            try {
-                const response = await fetch(`${apiUrl}/payment_gateways`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to load payment methods');
-                const methods = await response.json();
-                paymentMethods = methods.filter(method => method.enabled);
-                renderPaymentMethods();
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+        });
+        localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+        categories = [];
+        products.forEach(p => {
+            const secondCategory = p.categories?.[1];
+            const secondCategoryId = secondCategory?.id || 'other';
+            const categoryName = secondCategory?.name || 'Other';
+            if (!categories.find(c => c.id === secondCategoryId)) {
+                categories.push({ id: secondCategoryId, name: categoryName });
             }
-        }
-
-        function renderPaymentMethods() {
-            const paymentMethodsContainer = document.getElementById('payment-methods');
-            paymentMethodsContainer.innerHTML = '';
-            paymentMethods.forEach(method => {
-                const label = document.createElement('label');
-                label.innerHTML = `
-                    <input type="checkbox" name="payment_method" value="${method.id}" onchange="updatePaymentMethod(this)">
-                    ${method.title}
-                `;
-                paymentMethodsContainer.appendChild(label);
-            });
-        }
-
-        function updatePaymentMethod(checkbox) {
-            document.querySelectorAll('input[name="payment_method"]').forEach(cb => {
-                if (cb !== checkbox) cb.checked = false;
-            });
-        }
-
-        async function fetchCoupons() {
-            try {
-                const response = await fetch(`${apiUrl}/coupons?per_page=100`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to load coupons');
-                const allCoupons = await response.json();
-                const currentDate = new Date();
-                coupons = allCoupons.filter(coupon => {
-                    const expiryDate = coupon.date_expires ? new Date(coupon.date_expires) : null;
-                    const isNotExpired = !expiryDate || expiryDate >= currentDate;
-                    const isNotMaxUsed = coupon.maximum_uses === 0 || coupon.usage_count < coupon.maximum_uses;
-                    return isNotExpired && isNotMaxUsed;
-                });
-                renderCoupons();
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            }
-        }
-
-        function renderCoupons() {
-            const couponSection = document.getElementById('coupon-section');
-            const couponList = document.getElementById('coupon-list');
-            couponList.innerHTML = '';
-            if (coupons.length === 0) {
-                couponSection.style.display = 'none';
-                return;
-            }
-            couponSection.style.display = 'block';
-            coupons.forEach(coupon => {
-                const item = document.createElement('div');
-                item.className = `coupon-item ${selectedCoupon?.id === coupon.id ? 'active' : ''}`;
-                item.textContent = `${coupon.code} (${coupon.discount_type === 'percent' ? `${coupon.amount}%` : `EGP ${coupon.amount}`})`;
-                item.onclick = () => {
-                    selectedCoupon = coupon;
-                    document.querySelectorAll('.coupon-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Coupon Applied',
-                        text: `Coupon ${coupon.code} applied.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                    updateOrderSummary();
-                };
-                couponList.appendChild(item);
+        });
+        filteredProducts = products.filter(p => {
+            const stock = getMetaValue(p.meta_data, `_stock_${warehouse}`);
+            return stock && parseInt(stock) > 0;
+        });
+        if (filteredProducts.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: 'No products available in this warehouse.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
             });
         }
+        renderCategoryTabs();
+        filterProducts();
+        fetchCoupons();
+        fetchPaymentMethods();
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    } finally {
+        showLoader(false);
+    }
+}
 
-        async function fetchProducts(warehouse) {
-            if (!warehouse) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a warehouse.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            selectedWarehouse = warehouse;
-            document.querySelectorAll('.warehouse-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.warehouse === warehouse);
-            });
-            showLoader(true);
-            try {
-                const response = await fetch(`${apiUrl}/products?per_page=100`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to load products');
-                products = await response.json();
-                orderItems = orderItems.filter(item => {
-                    const product = products.find(p => p.id === item.product_id);
-                    if (!product) return false;
-                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0;
-                    return stock >= item.quantity;
-                });
-                orderItems.forEach(item => {
-                    const product = products.find(p => p.id === item.product_id);
-                    if (product) {
-                        item.price = getProductPrice(product, warehouse);
-                    }
-                });
-                localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
-                categories = [];
-                products.forEach(p => {
-                    const secondCategory = p.categories?.[1];
-                    const secondCategoryId = secondCategory?.id || 'other';
-                    const categoryName = secondCategory?.name || 'Other';
-                    if (!categories.find(c => c.id === secondCategoryId)) {
-                        categories.push({ id: secondCategoryId, name: categoryName });
-                    }
-                });
-                filteredProducts = products.filter(p => {
-                    const stock = getMetaValue(p.meta_data, `_stock_${warehouse}`);
-                    return stock && parseInt(stock) > 0;
-                });
-                if (filteredProducts.length === 0) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Info',
-                        text: 'No products available in this warehouse.',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                }
-                renderCategoryTabs();
-                filterProducts();
-                fetchCoupons();
-                fetchPaymentMethods();
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        function renderCategoryTabs() {
+function renderCategoryTabs() {
     const categoryTabs = document.getElementById('category-tabs');
     categoryTabs.innerHTML = '<div class="category-tab active" data-category="all">All</div>';
     
-
     const allTab = categoryTabs.firstChild;
     
     categories.forEach(category => {
@@ -1144,686 +1158,699 @@
         categoryTabs.appendChild(tab);
     });
     
-
     allTab.onclick = () => {
         document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
         allTab.classList.add('active');
         filterProducts();
     };
 }
-        function filterProducts() {
-            const searchTerm = document.getElementById('product-search').value.toLowerCase();
-            const selectedCategory = document.querySelector('.category-tab.active').dataset.category;
 
-            filteredProducts = products.filter(p => {
-                const stock = getMetaValue(p.meta_data, `_stock_${selectedWarehouse}`);
-                return stock && parseInt(stock) > 0;
-            });
+function filterProducts() {
+    const searchTerm = document.getElementById('product-search').value.toLowerCase();
+    const selectedCategory = document.querySelector('.category-tab.active').dataset.category;
 
-            if (selectedCategory !== 'all') {
-                filteredProducts = filteredProducts.filter(p => {
-                    const secondCategoryId = p.categories?.[1]?.id?.toString() || 'other';
-                    return secondCategoryId === selectedCategory;
-                });
-            }
+    filteredProducts = products.filter(p => {
+        const stock = getMetaValue(p.meta_data, `_stock_${selectedWarehouse}`);
+        return stock && parseInt(stock) > 0;
+    });
 
-            if (searchTerm) {
-                filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
-            }
+    if (selectedCategory !== 'all') {
+        filteredProducts = filteredProducts.filter(p => {
+            const secondCategoryId = p.categories?.[1]?.id?.toString() || 'other';
+            return secondCategoryId === selectedCategory;
+        });
+    }
 
-            renderProducts();
+    if (searchTerm) {
+        filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
+    }
+
+    renderProducts();
+}
+
+function renderProducts() {
+    const productGrid = document.getElementById('product-grid');
+    productGrid.innerHTML = '';
+    if (filteredProducts.length === 0) {
+        productGrid.innerHTML = '<p>No products available.</p>';
+        return;
+    }
+    filteredProducts.forEach(product => {
+        const stock = getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`);
+        const price = getProductPrice(product, selectedWarehouse);
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <img src="${product.images?.[0]?.src || 'https://via.placeholder.com/150'}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p class="stock">${stock} In Stock</p>
+            <p>EGP ${price.toFixed(2)}</p>
+        `;
+        card.onclick = () => addToOrder(product, price, stock);
+        productGrid.appendChild(card);
+    });
+}
+
+function addToOrder(product, price, stock) {
+    const availableStock = parseInt(stock);
+    if (availableStock <= 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Out of Stock',
+            text: `${product.name} is out of stock.`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    const existingItem = orderItems.find(item => item.product_id === product.id);
+    const cartQuantity = existingItem ? existingItem.quantity : 0;
+    if (cartQuantity >= availableStock) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Insufficient Stock',
+            text: `Only ${availableStock} units available for ${product.name}.`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    let newQuantity;
+    if (existingItem) {
+        existingItem.quantity += 1;
+        existingItem.price = price;
+        newQuantity = existingItem.quantity;
+    } else {
+        orderItems.push({
+            product_id: product.id,
+            name: product.name,
+            quantity: 1,
+            price: price,
+            warehouse: selectedWarehouse
+        });
+        newQuantity = 1;
+    }
+    localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+    renderOrderItems();
+    filterProducts();
+    Swal.fire({
+        icon: 'success',
+        title: `${product.name} Added`,
+        text: `Total Quantity in Cart: ${newQuantity}`,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1500
+    });
+}
+
+async function updateProductStock(productId, quantity) {
+    const product = products.find(p => p.id === productId);
+    const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`)) || 0;
+    const newStock = currentStock - quantity;
+    try {
+        const response = await fetch(`${apiUrl}/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            },
+            body: JSON.stringify({
+                meta_data: [
+                    { key: `_stock_${selectedWarehouse}`, value: newStock.toString() }
+                ]
+            })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Failed to update stock for ${product.name}: ${error.message}`);
         }
+        product.meta_data = product.meta_data.map(meta =>
+            meta.key === `_stock_${selectedWarehouse}` ? { ...meta, value: newStock.toString() } : meta
+        );
+        filterProducts();
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Stock Update Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+}
 
-        function renderProducts() {
-            const productGrid = document.getElementById('product-grid');
-            productGrid.innerHTML = '';
-            if (filteredProducts.length === 0) {
-                productGrid.innerHTML = '<p>No products available.</p>';
-                return;
-            }
-            filteredProducts.forEach(product => {
-                const stock = getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`);
-                const price = getProductPrice(product, selectedWarehouse);
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <img src="${product.images?.[0]?.src || 'https://via.placeholder.com/150'}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p class="stock">${stock} In Stock</p>
-                    <p>EGP ${price.toFixed(2)}</p>
-                `;
-                card.onclick = () => addToOrder(product, price, stock);
-                productGrid.appendChild(card);
-            });
+function renderOrderItems() {
+    const orderItemsBody = document.getElementById('order-items');
+    orderItemsBody.innerHTML = '';
+    orderItems.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>EGP ${item.price.toFixed(2)}</td>
+            <td>EGP ${(item.quantity * item.price).toFixed(2)}</td>
+            <td><i class="fas fa-trash remove-btn" onclick="removeItem(${index})"></i></td>
+        `;
+        orderItemsBody.appendChild(row);
+    });
+    updateOrderSummary();
+}
+
+function removeItem(index) {
+    orderItems.splice(index, 1);
+    localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+    renderOrderItems();
+    filterProducts();
+}
+
+async function searchCustomer() {
+    const searchTerm = document.getElementById('customer-search').value.trim();
+    if (searchTerm.length < 3) {
+        document.getElementById('customer-orders').innerHTML = '';
+        currentCustomerPage = 1;
+        totalCustomerPages = 1;
+        return;
+    }
+    showLoader(true);
+    try {
+        const response = await fetch(`${apiUrl}/orders?search=${encodeURIComponent(searchTerm)}&per_page=10&page=${currentCustomerPage}`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to search orders');
+        const orders = await response.json();
+        const total = parseInt(response.headers.get('X-WP-Total') || '0');
+        totalCustomerPages = Math.min(Math.ceil(total / 10), 5);
+        const customerOrders = document.getElementById('customer-orders');
+        if (currentCustomerPage === 1) {
+            customerOrders.innerHTML = '';
         }
+        if (orders.length === 0) {
+            customerOrders.innerHTML = '<p class="no-matching-orders">No matching orders found. Enter details manually.</p>';
+            return;
+        }
+        orders.forEach(order => {
+            const div = document.createElement('div');
+            div.className = 'customer-item';
+            div.innerHTML = `
+                <div class="customer-info">
+                    <p class="name"><i class="fas fa-user"></i> ${order.billing.first_name} ${order.billing.last_name}</p>
+                    <p class="email"><i class="fas fa-envelope"></i> ${order.billing.email}</p>
+                    <p class="phone"><i class="fas fa-phone"></i> ${order.billing.phone || 'N/A'}</p>
+                    <p class="order-info"><i class="fas fa-shopping-cart"></i> Order #${order.id} - ${new Date(order.date_created).toLocaleDateString()}</p>
+                </div>
+                <button class="reorder-btn" onclick="reorder(${order.id})"><i class="fas fa-redo"></i> Re Order</button>
+            `;
+            div.onclick = (e) => {
+                if (!e.target.closest('.reorder-btn')) selectCustomer(order);
+            };
+            customerOrders.appendChild(div);
+        });
+        customerOrders.querySelectorAll('.load-more-btn').forEach(btn => btn.remove());
+        if (currentCustomerPage < totalCustomerPages) {
+            const loadMoreBtn = document.createElement('div');
+            loadMoreBtn.className = 'load-more-btn';
+            loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Load More';
+            loadMoreBtn.onclick = () => {
+                currentCustomerPage++;
+                searchCustomer();
+            };
+            customerOrders.appendChild(loadMoreBtn);
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    } finally {
+        showLoader(false);
+    }
+}
 
-        function addToOrder(product, price, stock) {
-            const availableStock = parseInt(stock);
-            if (availableStock <= 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Out of Stock',
-                    text: `${product.name} is out of stock.`,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+function selectCustomer(order) {
+    selectedCustomer = order.customer_id || 0;
+    document.getElementById('customer_name').value = `${order.billing.first_name} ${order.billing.last_name}`.trim() || '';
+    document.getElementById('email').value = order.billing.email || '';
+    document.getElementById('phone').value = order.billing.phone || '';
+    document.getElementById('location_phone').value = getMetaValue(order.meta_data, 'location_phone') || '';
+    document.getElementById('address_1').value = order.billing.address_1 || '';
+
+    // Prioritize location: billing.location > billing.delivery_location > meta.location
+    let location = order.billing.location || '';
+    if (!location) {
+        location = order.billing.delivery_location || '';
+    }
+    if (!location) {
+        location = getMetaValue(order.meta_data, 'location') || '';
+    }
+    document.getElementById('location').value = location;
+
+    document.getElementById('zone_name').value = getMetaValue(order.meta_data, 'zone_name') || '';
+    document.getElementById('order_date').value = getMetaValue(order.meta_data, 'order_date') || '';
+    document.getElementById('order_time').value = getMetaValue(order.meta_data, 'order_time') || '12:00PM To 2:00PM';
+    document.getElementById('order_note').value = getMetaValue(order.meta_data, 'note') || '';
+    const deliveryFee = order.fee_lines.find(fee => fee.name === 'Delivery Fee')?.total || '';
+    document.getElementById('delivery_fee').value = deliveryFee;
+    const paymentMethod = order.payment_method;
+    const checkbox = document.querySelector(`input[name="payment_method"][value="${paymentMethod}"]`);
+    if (checkbox) {
+        document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
+        checkbox.checked = true;
+    }
+    document.getElementById('customer-orders').innerHTML = '';
+    Swal.fire({
+        icon: 'success',
+        title: 'Customer Selected',
+        text: 'Details loaded from last order.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1500
+    });
+}
+
+async function reorder(orderId) {
+    if (!selectedWarehouse) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a warehouse first.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    showLoader(true);
+    try {
+        const response = await fetch(`${apiUrl}/orders/${orderId}`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to fetch order');
+        const order = await response.json();
+        selectCustomer(order);
+        const unavailableItems = [];
+        const adjustedItems = [];
+        order.line_items.forEach(item => {
+            const product = products.find(p => p.id === item.product_id);
+            if (!product) {
+                unavailableItems.push(item.name);
                 return;
             }
-            const existingItem = orderItems.find(item => item.product_id === product.id);
-            const cartQuantity = existingItem ? existingItem.quantity : 0;
-            if (cartQuantity >= availableStock) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Insufficient Stock',
-                    text: `Only ${availableStock} units available for ${product.name}.`,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+            const stock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
+            if (stock === 0) {
+                unavailableItems.push(item.name);
                 return;
             }
-            let newQuantity;
+            const price = getProductPrice(product, selectedWarehouse);
+            const quantity = Math.min(item.quantity, stock);
+            if (quantity < item.quantity) {
+                adjustedItems.push({ name: item.name, available: quantity });
+            }
+            const existingItem = orderItems.find(i => i.product_id === item.product_id);
             if (existingItem) {
-                existingItem.quantity += 1;
+                existingItem.quantity = Math.min(existingItem.quantity + quantity, stock);
                 existingItem.price = price;
-                newQuantity = existingItem.quantity;
+                existingItem.warehouse = selectedWarehouse;
             } else {
                 orderItems.push({
-                    product_id: product.id,
-                    name: product.name,
-                    quantity: 1,
+                    product_id: item.product_id,
+                    name: item.name,
+                    quantity: quantity,
                     price: price,
                     warehouse: selectedWarehouse
                 });
-                newQuantity = 1;
             }
-            localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
-            renderOrderItems();
-            filterProducts();
+        });
+        localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
+        renderOrderItems();
+        filterProducts();
+        document.getElementById('customer-orders').innerHTML = '';
+        if (unavailableItems.length > 0) {
             Swal.fire({
-                icon: 'success',
-                title: `${product.name} Added`,
-                text: `Total Quantity in Cart: ${newQuantity}`,
+                icon: 'warning',
+                title: 'Items Unavailable',
+                text: `Removed: ${unavailableItems.join(', ')} (out of stock).`,
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 4000
             });
         }
-
-        async function updateProductStock(productId, quantity) {
-            const product = products.find(p => p.id === productId);
-            const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`)) || 0;
-            const newStock = currentStock - quantity;
-            try {
-                const response = await fetch(`${apiUrl}/products/${productId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
-                    },
-                    body: JSON.stringify({
-                        meta_data: [
-                            { key: `_stock_${selectedWarehouse}`, value: newStock.toString() }
-                        ]
-                    })
-                });
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(`Failed to update stock for ${product.name}: ${error.message}`);
-                }
-                product.meta_data = product.meta_data.map(meta =>
-                    meta.key === `_stock_${selectedWarehouse}` ? { ...meta, value: newStock.toString() } : meta
-                );
-                filterProducts();
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Stock Update Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            }
-        }
-
-        function renderOrderItems() {
-            const orderItemsBody = document.getElementById('order-items');
-            orderItemsBody.innerHTML = '';
-            orderItems.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>EGP ${item.price.toFixed(2)}</td>
-                    <td>EGP ${(item.quantity * item.price).toFixed(2)}</td>
-                    <td><i class="fas fa-trash remove-btn" onclick="removeItem(${index})"></i></td>
-                `;
-                orderItemsBody.appendChild(row);
-            });
-            updateOrderSummary();
-        }
-
-        function removeItem(index) {
-            orderItems.splice(index, 1);
-            localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
-            renderOrderItems();
-            filterProducts();
-        }
-
-        async function searchCustomer() {
-            const searchTerm = document.getElementById('customer-search').value.trim();
-            if (searchTerm.length < 3) {
-                document.getElementById('customer-orders').innerHTML = '';
-                currentCustomerPage = 1;
-                totalCustomerPages = 1;
-                return;
-            }
-            showLoader(true);
-            try {
-                const response = await fetch(`${apiUrl}/orders?search=${encodeURIComponent(searchTerm)}&per_page=10&page=${currentCustomerPage}`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to search orders');
-                const orders = await response.json();
-                const total = parseInt(response.headers.get('X-WP-Total') || '0');
-                totalCustomerPages = Math.min(Math.ceil(total / 10), 5);
-                const customerOrders = document.getElementById('customer-orders');
-                if (currentCustomerPage === 1) {
-                    customerOrders.innerHTML = '';
-                }
-                if (orders.length === 0) {
-                    customerOrders.innerHTML = '<p class="no-matching-orders">No matching orders found. Enter details manually.</p>';
-                    return;
-                }
-                orders.forEach(order => {
-                    const div = document.createElement('div');
-                    div.className = 'customer-item';
-                    div.innerHTML = `
-                        <div class="customer-info">
-                            <p class="name"><i class="fas fa-user"></i> ${order.billing.first_name} ${order.billing.last_name}</p>
-                            <p class="email"><i class="fas fa-envelope"></i> ${order.billing.email}</p>
-                            <p class="phone"><i class="fas fa-phone"></i> ${order.billing.phone || 'N/A'}</p>
-                            <p class="order-info"><i class="fas fa-shopping-cart"></i> Order #${order.id} - ${new Date(order.date_created).toLocaleDateString()}</p>
-                        </div>
-                        <button class="reorder-btn" onclick="reorder(${order.id})"><i class="fas fa-redo"></i> Re Order</button>
-                    `;
-                    div.onclick = (e) => {
-                        if (!e.target.closest('.reorder-btn')) selectCustomer(order);
-                    };
-                    customerOrders.appendChild(div);
-                });
-                customerOrders.querySelectorAll('.load-more-btn').forEach(btn => btn.remove());
-                if (currentCustomerPage < totalCustomerPages) {
-                    const loadMoreBtn = document.createElement('div');
-                    loadMoreBtn.className = 'load-more-btn';
-                    loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Load More';
-                    loadMoreBtn.onclick = () => {
-                        currentCustomerPage++;
-                        searchCustomer();
-                    };
-                    customerOrders.appendChild(loadMoreBtn);
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        function selectCustomer(order) {
-            selectedCustomer = order.customer_id || 0;
-            document.getElementById('customer_name').value = `${order.billing.first_name} ${order.billing.last_name}`.trim() || '';
-            document.getElementById('email').value = order.billing.email || '';
-            document.getElementById('phone').value = order.billing.phone || '';
-            document.getElementById('location_phone').value = getMetaValue(order.meta_data, 'location_phone') || '';
-            document.getElementById('address_1').value = order.billing.address_1 || '';
-            document.getElementById('location').value = getMetaValue(order.meta_data, 'location') || '';
-            document.getElementById('zone_name').value = getMetaValue(order.meta_data, 'zone_name') || '';
-            document.getElementById('order_date').value = getMetaValue(order.meta_data, 'order_date') || '';
-            document.getElementById('order_time').value = getMetaValue(order.meta_data, 'order_time') || '12:00PM To 2:00PM';
-            document.getElementById('order_note').value = getMetaValue(order.meta_data, 'note') || '';
-            const deliveryFee = order.fee_lines.find(fee => fee.name === 'Delivery Fee')?.total || '80';
-            document.getElementById('delivery_fee').value = deliveryFee;
-            const paymentMethod = order.payment_method;
-            const checkbox = document.querySelector(`input[name="payment_method"][value="${paymentMethod}"]`);
-            if (checkbox) {
-                document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
-                checkbox.checked = true;
-            }
-            document.getElementById('customer-orders').innerHTML = '';
+        if (adjustedItems.length > 0) {
+            const messages = adjustedItems.map(item => `${item.name}: Only ${item.available} available.`);
             Swal.fire({
-                icon: 'success',
-                title: 'Customer Selected',
-                text: 'Details loaded from last order.',
+                icon: 'warning',
+                title: 'Adjusted Quantities',
+                text: messages.join('\n'),
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 4000
             });
         }
+        Swal.fire({
+            icon: 'success',
+            title: 'Reordered',
+            text: 'Order items and customer details loaded.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    } finally {
+        showLoader(false);
+    }
+}
 
-        async function reorder(orderId) {
-            if (!selectedWarehouse) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a warehouse first.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            showLoader(true);
-            try {
-                const response = await fetch(`${apiUrl}/orders/${orderId}`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to fetch order');
-                const order = await response.json();
-                selectCustomer(order);
-                const unavailableItems = [];
-                const adjustedItems = [];
-                order.line_items.forEach(item => {
-                    const product = products.find(p => p.id === item.product_id);
-                    if (!product) {
-                        unavailableItems.push(item.name);
-                        return;
-                    }
-                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
-                    if (stock === 0) {
-                        unavailableItems.push(item.name);
-                        return;
-                    }
-                    const price = getProductPrice(product, selectedWarehouse);
-                    const quantity = Math.min(item.quantity, stock);
-                    if (quantity < item.quantity) {
-                        adjustedItems.push({ name: item.name, available: quantity });
-                    }
-                    const existingItem = orderItems.find(i => i.product_id === item.product_id);
-                    if (existingItem) {
-                        existingItem.quantity = Math.min(existingItem.quantity + quantity, stock);
-                        existingItem.price = price;
-                        existingItem.warehouse = selectedWarehouse;
-                    } else {
-                        orderItems.push({
-                            product_id: item.product_id,
-                            name: item.name,
-                            quantity: quantity,
-                            price: price,
-                            warehouse: selectedWarehouse
-                        });
-                    }
-                });
-                localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
-                renderOrderItems();
-                filterProducts();
-                document.getElementById('customer-orders').innerHTML = '';
-                if (unavailableItems.length > 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Items Unavailable',
-                        text: `Removed: ${unavailableItems.join(', ')} (out of stock).`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 4000
-                    });
-                }
-                if (adjustedItems.length > 0) {
-                    const messages = adjustedItems.map(item => `${item.name}: Only ${item.available} available.`);
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Adjusted Quantities',
-                        text: messages.join('\n'),
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 4000
-                    });
-                }
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Reordered',
-                    text: 'Order items and customer details loaded.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        async function createOrder() {
-            if (!selectedWarehouse) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a warehouse.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            if (orderItems.length === 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please add products to the order.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            const requiredFields = ['customer_name', 'email', 'phone', 'address_1', 'zone_name'];
-            for (const field of requiredFields) {
-                if (!document.getElementById(field).value.trim()) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: `${field.replace('_', ' ')} is required.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
-            if (!selectedPaymentMethod) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a payment method.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            const paymentMethodId = selectedPaymentMethod.value;
-            const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
-            for (const item of orderItems) {
-                const product = products.find(p => p.id === item.product_id);
-                const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
-                if (item.quantity > currentStock) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Insufficient Stock',
-                        text: `Only ${currentStock} units available for ${item.name}.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            if (selectedCoupon) {
-                const currentDate = new Date();
-                const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
-                if (expiryDate && expiryDate < currentDate) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Coupon',
-                        text: `Coupon ${selectedCoupon.code} has expired.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-                if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Coupon',
-                        text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            const customerName = document.getElementById('customer_name').value;
-            const email = document.getElementById('email').value;
-            const orderData = {
-                customer_id: selectedCustomer || 0,
-                status: 'processing',
-                payment_method: paymentMethodId,
-                payment_method_title: paymentMethod.title,
-                billing: {
-                    first_name: customerName.split(' ')[0],
-                    last_name: customerName.split(' ').slice(1).join(' '),
-                    email: email,
-                    phone: document.getElementById('phone').value,
-                    address_1: document.getElementById('address_1').value
-                },
-                shipping: {
-                    address_1: document.getElementById('address_1').value,
-                    phone: document.getElementById('phone').value
-                },
-                line_items: orderItems.map(item => ({
-                    product_id: item.product_id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    meta_data: [
-                        { key: '_warehouse', value: item.warehouse || selectedWarehouse },
-                        { key: '_reduced_stock', value: item.quantity.toString() }
-                    ]
-                })),
-                fee_lines: [
-                    {
-                        name: 'Delivery Fee',
-                        total: document.getElementById('delivery_fee').value,
-                        tax_status: 'taxable'
-                    },
-                    ...additionalFees.filter(fee => fee.amount > 0).map(fee => ({
-                        name: fee.name || 'Additional Fee',
-                        total: fee.amount.toString(),
-                        tax_status: 'taxable'
-                    }))
-                ],
-                coupon_lines: selectedCoupon ? [{ code: selectedCoupon.code }] : [],
-                meta_data: [
-                    { key: '_selected_warehouse', value: selectedWarehouse },
-                    { key: 'order_date', value: document.getElementById('order_date').value },
-                    { key: 'order_time', value: document.getElementById('order_time').value },
-                    { key: 'location', value: document.getElementById('location').value },
-                    { key: 'location_phone', value: document.getElementById('location_phone').value },
-                    { key: 'zone_name', value: document.getElementById('zone_name').value },
-                    { key: 'note', value: document.getElementById('order_note').value }
-                ]
-            };
-            console.log('Order Data:', JSON.stringify(orderData, null, 2));
-            showLoader(true);
-            try {
-                const orderResponse = await fetch(`${apiUrl}/orders`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
-                    },
-                    body: JSON.stringify(orderData)
-                });
-                if (!orderResponse.ok) {
-                    const error = await orderResponse.json();
-                    throw new Error(error.message);
-                }
-                const order = await orderResponse.json();
-                lastOrder = { ...orderData, id: order.id };
-                for (const item of orderItems) {
-                    await updateProductStock(item.product_id, item.quantity);
-                }
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Order Created',
-                    text: 'Order created and stock updated successfully!',
-                    showConfirmButton: true,
-                    confirmButtonText: 'Send Invoice to WhatsApp',
-                    confirmButtonColor: '#25D366',
-                    showCancelButton: true,
-                    cancelButtonText: 'Close',
-                    cancelButtonColor: '#c62828'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        sendInvoice();
-                    }
-                    clearOrder();
-                });
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        function sendInvoice() {
-            if (!lastOrder) return;
-            const customerName = document.getElementById('customer_name').value;
-            const selectedDate = document.getElementById('order_date').value;
-            const selectedTime = document.getElementById('order_time').value;
-            const currency = 'EGP';
-            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            let discountTotal = 0;
-            let couponCode = '';
-            if (selectedCoupon) {
-                couponCode = selectedCoupon.code;
-                if (selectedCoupon.discount_type === 'fixed_cart') {
-                    discountTotal = parseFloat(selectedCoupon.amount) || 0;
-                } else if (selectedCoupon.discount_type === 'percent') {
-                    discountTotal = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
-                }
-            }
-            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
-            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-            const feesText = [
-                `*Delivery Fee:* ${deliveryFee.toFixed(2)} ${currency}`,
-                ...additionalFees.filter(fee => fee.amount > 0).map(fee => `*${fee.name}:* ${parseFloat(fee.amount).toFixed(2)} ${currency}`)
-            ].join('\n');
-            const total = subtotal + deliveryFee + feeTotal - discountTotal;
-            const products = orderItems.map(item => `${item.name} x${item.quantity} - ${item.price.toFixed(2)} ${currency}`).join('\n');
-            const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
-            const message = `*Hello ${customerName},*\n\n` +
-                           `We’re happy to inform you that your order is ready and will be delivered on ${formattedDate} at ${selectedTime || 'Not specified'}.\n\n` +
-                           `━━━━━━━━━━━━━━━━━━\n` +
-                           `*Order Summary:*\n\n` +
-                           `${products}\n\n` +
-                           `━━━━━━━━━━━━━━━━━━\n` +
-                           `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
-                           (discountTotal > 0 ? `*Discount${couponCode ? ` (${couponCode})` : ''}:* -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
-                           `${feesText}\n\n` +
-                           `*Total:* ${total.toFixed(2)} ${currency}\n` +
-                           `━━━━━━━━━━━━━━━━━━\n\n` +
-                           `You can explore all our delicious frozen meals anytime at:\n` +
-                           `https://tenderfrozen.com\n\n` +
-                           `*Thank you for choosing Tender Frozen!*\n\n` +
-                           `We can’t wait to serve you again.`;
-            let phone = document.getElementById('phone').value.replace(/\D/g, '');
-            if (!phone.startsWith('+20')) {
-                phone = `+20${phone}`;
-            }
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        }
-
-        function clearOrder() {
-            orderItems = [];
-            selectedCustomer = null;
-            selectedCoupon = null;
-            additionalFees = [];
-            document.getElementById('customer_name').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('location_phone').value = '';
-            document.getElementById('address_1').value = '';
-            document.getElementById('location').value = '';
-            document.getElementById('zone_name').value = '';
-            document.getElementById('order_date').value = '';
-            document.getElementById('order_time').value = '12:00PM To 2:00PM';
-            document.getElementById('order_note').value = '';
-            document.getElementById('delivery_fee').value = '80';
-            document.getElementById('fee-group').innerHTML = '';
-            document.getElementById('customer-search').value = '';
-            document.getElementById('customer-orders').innerHTML = '';
-            document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
-            document.getElementById('coupon-section').style.display = 'none';
-            localStorage.removeItem('posOrderItems');
-            currentCustomerPage = 1;
-            totalCustomerPages = 1;
-            renderOrderItems();
-            filterProducts();
+async function createOrder() {
+    if (!selectedWarehouse) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a warehouse.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    if (orderItems.length === 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please add products to the order.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    const requiredFields = ['customer_name', 'email', 'phone', 'address_1', 'zone_name', 'delivery_fee'];
+    for (const field of requiredFields) {
+        if (!document.getElementById(field).value.trim()) {
             Swal.fire({
-                icon: 'success',
-                title: 'Order Cleared',
-                text: 'All order details have been reset.',
+                icon: 'error',
+                title: 'Error',
+                text: `${field.replace('_', ' ')} is required.`,
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 3000
             });
+            return;
         }
-
-        function init() {
-            const savedOrderItems = localStorage.getItem('posOrderItems');
-            if (savedOrderItems) {
-                orderItems = JSON.parse(savedOrderItems);
-                renderOrderItems();
+    }
+    const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    if (!selectedPaymentMethod) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a payment method.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    const paymentMethodId = selectedPaymentMethod.value;
+    const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
+    for (const item of orderItems) {
+        const product = products.find(p => p.id === item.product_id);
+        const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
+        if (item.quantity > currentStock) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Insufficient Stock',
+                text: `Only ${currentStock} units available for ${item.name}.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+    }
+    if (selectedCoupon) {
+        const currentDate = new Date();
+        const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
+        if (expiryDate && expiryDate < currentDate) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: `Coupon ${selectedCoupon.code} has expired.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+        if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+    }
+    const customerName = document.getElementById('customer_name').value;
+    const email = document.getElementById('email').value;
+    const location = document.getElementById('location').value;
+    const orderData = {
+        customer_id: selectedCustomer || 0,
+        status: 'processing',
+        payment_method: paymentMethodId,
+        payment_method_title: paymentMethod.title,
+        billing: {
+            first_name: customerName.split(' ')[0],
+            last_name: customerName.split(' ').slice(1).join(' '),
+            email: email,
+            phone: document.getElementById('phone').value,
+            address_1: document.getElementById('address_1').value,
+            delivery_location: location
+        },
+        shipping: {
+            address_1: document.getElementById('address_1').value,
+            phone: document.getElementById('phone').value,
+            delivery_location: location
+        },
+        line_items: orderItems.map(item => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            meta_data: [
+                { key: '_warehouse', value: item.warehouse || selectedWarehouse },
+                { key: '_reduced_stock', value: item.quantity.toString() }
+            ]
+        })),
+        fee_lines: [
+            {
+                name: 'Delivery Fee',
+                total: document.getElementById('delivery_fee').value,
+                tax_status: 'taxable'
+            },
+            ...additionalFees.filter(fee => fee.amount > 0).map(fee => ({
+                name: fee.name || 'Additional Fee',
+                total: fee.amount.toString(),
+                tax_status: 'taxable'
+            }))
+        ],
+        coupon_lines: selectedCoupon ? [{ code: selectedCoupon.code }] : [],
+        meta_data: [
+            { key: '_selected_warehouse', value: selectedWarehouse },
+            { key: 'order_date', value: document.getElementById('order_date').value },
+            { key: 'order_time', value: document.getElementById('order_time').value },
+            { key: 'location', value: document.getElementById('location').value },
+            { key: 'location_phone', value: document.getElementById('location_phone').value },
+            { key: 'zone_name', value: document.getElementById('zone_name').value },
+            { key: 'note', value: document.getElementById('order_note').value }
+        ]
+    };
+    showLoader(true);
+    try {
+        const orderResponse = await fetch(`${apiUrl}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            },
+            body: JSON.stringify(orderData)
+        });
+        if (!orderResponse.ok) {
+            const error = await orderResponse.json();
+            throw new Error(error.message);
+        }
+        const order = await orderResponse.json();
+        lastOrder = { ...orderData, id: order.id };
+        for (const item of orderItems) {
+            await updateProductStock(item.product_id, item.quantity);
+        }
+        Swal.fire({
+            icon: 'success',
+            title: 'Order Created',
+            text: 'Order created and stock updated successfully!',
+            showConfirmButton: true,
+            confirmButtonText: 'Send Invoice to WhatsApp',
+            confirmButtonColor: '#25D366',
+            showCancelButton: true,
+            cancelButtonText: 'Close',
+            cancelButtonColor: '#c62828'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                sendInvoice();
             }
-            document.querySelectorAll('.warehouse-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const warehouse = button.dataset.warehouse;
-                    fetchProducts(warehouse);
-                });
-            });
-            const defaultWarehouse = 'oraby';
-            fetchProducts(defaultWarehouse);
-        }
+            clearOrder();
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    } finally {
+        showLoader(false);
+    }
+}
 
-        init();
-    </script>
+function sendInvoice() {
+    if (!lastOrder) return;
+    const customerName = document.getElementById('customer_name').value;
+    const selectedDate = document.getElementById('order_date').value;
+    const selectedTime = document.getElementById('order_time').value;
+    const currency = 'EGP';
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    let discountTotal = 0;
+    let couponCode = '';
+    if (selectedCoupon) {
+        couponCode = selectedCoupon.code;
+        if (selectedCoupon.discount_type === 'fixed_cart') {
+            discountTotal = parseFloat(selectedCoupon.amount) || 0;
+        } else if (selectedCoupon.discount_type === 'percent') {
+            discountTotal = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
+        }
+    }
+    const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+    const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+    const feesText = [
+        `*Delivery Fee:* ${deliveryFee.toFixed(2)} ${currency}`,
+        ...additionalFees.filter(fee => fee.amount > 0).map(fee => `*${fee.name}:* ${parseFloat(fee.amount).toFixed(2)} ${currency}`)
+    ].join('\n');
+    const total = subtotal + deliveryFee + feeTotal - discountTotal;
+    const products = orderItems.map(item => `${item.name} x${item.quantity} - ${item.price.toFixed(2)} ${currency}`).join('\n');
+    const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
+    const message = `*Hello ${customerName},*\n\n` +
+                   `We’re happy to inform you that your order is ready and will be delivered on ${formattedDate} at ${selectedTime || 'Not specified'}.\n\n` +
+                   `━━━━━━━━━━━━━━━━━━\n` +
+                   `*Order Summary:*\n\n` +
+                   `${products}\n\n` +
+                   `━━━━━━━━━━━━━━━━━━\n` +
+                   `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
+                   (discountTotal > 0 ? `*Discount${couponCode ? ` (${couponCode})` : ''}:* -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
+                   `${feesText}\n\n` +
+                   `*Total:* ${total.toFixed(2)} ${currency}\n` +
+                   `━━━━━━━━━━━━━━━━━━\n\n` +
+                   `You can explore all our delicious frozen meals anytime at:\n` +
+                   `https://tenderfrozen.com\n\n` +
+                   `*Thank you for choosing Tender Frozen!*\n\n` +
+                   `We can’t wait to serve you again.`;
+    let phone = document.getElementById('phone').value.replace(/\D/g, '');
+    if (!phone.startsWith('+20')) {
+        phone = `+20${phone}`;
+    }
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function clearOrder() {
+    orderItems = [];
+    selectedCustomer = null;
+    selectedCoupon = null;
+    additionalFees = [];
+    document.getElementById('customer_name').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('location_phone').value = '';
+    document.getElementById('address_1').value = '';
+    document.getElementById('location').value = '';
+    document.getElementById('zone_name').value = '';
+    document.getElementById('order_date').value = '';
+    document.getElementById('order_time').value = '12:00PM To 2:00PM';
+    document.getElementById('order_note').value = '';
+    document.getElementById('delivery_fee').value = '';
+    document.getElementById('fee-group').innerHTML = '';
+    document.getElementById('customer-search').value = '';
+    document.getElementById('customer-orders').innerHTML = '';
+    document.querySelectorAll('input[name="payment_method"]').forEach(cb => cb.checked = false);
+    document.getElementById('coupon-section').style.display = 'none';
+    localStorage.removeItem('posOrderItems');
+    currentCustomerPage = 1;
+    totalCustomerPages = 1;
+    renderOrderItems();
+    filterProducts();
+    Swal.fire({
+        icon: 'success',
+        title: 'Order Cleared',
+        text: 'All order details have been reset.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1500
+    });
+}
+
+function init() {
+    const savedOrderItems = localStorage.getItem('posOrderItems');
+    if (savedOrderItems) {
+        orderItems = JSON.parse(savedOrderItems);
+        renderOrderItems();
+    }
+    document.querySelectorAll('.warehouse-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const warehouse = button.dataset.warehouse;
+            fetchProducts(warehouse);
+        });
+    });
+    const defaultWarehouse = 'oraby';
+    fetchProducts(defaultWarehouse);
+    document.getElementById('delivery_fee').addEventListener('input', updateOrderSummary);
+}
+
+init();
+</script>
 </body>
 </html>

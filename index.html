@@ -1156,6 +1156,7 @@
             Object.keys(statusConfig).forEach(status => {
                 const count = statusCounts[status] || 0;
                 if (count > 0) {
+                    
                     const config = statusConfig[status];
                     const statCard = document.createElement('div');
                     statCard.classList.add('stat-card');
@@ -1189,6 +1190,7 @@
         function groupOrdersByWarehouse(orders) {
             const groupedOrders = { 'all': orders };
             orders.forEach(order => {
+                console.log(order)
                 const warehouseMeta = order.meta_data?.find(meta => meta.key === '_selected_warehouse');
                 const warehouse = warehouseMeta ? warehouseMeta.value : 'Unspecified';
                 if (!groupedOrders[warehouse]) groupedOrders[warehouse] = [];
@@ -1390,7 +1392,7 @@ try {
             const billingInfo = orderData.billing || {};
             const shippingInfo = orderData.shipping || {};
             const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-            const customerLocationLink = billingInfo.location || shippingInfo.location || '#';
+            const customerLocationLink = billingInfo.delivery_location|| shippingInfo.location || '#';
             const warehouseMeta = orderData.meta_data?.find(meta => meta.key === '_selected_warehouse');
             const warehouseName = warehouseMeta ? warehouseMeta.value : 'Unspecified';
             const dateCreated = orderData.date_created ? new Date(orderData.date_created).toLocaleString() : 'N/A';
@@ -1499,7 +1501,7 @@ function copyAddress(order, forWhatsApp = false) {
                        `*العميل:* ${customerName}\n` +
                        `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
                        `*العنوان:* ${customerAddress}\n` +
-                       `*اللوكيشن:* ${billing.location || shipping.location || 'Not Found'}\n` +
+                       `*اللوكيشن:* ${billing.delivery_location || shipping.location || 'Not Found'}\n` +
                        `*يوم التوصيل:* ${orderSelectDate}\n` +
                        `*وقت التوصيل:* ${orderSelectTime}\n` +
                        `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n` +
