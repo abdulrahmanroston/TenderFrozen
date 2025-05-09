@@ -19,8 +19,8 @@
             --card-bg: #ffffff;
             --text: #1f2937;
             --border: #d1d5db;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --out-of-stock-bg: rgba(255, 0, 0, 0.1); /* خلفية حمراء خفيفة */
+            --shadow: 0 4px 12 недавноpx rgba(0, 0, 0, 0.08);
+            --out-of-stock-bg: rgba(255, 0, 0, 0.1);
         }
 
         * {
@@ -277,38 +277,34 @@
         }
 
         .low-stock-badge {
-    display: inline-block;
-    background: red;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    margin-top: 5px;
-    font-weight: 500;
-    font-family: 'Roboto', sans-serif;
-    position: absolute;
-    top: 0px;
-    right: 50%;
-    animation: sway 3s ease-in-out infinite alternate;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 10;
-    transform-origin: center;
-    transition: all 0.5s ease;
-}
+            display: inline-block;
+            background: red;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: 500;
+            font-family: 'Roboto', sans-serif;
+            position: absolute;
+            top: 0px;
+            right: 50%;
+            animation: sway 3s ease-in-out infinite alternate;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            transform-origin: center;
+            transition: all 0.5s ease;
+        }
 
-.low-stock-badge:hover {
-    animation-play-state: paused;
-    transform: scale(1.05);
-}
+        .low-stock-badge:hover {
+            animation-play-state: paused;
+            transform: scale(1.05);
+        }
 
-@keyframes sway {
-    0% {
-        transform: translateX(5px);
-    }
-    100% {
-        transform: translateX(95%);
-    }
-}
+        @keyframes sway {
+            0% { transform: translateX(5px); }
+            100% { transform: translateX(95%); }
+        }
 
         .product-card .actions {
             display: flex;
@@ -388,6 +384,72 @@
 
         .transfer-form button:hover {
             background: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        .transfer-form .search-container {
+            position: relative;
+        }
+
+        .transfer-form .search-container input {
+            padding-left: 40px;
+        }
+
+        .transfer-form .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .transfer-form .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .transfer-form .search-results .result-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+        }
+
+        .transfer-form .search-results .result-item:hover {
+            background: var(--secondary);
+        }
+
+        .transfer-form .search-results .no-results {
+            padding: 10px;
+            color: var(--danger);
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+        }
+
+        .transfer-form .clear-selection {
+            padding: 10px;
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s, transform 0.2s;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 5px;
+        }
+
+        .transfer-form .clear-selection:hover {
+            background: #b91c1c;
             transform: scale(1.02);
         }
 
@@ -810,7 +872,13 @@
             <div class="transfer-form">
                 <div class="form-group">
                     <label><i class="fas fa-box"></i> Select Product</label>
-                    <select id="transfer-product"></select>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="transfer-search" placeholder="Search products...">
+                    </div>
+                    <button class="clear-selection" id="clear-selection">Clear Selection</button>
+                    <div id="search-results" class="search-results"></div>
+                    <select id="transfer-product" style="display: none;"></select>
                     <div id="available-stock" style="margin-top: 10px;"></div>
                 </div>
                 <div class="form-group">
@@ -1086,7 +1154,7 @@
                     renderWarehouseFilter();
                     renderLowStockFilter();
                     renderProducts();
-                    renderTransferProducts();
+                    renderSearchResults('');
                 }
             } catch (error) {
                 console.error('Fetch Products Error:', error);
@@ -1187,7 +1255,6 @@
             const lowStockFilter = document.getElementById('low-stock-filter');
             lowStockFilter.innerHTML = '';
             
-            // إخفاء الفلتر إذا كان المخزن المختار هو "all"
             if (currentWarehouseFilter === 'all') {
                 lowStockFilter.style.display = 'none';
                 currentLowStockFilter = 'all';
@@ -1314,25 +1381,54 @@
             });
         }
 
-        // Render transfer products
-        function renderTransferProducts() {
+        // Clear product selection
+        function clearProductSelection() {
             const transferProduct = document.getElementById('transfer-product');
-            transferProduct.innerHTML = '<option value="">Select a product</option>';
-            products.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.textContent = product.name || 'Unnamed Product';
-                transferProduct.appendChild(option);
-            });
+            const transferSearch = document.getElementById('transfer-search');
+            const availableStockDiv = document.getElementById('available-stock');
+            const searchResults = document.getElementById('search-results');
 
-            // Add event listener to show available stock
-            transferProduct.addEventListener('change', () => {
-                const productId = transferProduct.value;
-                renderAvailableStock(productId);
-            });
+            transferProduct.value = '';
+            transferSearch.value = '';
+            availableStockDiv.innerHTML = '';
+            searchResults.innerHTML = '';
+            renderSearchResults('');
+        }
 
-            // Initialize with empty stock display
-            renderAvailableStock('');
+        // Render search results for transfer products
+        function renderSearchResults(searchTerm = '') {
+            const searchResults = document.getElementById('search-results');
+            searchResults.innerHTML = '';
+
+            // Sort products alphabetically
+            const sortedProducts = [...products].sort((a, b) => 
+                (a.name || 'Unnamed Product').localeCompare(b.name || 'Unnamed Product')
+            );
+
+            // Filter products based on search term
+            const filtered = sortedProducts.filter(product =>
+                (product.name || 'Unnamed Product').toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0 && searchTerm) {
+                searchResults.innerHTML = '<div class="no-results">No products found</div>';
+                return;
+            }
+
+            filtered.forEach(product => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.textContent = product.name || 'Unnamed Product';
+                resultItem.dataset.productId = product.id;
+                resultItem.addEventListener('click', () => {
+                    const transferProduct = document.getElementById('transfer-product');
+                    transferProduct.value = product.id;
+                    renderAvailableStock(product.id);
+                    document.getElementById('transfer-search').value = product.name || 'Unnamed Product';
+                    searchResults.innerHTML = '';
+                });
+                searchResults.appendChild(resultItem);
+            });
         }
 
         // Render available stock for selected product
@@ -1560,15 +1656,14 @@
                 meta_data: []
             };
 
-            // Only include regular_price if it has changed
+            // Only update regular_price if the main price input has been explicitly changed
             const currentRegularPrice = currentProduct.regular_price || '';
             const inputPrice = inputs.price.trim();
-            const parsedInputPrice = inputPrice === '' ? '0' : parseFloat(inputPrice).toString();
-            if (parsedInputPrice !== currentRegularPrice) {
-                data.regular_price = parsedInputPrice;
+            if (inputPrice !== '' && parseFloat(inputPrice).toString() !== currentRegularPrice) {
+                data.regular_price = parseFloat(inputPrice).toString();
             }
 
-            // Handle warehouse prices (set empty to '0')
+            // Update warehouse-specific data
             warehouses.forEach(warehouse => {
                 const adjustStock = inputs[`adjust_stock_${warehouse}`];
                 const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
@@ -1579,11 +1674,12 @@
                     });
                 }
                 const warehousePrice = inputs[`price_${warehouse}`].trim();
-                const parsedWarehousePrice = warehousePrice === '' ? '0' : warehousePrice;
-                data.meta_data.push({
-                    key: `_price_${warehouse}`,
-                    value: parsedWarehousePrice
-                });
+                if (warehousePrice !== '') {
+                    data.meta_data.push({
+                        key: `_price_${warehouse}`,
+                        value: parseFloat(warehousePrice).toString()
+                    });
+                }
                 if (inputs[`min_stock_${warehouse}`]) {
                     data.meta_data.push({
                         key: `_min_stock_${warehouse}`,
@@ -1685,8 +1781,8 @@
                     transferHistory.push(record);
                     localStorage.setItem('transferHistory', JSON.stringify(transferHistory));
                     renderTransferHistory();
-                    document.getElementById('transfer-product').value = '';
                     document.getElementById('transfer-quantity').value = '';
+                    clearProductSelection();
                 } else {
                     const error = await response.json();
                     showErrorModal(`Error: ${error.message || 'Failed to transfer stock'}`);
@@ -1720,6 +1816,9 @@
             document.getElementById('transfer-section').style.display = section === 'transfer' ? 'block' : 'none';
             document.getElementById('page-title').textContent = section === 'products' ? 'Product Management' : 'Stock Transfer';
             document.getElementById('menu-modal').classList.remove('active');
+            if (section === 'transfer') {
+                clearProductSelection();
+            }
         }
 
         // Event listeners
@@ -1730,6 +1829,21 @@
         });
         document.querySelectorAll('.menu-content li').forEach(li => {
             li.addEventListener('click', () => switchSection(li.dataset.section));
+        });
+
+        // Search products in transfer section
+        document.getElementById('transfer-search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm === '') {
+                clearProductSelection();
+            } else {
+                renderSearchResults(searchTerm);
+            }
+        });
+
+        // Clear selection button
+        document.getElementById('clear-selection').addEventListener('click', () => {
+            clearProductSelection();
         });
 
         // Initialize
