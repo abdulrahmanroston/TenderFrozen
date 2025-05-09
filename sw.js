@@ -5,9 +5,9 @@ const urlsToCache = [
   'https://abdulrahmanroston.github.io/TenderFrozen/products.html',
   'https://abdulrahmanroston.github.io/TenderFrozen/tf-navigation.css',
   'https://abdulrahmanroston.github.io/TenderFrozen/tf-navigation.js',
-  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon-192.png',
-  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon-512.png',
-  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon-maskable.png'
+  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon1.png',
+  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon2.png',
+  'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon1.png'
 ];
 
 self.addEventListener('install', event => {
