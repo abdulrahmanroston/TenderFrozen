@@ -49,6 +49,7 @@
             width: 100%;
             font-size: 14px;
             padding-bottom: 60px; /* Space for fixed navbar */
+            
         }
         .container {
             max-width: 100%;
@@ -1198,7 +1199,7 @@
         function groupOrdersByWarehouse(orders) {
             const groupedOrders = { 'all': orders };
             orders.forEach(order => {
-                console.log(order)
+                
                 const warehouseMeta = order.meta_data?.find(meta => meta.key === '_selected_warehouse');
                 const warehouse = warehouseMeta ? warehouseMeta.value : 'Unspecified';
                 if (!groupedOrders[warehouse]) groupedOrders[warehouse] = [];
