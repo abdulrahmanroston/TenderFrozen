@@ -216,6 +216,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
             width: calc(25% - 15px);
+            position: relative;
         }
 
         .product-card.out-of-stock {
@@ -274,6 +275,40 @@
             margin-bottom: 10px;
             font-family: 'Roboto', sans-serif;
         }
+
+        .low-stock-badge {
+    display: inline-block;
+    background: red;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    position: absolute;
+    top: 0px;
+    right: 50%;
+    animation: sway 3s ease-in-out infinite alternate;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 10;
+    transform-origin: center;
+    transition: all 0.5s ease;
+}
+
+.low-stock-badge:hover {
+    animation-play-state: paused;
+    transform: scale(1.05);
+}
+
+@keyframes sway {
+    0% {
+        transform: translateX(5px);
+    }
+    100% {
+        transform: translateX(95%);
+    }
+}
 
         .product-card .actions {
             display: flex;
@@ -765,6 +800,7 @@
             <div class="filter-tabs" id="stock-filter"></div>
             <div class="filter-tabs" id="category-filter"></div>
             <div class="filter-tabs" id="warehouse-filter"></div>
+            <div class="filter-tabs" id="low-stock-filter" style="display: none;"></div>
             <div id="status-message" class="status-message">Loading products...</div>
             <div id="loader" class="loader"></div>
             <div id="category-sections"></div>
@@ -984,6 +1020,7 @@
         let currentCategory = 'all';
         let currentStockFilter = 'all';
         let currentWarehouseFilter = 'all';
+        let currentLowStockFilter = 'all';
         let transferHistory = JSON.parse(localStorage.getItem('transferHistory')) || [];
 
         // Utility: Get meta value by key
@@ -1047,6 +1084,7 @@
                     renderStockFilter();
                     renderCategoryFilter();
                     renderWarehouseFilter();
+                    renderLowStockFilter();
                     renderProducts();
                     renderTransferProducts();
                 }
@@ -1137,9 +1175,43 @@
                     currentWarehouseFilter = warehouse.value;
                     document.querySelectorAll('#warehouse-filter button').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
+                    renderLowStockFilter();
                     filterProducts();
                 });
                 warehouseFilter.appendChild(button);
+            });
+        }
+
+        // Render low stock filter (buttons)
+        function renderLowStockFilter() {
+            const lowStockFilter = document.getElementById('low-stock-filter');
+            lowStockFilter.innerHTML = '';
+            
+            // إخفاء الفلتر إذا كان المخزن المختار هو "all"
+            if (currentWarehouseFilter === 'all') {
+                lowStockFilter.style.display = 'none';
+                currentLowStockFilter = 'all';
+                return;
+            }
+            
+            lowStockFilter.style.display = 'flex';
+            const filters = [
+                { value: 'all', label: 'All', icon: 'fa-circle' },
+                { value: 'lowstock', label: 'Low Stock', icon: 'fa-exclamation-triangle' }
+            ];
+
+            filters.forEach(filter => {
+                const button = document.createElement('button');
+                button.innerHTML = `<i class="fas ${filter.icon}"></i> ${filter.label}`;
+                button.dataset.lowStock = filter.value;
+                button.className = currentLowStockFilter === filter.value ? 'active' : '';
+                button.addEventListener('click', () => {
+                    currentLowStockFilter = filter.value;
+                    document.querySelectorAll('#low-stock-filter button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterProducts();
+                });
+                lowStockFilter.appendChild(button);
             });
         }
 
@@ -1164,6 +1236,18 @@
                                (currentStockFilter === 'outofstock' && stock === 0);
                     });
                 }
+            }
+            if (currentWarehouseFilter !== 'all' && currentLowStockFilter !== 'all') {
+                filtered = filtered.filter(product => {
+                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                    const minStock = parseInt(getMetaValue(product.meta_data, `_min_stock_${currentWarehouseFilter}`)) || 0;
+                    if (currentLowStockFilter === 'lowstock') {
+                        return stock > 0 && stock <= minStock;
+                    } else if (currentLowStockFilter === 'outofstock') {
+                        return stock === 0;
+                    }
+                    return true;
+                });
             }
 
             if (filtered.length === 0) {
@@ -1190,6 +1274,7 @@
                     const price = product.regular_price ? `EGP ${parseFloat(product.regular_price).toFixed(2)}` : 'N/A';
                     let stockStatus, stockClass, stockDisplay;
                     let isOutOfStock = false;
+                    let isLowStock = false;
 
                     if (currentWarehouseFilter === 'all') {
                         stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
@@ -1198,13 +1283,15 @@
                             return sum + (parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0);
                         }, 0);
                         stockDisplay = `Total Stock: ${totalStock}`;
-                        isOutOfStock = totalStock === 0; // Apply out-of-stock class if total stock is 0
+                        isOutOfStock = totalStock === 0;
                     } else {
                         const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                        const minStock = parseInt(getMetaValue(product.meta_data, `_min_stock_${currentWarehouseFilter}`)) || 0;
                         stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
                         stockClass = stock > 0 ? 'instock' : 'outofstock';
                         stockDisplay = `${currentWarehouseFilter.charAt(0).toUpperCase() + currentWarehouseFilter.slice(1)} Stock: ${stock}`;
                         isOutOfStock = stock === 0;
+                        isLowStock = stock > 0 && stock <= minStock;
                     }
 
                     card.className = `product-card ${isOutOfStock ? 'out-of-stock' : ''}`;
@@ -1214,6 +1301,7 @@
                         <p class="price">${price}</p>
                         <p class="stock-status ${stockClass}">${stockStatus}</p>
                         <p class="stock-quantity">${stockDisplay}</p>
+                        ${isLowStock ? '<span class="low-stock-badge">Please Re Stock</span>' : ''}
                         <div class="actions">
                             <button onclick="openModal(${product.id})">Edit</button>
                             <button onclick="quickView(${product.id})">Quick View</button>
