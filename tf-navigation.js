@@ -1,7 +1,7 @@
 // Navigation configuration
 const navConfig = {
   pages: [
-    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen', relativePath: '' },
+    { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen/', relativePath: '' },
     { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', relativePath: 'products.html' },
     { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', relativePath: 'pos.html' },
   ],
@@ -32,9 +32,46 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Variable to store the beforeinstallprompt event
+let deferredPrompt;
+
+// Check if the app is already installed
+function isAppInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the default mini-infobar
+  e.preventDefault();
+  // Stash the event so it can be triggered later
+  deferredPrompt = e;
+  
+  // Show install prompt immediately if not installed
+  if (!isAppInstalled()) {
+    showInstallPrompt();
+  }
+});
+
+// Function to show the install prompt
+function showInstallPrompt() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        showToast('تم تثبيت التطبيق بنجاح!', 'success', 'fas fa-check-circle');
+      } else {
+        console.log('User dismissed the install prompt');
+        showToast('تم رفض تثبيت التطبيق.', 'error', 'fas fa-exclamation-circle');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
 // Function to create the navigation
 function createNavigation() {
-  // Check if the navigation container already exists
   let container = document.getElementById('tf-navigation');
   if (!container) {
     container = document.createElement('div');
@@ -42,7 +79,6 @@ function createNavigation() {
     document.body.appendChild(container);
   }
   
-  // Clear the container to avoid duplication
   container.innerHTML = '';
   
   const fab = document.createElement('div');
@@ -88,7 +124,6 @@ function createNavigation() {
   container.appendChild(fab);
   container.appendChild(modal);
   
-  // Check if toast container exists, if not create it
   let toast = document.getElementById('tf-nav-toast');
   if (!toast) {
     toast = document.createElement('div');
@@ -118,16 +153,14 @@ function navigateToPage(pageId, relativePath) {
   
   console.log(`Navigating: currentRelativePath=${currentRelativePath}, targetRelativePath=${relativePath}`);
   if (currentRelativePath === relativePath) {
-    showToast('You are already on this page', 'error', 'fas fa-exclamation-circle');
+    showToast('أنت بالفعل في هذه الصفحة', 'error', 'fas fa-exclamation-circle');
     return;
   }
   
-  showToast(`Navigating to ${page.name}`, 'success', 'fas fa-check-circle');
+  showToast(`الانتقال إلى ${page.name}`, 'success', 'fas fa-check-circle');
   
-  // Navigate to the page within the app
   window.location.href = page.url;
   
-  // Close the navigation menu
   const modal = document.getElementById('tf-nav-modal');
   const fab = document.getElementById('tf-nav-fab');
   if (modal && fab) {
@@ -139,7 +172,7 @@ function navigateToPage(pageId, relativePath) {
 // Function to show toast notification
 function showToast(message, type, iconClass) {
   const toast = document.getElementById('tf-nav-toast');
-  if (!toast) return; // If toast doesn't exist, skip
+  if (!toast) return;
   
   toast.innerHTML = `<i class="${iconClass}"></i> ${message}`;
   toast.className = `tf-nav-toast ${type}`;
