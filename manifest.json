@@ -1,6 +1,6 @@
 {
   "name": "TenderFrozen",
-  "short_name": "TenderFrozen",
+  "short_name": "Frozen Dashboard",
   "start_url": "https://abdulrahmanroston.github.io/TenderFrozen/",
   "display": "standalone",
   "background_color": "#ffffff",
