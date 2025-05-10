@@ -27,7 +27,19 @@ function getRelativePath() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker registered:', reg))
+      .then(reg => {
+        console.log('Service Worker registered:', reg);
+        // Check for updates
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New update available
+              showUpdateButton();
+            }
+          });
+        });
+      })
       .catch(err => console.log('Service Worker registration failed:', err));
   });
 }
@@ -42,12 +54,8 @@ function isAppInstalled() {
 
 // Listen for the beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the default mini-infobar
   e.preventDefault();
-  // Stash the event so it can be triggered later
   deferredPrompt = e;
-  
-  // Show install prompt immediately if not installed
   if (!isAppInstalled()) {
     showInstallPrompt();
   }
@@ -69,6 +77,33 @@ function showInstallPrompt() {
     });
   }
 }
+
+// Function to show an update button when a new version is available
+function showUpdateButton() {
+  let updateButton = document.getElementById('update-button');
+  if (!updateButton) {
+    updateButton = document.createElement('button');
+    updateButton.id = 'update-button';
+    updateButton.textContent = 'تحديث التطبيق';
+    updateButton.style.cssText = 'position: fixed; bottom: 20px; left: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 1000;';
+    document.body.appendChild(updateButton);
+    
+    updateButton.addEventListener('click', () => {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+        window.location.reload();
+      }
+    });
+  }
+  updateButton.style.display = 'block';
+}
+
+// Listen for messages from Service Worker
+navigator.serviceWorker.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    window.location.reload();
+  }
+});
 
 // Function to create the navigation
 function createNavigation() {
