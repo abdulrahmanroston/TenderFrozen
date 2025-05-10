@@ -84,7 +84,7 @@ function showUpdateButton() {
   if (!updateButton) {
     updateButton = document.createElement('button');
     updateButton.id = 'update-button';
-    updateButton.textContent = 'تحديث التطبيق';
+    updateButton.textContent = 'Update App Now';
     updateButton.style.cssText = 'position: fixed; bottom: 20px; left: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 1000;';
     document.body.appendChild(updateButton);
     

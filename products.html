@@ -9,11 +9,11 @@
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="tf-navigation.css">
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#1a73e8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#1a73e8">
     <style>
         :root {
             --primary: #1a73e8;
@@ -25,7 +25,7 @@
             --card-bg: #ffffff;
             --text: #1f2937;
             --border: #d1d5db;
-            --shadow: 0 4px 12 недавноpx rgba(0, 0, 0, 0.08);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --out-of-stock-bg: rgba(255, 0, 0, 0.1);
         }
 
@@ -1723,27 +1723,54 @@
 
         // Transfer stock
         async function transferStock() {
+            // Retrieve input values
             const productId = document.getElementById('transfer-product').value;
             const fromWarehouse = document.getElementById('transfer-from').value;
             const toWarehouse = document.getElementById('transfer-to').value;
-            const quantity = parseInt(document.getElementById('transfer-quantity').value);
+            const quantityInput = document.getElementById('transfer-quantity').value;
 
-            if (!productId || !fromWarehouse || !toWarehouse || !quantity || quantity <= 0) {
-                showToast('Please fill all fields with valid values.', 'error');
+            // Validate inputs
+            if (!productId || isNaN(parseInt(productId))) {
+                showToast('Please select a product from the list.', 'error');
                 return;
             }
+
+            if (!fromWarehouse) {
+                showToast('Please select a source warehouse.', 'error');
+                return;
+            }
+
+            if (!toWarehouse) {
+                showToast('Please select a destination warehouse.', 'error');
+                return;
+            }
+
             if (fromWarehouse === toWarehouse) {
-                showToast('Source and destination cannot be the same.', 'error');
+                showToast('Source and destination warehouses cannot be the same.', 'error');
                 return;
             }
 
-            const product = products.find(p => p.id == productId);
+            const quantity = parseInt(quantityInput);
+            if (isNaN(quantity) || quantity <= 0) {
+                showToast('Please enter a valid quantity greater than zero.', 'error');
+                return;
+            }
+
+            // Find the product
+            const product = products.find(p => p.id === parseInt(productId));
+            if (!product) {
+                showToast('Selected product not found.', 'error');
+                return;
+            }
+
+            // Check stock availability
             const fromStock = parseInt(getMetaValue(product.meta_data, `_stock_${fromWarehouse}`)) || 0;
             if (fromStock < quantity) {
-                showToast(`Insufficient stock in ${fromWarehouse}.`, 'error');
+                showToast(`Insufficient stock in ${fromWarehouse}. Available: ${fromStock} units.`, 'error');
                 return;
             }
 
+            // Prepare updated metadata
             const updatedMeta = product.meta_data ? [...product.meta_data] : [];
             const fromMetaIndex = updatedMeta.findIndex(m => m.key === `_stock_${fromWarehouse}`);
             const toMetaIndex = updatedMeta.findIndex(m => m.key === `_stock_${toWarehouse}`);
@@ -1763,6 +1790,7 @@
 
             const data = { meta_data: updatedMeta };
 
+            // Send request to API
             showLoader(true);
             try {
                 const response = await fetch(`${apiUrl}/${productId}`, {
@@ -1775,10 +1803,10 @@
                 });
 
                 if (response.ok) {
-                    showToast(`Transferred ${quantity} units from ${fromWarehouse} to ${toWarehouse}.`, 'success');
+                    showToast(`Successfully transferred ${quantity} units from ${fromWarehouse} to ${toWarehouse}.`, 'success');
                     await fetchProducts();
                     const record = {
-                        product: product.name,
+                        product: product.name || 'Unnamed Product',
                         from: fromWarehouse,
                         to: toWarehouse,
                         quantity,
@@ -1791,11 +1819,11 @@
                     clearProductSelection();
                 } else {
                     const error = await response.json();
-                    showErrorModal(`Error: ${error.message || 'Failed to transfer stock'}`);
+                    showErrorModal(`Failed to transfer stock: ${error.message || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error('Transfer Stock Error:', error);
-                showErrorModal('Failed to transfer stock.');
+                showErrorModal('Failed to transfer stock due to a network or server error.');
             } finally {
                 showLoader(false);
             }
@@ -1827,34 +1855,34 @@
             }
         }
 
-        // Event listeners
-        document.getElementById('search').addEventListener('input', filterProducts);
-        document.getElementById('fab').addEventListener('click', () => {
-            const menuModal = document.getElementById('menu-modal');
-            menuModal.classList.toggle('active');
-        });
-        document.querySelectorAll('.menu-content li').forEach(li => {
-            li.addEventListener('click', () => switchSection(li.dataset.section));
-        });
+// Event listeners
+document.getElementById('search').addEventListener('input', filterProducts);
+document.getElementById('fab').addEventListener('click', () => {
+    const menuModal = document.getElementById('menu-modal');
+    menuModal.classList.toggle('active');
+});
+document.querySelectorAll('.menu-content li').forEach(li => {
+    li.addEventListener('click', () => switchSection(li.dataset.section));
+});
 
-        // Search products in transfer section
-        document.getElementById('transfer-search').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.trim();
-            if (searchTerm === '') {
-                clearProductSelection();
-            } else {
-                renderSearchResults(searchTerm);
-            }
-        });
+// Search products in transfer section
+document.getElementById('transfer-search').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.trim();
+    if (searchTerm === '') {
+        clearProductSelection();
+    } else {
+        renderSearchResults(searchTerm);
+    }
+});
 
-        // Clear selection button
-        document.getElementById('clear-selection').addEventListener('click', () => {
-            clearProductSelection();
-        });
+// Clear selection button
+document.getElementById('clear-selection').addEventListener('click', () => {
+    clearProductSelection();
+});
 
-        // Initialize
-        fetchProducts();
-        renderTransferHistory();
-    </script>
-</body>
+// Initialize
+fetchProducts();
+renderTransferHistory();
+</script> 
+</body> 
 </html>
