@@ -68,10 +68,10 @@ function showInstallPrompt() {
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
-        showToast('تم تثبيت التطبيق بنجاح!', 'success', 'fas fa-check-circle');
+        showToast('The application has been updated successfully.!', 'success', 'fas fa-check-circle');
       } else {
         console.log('User dismissed the install prompt');
-        showToast('تم رفض تثبيت التطبيق.', 'error', 'fas fa-exclamation-circle');
+        showToast('App update rejected.', 'error', 'fas fa-exclamation-circle');
       }
       deferredPrompt = null;
     });
@@ -188,11 +188,11 @@ function navigateToPage(pageId, relativePath) {
   
   console.log(`Navigating: currentRelativePath=${currentRelativePath}, targetRelativePath=${relativePath}`);
   if (currentRelativePath === relativePath) {
-    showToast('أنت بالفعل في هذه الصفحة', 'error', 'fas fa-exclamation-circle');
+    showToast('You are already on this page', 'error', 'fas fa-exclamation-circle');
     return;
   }
   
-  showToast(`الانتقال إلى ${page.name}`, 'success', 'fas fa-check-circle');
+  showToast(` Go To ${page.name}`, 'success', 'fas fa-check-circle');
   
   window.location.href = page.url;
   
