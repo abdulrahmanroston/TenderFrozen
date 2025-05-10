@@ -49,7 +49,7 @@ self.addEventListener('fetch', (event) => {
         // Return cached response, but also check for updates  
         fetch(event.request).then((networkResponse) => {
           if (networkResponse.ok) {
-            caches.open('tenderfrozen-cache-v2').then((cache) => {
+            caches.open('tenderfrozen-cache-v2.0.1').then((cache) => {
               cache.put(event.request, networkResponse.clone());
             });
           }
