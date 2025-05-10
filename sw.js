@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request)
     .then((response) => {
       if (response) {
-        // Return cached response, but also check for updates
+        // Return cached response, but also check for updates  
         fetch(event.request).then((networkResponse) => {
           if (networkResponse.ok) {
             caches.open('tenderfrozen-cache-v2').then((cache) => {
