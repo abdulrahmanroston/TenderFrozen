@@ -6,7 +6,6 @@
     <title>Frozen Product's</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- Navigation CSS -->
     <link rel="stylesheet" href="tf-navigation.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -998,7 +997,7 @@
                         <div class="stock-group">
                             <span id="current-stock-tagamo3">0</span>
                             <input type="number" id="adjust-stock-tagamo3" placeholder="Adjust (+/-)">
-                            <button class="stock-btn" onclick="adjustStock('tagamo3', 1)" title="Increase stock">+</button>
+                            <button class="stock-btn" onclick="adjustStock('tag Stewardship', 1)" title="Increase stock">+</button>
                             <button class="stock-btn" onclick="adjustStock('tagamo3', -1)" title="Decrease stock">−</button>
                         </div>
                     </div>
@@ -1076,7 +1075,6 @@
         </div>
     </div>
     <div id="tf-navigation"></div>
-    <!-- Navigation JavaScript -->
     <script src="tf-navigation.js"></script>
     <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span></span></div>
 
@@ -1429,8 +1427,8 @@
                 resultItem.addEventListener('click', () => {
                     const transferProduct = document.getElementById('transfer-product');
                     transferProduct.value = product.id;
-                    renderAvailableStock(product.id);
                     document.getElementById('transfer-search').value = product.name || 'Unnamed Product';
+                    renderAvailableStock(product.id);
                     searchResults.innerHTML = '';
                 });
                 searchResults.appendChild(resultItem);
@@ -1730,7 +1728,8 @@
             const quantityInput = document.getElementById('transfer-quantity').value;
 
             // Validate inputs
-            if (!productId || isNaN(parseInt(productId))) {
+            const parsedProductId = parseInt(productId);
+            if (!productId || isNaN(parsedProductId)) {
                 showToast('Please select a product from the list.', 'error');
                 return;
             }
@@ -1757,7 +1756,7 @@
             }
 
             // Find the product
-            const product = products.find(p => p.id === parseInt(productId));
+            const product = products.find(p => p.id === parsedProductId);
             if (!product) {
                 showToast('Selected product not found.', 'error');
                 return;
@@ -1793,7 +1792,7 @@
             // Send request to API
             showLoader(true);
             try {
-                const response = await fetch(`${apiUrl}/${productId}`, {
+                const response = await fetch(`${apiUrl}/${parsedProductId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1855,34 +1854,34 @@
             }
         }
 
-// Event listeners
-document.getElementById('search').addEventListener('input', filterProducts);
-document.getElementById('fab').addEventListener('click', () => {
-    const menuModal = document.getElementById('menu-modal');
-    menuModal.classList.toggle('active');
-});
-document.querySelectorAll('.menu-content li').forEach(li => {
-    li.addEventListener('click', () => switchSection(li.dataset.section));
-});
+        // Event listeners
+        document.getElementById('search').addEventListener('input', filterProducts);
+        document.getElementById('fab').addEventListener('click', () => {
+            const menuModal = document.getElementById('menu-modal');
+            menuModal.classList.toggle('active');
+        });
+        document.querySelectorAll('.menu-content li').forEach(li => {
+            li.addEventListener('click', () => switchSection(li.dataset.section));
+        });
 
-// Search products in transfer section
-document.getElementById('transfer-search').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.trim();
-    if (searchTerm === '') {
-        clearProductSelection();
-    } else {
-        renderSearchResults(searchTerm);
-    }
-});
+        // Search products in transfer section
+        document.getElementById('transfer-search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm === '') {
+                clearProductSelection();
+            } else {
+                renderSearchResults(searchTerm);
+            }
+        });
 
-// Clear selection button
-document.getElementById('clear-selection').addEventListener('click', () => {
-    clearProductSelection();
-});
+        // Clear selection button
+        document.getElementById('clear-selection').addEventListener('click', () => {
+            clearProductSelection();
+        });
 
-// Initialize
-fetchProducts();
-renderTransferHistory();
-</script> 
-</body> 
+        // Initialize
+        fetchProducts();
+        renderTransferHistory();
+    </script>
+</body>
 </html>
