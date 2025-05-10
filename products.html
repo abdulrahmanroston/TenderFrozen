@@ -1634,113 +1634,117 @@
 
         // Update product
         async function updateProduct() {
-            if (!currentProduct) {
-                showToast('Please select a product.', 'error');
-                return;
-            }
-
-            const inputs = {
-                name: document.getElementById('name').value,
-                arabic_name: document.getElementById('arabic_name').value || '',
-                price: document.getElementById('price').value,
-                stock_status: document.getElementById('stock_status').value,
-                adjust_stock_oraby: document.getElementById('adjust-stock-oraby').value,
-                price_oraby: document.getElementById('price-oraby').value,
-                min_stock_oraby: document.getElementById('min-stock-oraby').value,
-                adjust_stock_tagamo3: document.getElementById('adjust-stock-tagamo3').value,
-                price_tagamo3: document.getElementById('price-tagamo3').value,
-                min_stock_tagamo3: document.getElementById('min-stock-tagamo3').value,
-                adjust_stock_giza: document.getElementById('adjust-stock-giza').value,
-                price_giza: document.getElementById('price-giza').value,
-                min_stock_giza: document.getElementById('min-stock-giza').value,
-                adjust_stock_lavista: document.getElementById('adjust-stock-lavista').value,
-                price_lavista: document.getElementById('price-lavista').value,
-                min_stock_lavista: document.getElementById('min-stock-lavista').value
-            };
-
-            console.log('Arabic Name Input:', inputs.arabic_name); // Log the Arabic name input
-
-            if (!inputs.name) {
-                showToast('Product name is required.', 'error');
-                return;
-            }
-
-            const warehouses = ['oraby', 'tagamo3', 'giza', 'lavista'];
-            for (const warehouse of warehouses) {
-                const adjustStock = parseInt(inputs[`adjust_stock_${warehouse}`]) || 0;
-                const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
-                if (currentStock + adjustStock < 0) {
-                    showToast(`Cannot reduce ${warehouse} stock below 0.`, 'error');
-                    return;
-                }
-            }
-
-            const data = {
-                name: inputs.name,
-                arabic_name: inputs.arabic_name, // Ensure arabic_name is always included
-                stock_status: inputs.stock_status,
-                meta_data: []
-            };
-
-            const currentRegularPrice = currentProduct.regular_price || '';
-            const inputPrice = inputs.price.trim();
-            if (inputPrice !== '' && parseFloat(inputPrice).toString() !== currentRegularPrice) {
-                data.regular_price = parseFloat(inputPrice).toString();
-            }
-
-            warehouses.forEach(warehouse => {
-                const adjustStock = inputs[`adjust_stock_${warehouse}`];
-                const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
-                if (adjustStock) {
-                    data.meta_data.push({
-                        key: `_stock_${warehouse}`,
-                        value: (currentStock + parseInt(adjustStock)).toString()
-                    });
-                }
-                const warehousePrice = inputs[`price_${warehouse}`].trim();
-                if (warehousePrice !== '') {
-                    data.meta_data.push({
-                        key: `_price_${warehouse}`,
-                        value: parseFloat(warehousePrice).toString()
-                    });
-                }
-                if (inputs[`min_stock_${warehouse}`]) {
-                    data.meta_data.push({
-                        key: `_min_stock_${warehouse}`,
-                        value: inputs[`min_stock_${warehouse}`]
-                    });
-                }
-            });
-
-            console.log('Update Product Request Body:', data); // Log the entire request body
-
-            showLoader(true);
-            try {
-                const response = await fetch(`${apiUrl}/${currentProduct.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    showToast('Product updated successfully!', 'success');
-                    await fetchProducts();
-                    closeModal();
-                } else {
-                    const error = await response.json();
-                    console.error('Update Product API Error:', error);
-                    showErrorModal(`Error: ${error.message || 'Failed to update product'}`);
-                }
-            } catch (error) {
-                console.error('Update Product Error:', error);
-                showErrorModal('Failed to update product due to a network or server error.');
-            } finally {
-                showLoader(false);
-            }
+    if (!currentProduct) {
+        showToast('Please select a product.', 'error');
+        return;
+    }
+    
+    const inputs = {
+        name: document.getElementById('name').value.trim(),
+        arabic_name: document.getElementById('arabic_name').value.trim() || '', // Always include arabic_name
+        price: document.getElementById('price').value.trim(),
+        stock_status: document.getElementById('stock_status').value,
+        adjust_stock_oraby: document.getElementById('adjust-stock-oraby').value.trim(),
+        price_oraby: document.getElementById('price-oraby').value.trim(),
+        min_stock_oraby: document.getElementById('min-stock-oraby').value.trim(),
+        adjust_stock_tagamo3: document.getElementById('adjust-stock-tagamo3').value.trim(),
+        price_tagamo3: document.getElementById('price-tagamo3').value.trim(),
+        min_stock_tagamo3: document.getElementById('min-stock-tagamo3').value.trim(),
+        adjust_stock_giza: document.getElementById('adjust-stock-giza').value.trim(),
+        price_giza: document.getElementById('price-giza').value.trim(),
+        min_stock_giza: document.getElementById('min-stock-giza').value.trim(),
+        adjust_stock_lavista: document.getElementById('adjust-stock-lavista').value.trim(),
+        price_lavista: document.getElementById('price-lavista').value.trim(),
+        min_stock_lavista: document.getElementById('min-stock-lavista').value.trim()
+    };
+    
+    console.log('Inputs Captured:', inputs); // Log all inputs
+    console.log('Arabic Name Input:', inputs.arabic_name); // Log arabic_name specifically
+    
+    if (!inputs.name) {
+        showToast('Product name is required.', 'error');
+        return;
+    }
+    
+    const warehouses = ['oraby', 'tagamo3', 'giza', 'lavista'];
+    for (const warehouse of warehouses) {
+        const adjustStock = parseInt(inputs[`adjust_stock_${warehouse}`]) || 0;
+        const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
+        if (currentStock + adjustStock < 0) {
+            showToast(`Cannot reduce ${warehouse} stock below 0.`, 'error');
+            return;
         }
+    }
+    
+    const data = {
+        name: inputs.name,
+        arabic_name: inputs.arabic_name, // Explicitly include arabic_name
+        stock_status: inputs.stock_status,
+        meta_data: []
+    };
+    
+    // Handle price update
+    if (inputs.price !== '') {
+        data.regular_price = parseFloat(inputs.price).toString();
+    }
+    
+    // Handle warehouse-specific meta data
+    warehouses.forEach(warehouse => {
+        const adjustStock = parseInt(inputs[`adjust_stock_${warehouse}`]) || 0;
+        const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
+        if (adjustStock !== 0) {
+            data.meta_data.push({
+                key: `_stock_${warehouse}`,
+                value: (currentStock + adjustStock).toString()
+            });
+        }
+        if (inputs[`price_${warehouse}`] !== '') {
+            data.meta_data.push({
+                key: `_price_${warehouse}`,
+                value: parseFloat(inputs[`price_${warehouse}`]).toString()
+            });
+        }
+        if (inputs[`min_stock_${warehouse}`] !== '') {
+            data.meta_data.push({
+                key: `_min_stock_${warehouse}`,
+                value: inputs[`min_stock_${warehouse}`]
+            });
+        }
+    });
+    
+    console.log('Request Body:', JSON.stringify(data, null, 2)); // Log the request body
+    
+    showLoader(true);
+    try {
+        const response = await fetch(`${apiUrl}/${currentProduct.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const responseData = await response.json();
+        console.log('API Response:', responseData); // Log the full API response
+        
+        if (response.ok) {
+            showToast('Product updated successfully!', 'success');
+            await fetchProducts();
+            closeModal();
+            // Verify arabic_name in response
+            console.log('Updated Arabic Name in Response:', responseData.arabic_name);
+        } else {
+            console.error('Update Product API Error:', responseData);
+            showErrorModal(`Error: ${responseData.message || 'Failed to update product'}`);
+        }
+    } catch (error) {
+        console.error('Update Product Error:', error);
+        showErrorModal('Failed to update product due to a network or server error.');
+    } finally {
+        showLoader(false);
+    }
+}
 
         // Transfer stock
         async function transferStock() {
