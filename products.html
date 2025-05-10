@@ -952,8 +952,12 @@
             </div>
             <div class="tab-content active" id="general-tab">
                 <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Product Name</label>
+                    <label><i class="fas fa-tag"></i> Product Name (EN)</label>
                     <input type="text" id="name" placeholder="Enter product name">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-language"></i> Product Name (AR)</label>
+                    <input type="text" id="arabic_name" placeholder="Enter Arabic name">
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-dollar-sign"></i> Price</label>
@@ -1156,7 +1160,7 @@
                     renderWarehouseFilter();
                     renderLowStockFilter();
                     renderProducts();
-                    populateTransferProductSelect(); // Populate transfer product select
+                    populateTransferProductSelect();
                 }
             } catch (error) {
                 console.error('Fetch Products Error:', error);
@@ -1417,12 +1421,10 @@
             const searchResults = document.getElementById('search-results');
             searchResults.innerHTML = '';
 
-            // Sort products alphabetically
             const sortedProducts = [...products].sort((a, b) => 
                 (a.name || 'Unnamed Product').localeCompare(b.name || 'Unnamed Product')
             );
 
-            // Filter products based on search term
             const filtered = sortedProducts.filter(product =>
                 (product.name || 'Unnamed Product').toLowerCase().includes(searchTerm.toLowerCase())
             );
@@ -1444,7 +1446,7 @@
                     document.getElementById('transfer-search').value = product.name || 'Unnamed Product';
                     renderAvailableStock(productId);
                     searchResults.innerHTML = '';
-                    console.log('Selected Product ID:', productId); // Debugging
+                    console.log('Selected Product ID:', productId);
                 });
                 searchResults.appendChild(resultItem);
             });
@@ -1549,6 +1551,7 @@
 
             // General tab
             document.getElementById('name').value = currentProduct.name || '';
+            document.getElementById('arabic_name').value = currentProduct.arabic_name || '';
             document.getElementById('price').value = currentProduct.regular_price || '';
             document.getElementById('stock_status').value = currentProduct.stock_status || 'instock';
 
@@ -1638,6 +1641,7 @@
 
             const inputs = {
                 name: document.getElementById('name').value,
+                arabic_name: document.getElementById('arabic_name').value,
                 price: document.getElementById('price').value,
                 stock_status: document.getElementById('stock_status').value,
                 adjust_stock_oraby: document.getElementById('adjust-stock-oraby').value,
@@ -1671,18 +1675,17 @@
 
             const data = {
                 name: inputs.name,
+                arabic_name: inputs.arabic_name,
                 stock_status: inputs.stock_status,
                 meta_data: []
             };
 
-            // Only update regular_price if the main price input has been explicitly changed
             const currentRegularPrice = currentProduct.regular_price || '';
             const inputPrice = inputs.price.trim();
             if (inputPrice !== '' && parseFloat(inputPrice).toString() !== currentRegularPrice) {
                 data.regular_price = parseFloat(inputPrice).toString();
             }
 
-            // Update warehouse-specific data
             warehouses.forEach(warehouse => {
                 const adjustStock = inputs[`adjust_stock_${warehouse}`];
                 const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
@@ -1736,20 +1739,18 @@
 
         // Transfer stock
         async function transferStock() {
-            // Retrieve input values
             const transferProduct = document.getElementById('transfer-product');
             const productId = transferProduct.value;
             const fromWarehouse = document.getElementById('transfer-from').value;
             const toWarehouse = document.getElementById('transfer-to').value;
             const quantityInput = document.getElementById('transfer-quantity').value;
 
-            console.log('Transfer Stock Inputs:', { productId, fromWarehouse, toWarehouse, quantityInput }); // Debugging
+            console.log('Transfer Stock Inputs:', { productId, fromWarehouse, toWarehouse, quantityInput });
 
-            // Validate inputs
             const parsedProductId = parseInt(productId);
             if (!productId || isNaN(parsedProductId)) {
                 showToast('Please select a product from the list.', 'error');
-                console.log('Invalid productId:', productId); // Debugging
+                console.log('Invalid productId:', productId);
                 return;
             }
 
@@ -1774,22 +1775,19 @@
                 return;
             }
 
-            // Find the product
             const product = products.find(p => p.id === parsedProductId);
             if (!product) {
                 showToast('Selected product not found.', 'error');
-                console.log('Product not found for ID:', parsedProductId); // Debugging
+                console.log('Product not found for ID:', parsedProductId);
                 return;
             }
 
-            // Check stock availability
             const fromStock = parseInt(getMetaValue(product.meta_data, `_stock_${fromWarehouse}`)) || 0;
             if (fromStock < quantity) {
                 showToast(`Insufficient stock in ${fromWarehouse}. Available: ${fromStock} units.`, 'error');
                 return;
             }
 
-            // Prepare updated metadata
             const updatedMeta = product.meta_data ? [...product.meta_data] : [];
             const fromMetaIndex = updatedMeta.findIndex(m => m.key === `_stock_${fromWarehouse}`);
             const toMetaIndex = updatedMeta.findIndex(m => m.key === `_stock_${toWarehouse}`);
@@ -1809,7 +1807,6 @@
 
             const data = { meta_data: updatedMeta };
 
-            // Send request to API
             showLoader(true);
             try {
                 const response = await fetch(`${apiUrl}/${parsedProductId}`, {
@@ -1849,86 +1846,85 @@
         }
 
         // Filter products
-function filterProducts() {
-    let searchTerm = document.getElementById('search').value.toLowerCase();
-    filteredProducts = products.filter(product => {
-        const name = (product.name || 'Unnamed Product').toLowerCase();
-        const categories = product.categories.map(c => c.name.toLowerCase());
-        const matchesSearch = name.includes(searchTerm) || categories.some(c => c.includes(searchTerm));
-        const matchesCategory = currentCategory === 'all' || product.categories.some(c => c.name === currentCategory);
-        let matchesStock = true;
-        let matchesLowStock = true;
-        
-        if (currentStockFilter !== 'all') {
-            if (currentWarehouseFilter === 'all') {
-                matchesStock = product.stock_status === currentStockFilter;
+        function filterProducts() {
+            let searchTerm = document.getElementById('search').value.toLowerCase();
+            filteredProducts = products.filter(product => {
+                const name = (product.name || 'Unnamed Product').toLowerCase();
+                const categories = product.categories.map(c => c.name.toLowerCase());
+                const matchesSearch = name.includes(searchTerm) || categories.some(c => c.includes(searchTerm));
+                const matchesCategory = currentCategory === 'all' || product.categories.some(c => c.name === currentCategory);
+                let matchesStock = true;
+                let matchesLowStock = true;
+
+                if (currentStockFilter !== 'all') {
+                    if (currentWarehouseFilter === 'all') {
+                        matchesStock = product.stock_status === currentStockFilter;
+                    } else {
+                        const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                        matchesStock = (currentStockFilter === 'instock' && stock > 0) || 
+                                      (currentStockFilter === 'outofstock' && stock === 0);
+                    }
+                }
+
+                if (currentWarehouseFilter !== 'all' && currentLowStockFilter === 'lowstock') {
+                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
+                    const minStock = parseInt(getMetaValue(product.meta_data, `_min_stock_${currentWarehouseFilter}`)) || 0;
+                    matchesLowStock = stock > 0 && stock <= minStock;
+                }
+
+                return matchesSearch && matchesCategory && matchesStock && matchesLowStock;
+            });
+
+            if (filteredProducts.length === 0) {
+                updateStatusMessage('No products match your filters.');
             } else {
-                const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
-                matchesStock = (currentStockFilter === 'instock' && stock > 0) ||
-                    (currentStockFilter === 'outofstock' && stock === 0);
+                updateStatusMessage('');
             }
+            renderProducts();
         }
-        
-        if (currentWarehouseFilter !== 'all' && currentLowStockFilter === 'lowstock') {
-            const stock = parseInt(getMetaValue(product.meta_data, `_stock_${currentWarehouseFilter}`)) || 0;
-            const minStock = parseInt(getMetaValue(product.meta_data, `_min_stock_${currentWarehouseFilter}`)) || 0;
-            matchesLowStock = stock > 0 && stock <= minStock;
+
+        // Initialize page
+        function init() {
+            fetchProducts();
+            renderTransferHistory();
+
+            document.getElementById('search').addEventListener('input', filterProducts);
+
+            document.getElementById('fab').addEventListener('click', () => {
+                const menuModal = document.getElementById('menu-modal');
+                menuModal.classList.toggle('active');
+            });
+
+            document.querySelectorAll('#menu-modal li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    document.querySelectorAll('#menu-modal li').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    document.getElementById('products-section').style.display = section === 'products' ? 'block' : 'none';
+                    document.getElementById('transfer-section').style.display = section === 'transfer' ? 'block' : 'none';
+                    document.getElementById('page-title').textContent = section === 'products' ? "Frozen Product's" : 'Stock Transfer';
+                    document.getElementById('menu-modal').classList.remove('active');
+                });
+            });
+
+            document.getElementById('transfer-search').addEventListener('input', (e) => {
+                renderSearchResults(e.target.value);
+            });
+
+            document.getElementById('clear-selection').addEventListener('click', clearProductSelection);
         }
-        
-        return matchesSearch && matchesCategory && matchesStock && matchesLowStock;
-    });
-    
-    if (filteredProducts.length === 0) {
-        updateStatusMessage('No products match your filters.');
-    } else {
-        updateStatusMessage('');
-    }
-    renderProducts();
-}
 
-// Initialize page
-function init() {
-    fetchProducts();
-    renderTransferHistory();
-    
-    // Event listeners
-    document.getElementById('search').addEventListener('input', filterProducts);
-    
-    document.getElementById('fab').addEventListener('click', () => {
-        const menuModal = document.getElementById('menu-modal');
-        menuModal.classList.toggle('active');
-    });
-    
-    document.querySelectorAll('#menu-modal li').forEach(item => {
-        item.addEventListener('click', () => {
-            const section = item.dataset.section;
-            document.querySelectorAll('#menu-modal li').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            document.getElementById('products-section').style.display = section === 'products' ? 'block' : 'none';
-            document.getElementById('transfer-section').style.display = section === 'transfer' ? 'block' : 'none';
-            document.getElementById('page-title').textContent = section === 'products' ? "Frozen Product's" : 'Stock Transfer';
-            document.getElementById('menu-modal').classList.remove('active');
-        });
-    });
-    
-    document.getElementById('transfer-search').addEventListener('input', (e) => {
-        renderSearchResults(e.target.value);
-    });
-    
-    document.getElementById('clear-selection').addEventListener('click', clearProductSelection);
-}
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('Service Worker registered with scope:', registration.scope))
+                    .catch(error => console.error('Service Worker registration failed:', error));
+            });
+        }
 
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => console.log('Service Worker registered with scope:', registration.scope))
-            .catch(error => console.error('Service Worker registration failed:', error));
-    });
-}
-
-// Initialize the app
-init();
-</script> 
-</body> 
+        // Initialize the app
+        init();
+    </script>
+</body>
 </html>
