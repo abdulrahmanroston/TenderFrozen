@@ -4,19 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tender Frozen Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="tf-navigation.css">
-    <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#1a73e8">
-    
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#1a73e8">
     <style>
         :root {
             --primary: #1a73e8;
@@ -752,10 +749,13 @@
         </div>
     </div>
 
-    <!-- Navigation JavaScript -->
-    <script src="tf-navigation.js"></script>
         <div id="tf-navigation"></div>
+        
+        <!-- External Scripts -->
+    <script type="text/javascript" src="tf-navigation.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Application Logic -->
     <script>
         const consumer_key = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
         const consumer_secret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
@@ -1902,6 +1902,9 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.addEventListener('change', debouncedSaveSettingsAndFetch);
     });
 });
+
+
+
 
 </script> 
 

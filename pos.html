@@ -504,39 +504,65 @@
         }
 
         .coupon-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: var(--hover-bg);
-            border-radius: 8px;
-        }
+    margin: 15px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-        .coupon-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
+.coupon-section h3 {
+    margin-bottom: 20px ;
+}
 
-        .coupon-item {
-            padding: 8px 15px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.3s, transform 0.2s;
-        }
+.coupon-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-        .coupon-item:hover {
-            background: var(--accent);
-            transform: scale(1.02);
-        }
+.coupon-list label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
 
-        .coupon-item.active {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
+.coupon-list select {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+}
+
+.coupon-list select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.coupon-list select option {
+    padding: 10px;
+    background: #fff;
+    color: #333;
+}
+
+.coupon-list select:invalid {
+    color: #888;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .coupon-list select {
+        max-width: 100%;
+    }
+}
 
         .discount-section {
             margin-bottom: 20px;
@@ -789,10 +815,6 @@
                 <input type="text" id="customer-search" placeholder="Search by name, email, or phone..." oninput="debounce(searchCustomer, 500)()">
             </div>
             <div class="customer-orders" id="customer-orders"></div>
-            <div class="coupon-section" id="coupon-section" style="display: none;">
-                <h3><i class="fas fa-ticket-alt"></i> Available Coupons</h3>
-                <div class="coupon-list" id="coupon-list"></div>
-            </div>
             <div class="customer-data">
                 <div class="form-group">
                     <label class="required"><i class="fas fa-user"></i> Customer Name</label>
@@ -850,16 +872,9 @@
                     <div class="payment-methods" id="payment-methods"></div>
                 </div>
             </div>
-            <div class="discount-section">
-                <h3><i class="fas fa-percent"></i> Discount</h3>
-                <div class="discount-group">
-                    <select id="discount_type" onchange="updateDiscountType()">
-                        <option value="none">No Discount</option>
-                        <option value="percent">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount</option>
-                    </select>
-                    <input type="number" id="discount_value" placeholder="Enter discount value" step="0.01" min="0" oninput="updateOrderSummary()" disabled>
-                </div>
+            <div class="coupon-section" id="coupon-section" style="display: none;">
+                <h3><i class="fas fa-ticket-alt"></i> Available Coupons</h3>
+                <div class="coupon-list" id="coupon-list"></div>
             </div>
             <div class="fee-group" id="fee-group"></div>
             <div class="add-fee-btn" onclick="addFeeField()"><i class="fas fa-plus"></i> Add Fee</div>
@@ -946,81 +961,35 @@
         }
 
         function updateOrderSummary() {
-            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
-            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-            let couponDiscount = 0;
-            if (selectedCoupon) {
-                if (selectedCoupon.discount_type === 'fixed_cart') {
-                    couponDiscount = parseFloat(selectedCoupon.amount) || 0;
-                } else if (selectedCoupon.discount_type === 'percent') {
-                    couponDiscount = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
-                }
-            }
-            discountValue = parseFloat(document.getElementById('discount_value').value) || 0;
-            let manualDiscount = 0;
-            if (discountType === 'percent' && discountValue > 0 && discountValue <= 100) {
-                manualDiscount = (subtotal * discountValue) / 100;
-            } else if (discountType === 'fixed' && discountValue > 0) {
-                manualDiscount = discountValue;
-            }
-            const totalDiscount = couponDiscount + manualDiscount;
-
-            document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
-            document.getElementById('order-discount').textContent = totalDiscount.toFixed(2);
-            document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - totalDiscount).toFixed(2);
-
-            const feeSummary = document.getElementById('fee-summary');
-            feeSummary.innerHTML = '';
-            if (deliveryFee > 0) {
-                feeSummary.innerHTML += `<strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}</p>`;
-            }
-            additionalFees.forEach(fee => {
-                if (fee.amount > 0) {
-                    feeSummary.innerHTML += `<p><strong>${fee.name}:</strong> ${parseFloat(fee.amount).toFixed(2)}</p>`;
-                }
-            });
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * (parseFloat(item.price) || 0)), 0);
+    const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+    const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+    let couponDiscount = 0;
+    if (selectedCoupon && selectedCoupon.amount && selectedCoupon.discount_type) {
+        const couponAmount = parseFloat(selectedCoupon.amount) || 0;
+        if (selectedCoupon.discount_type === 'fixed_cart') {
+            couponDiscount = Math.min(couponAmount, subtotal);
+        } else if (selectedCoupon.discount_type === 'percent') {
+            couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
         }
-
-        function addFeeField() {
-            const feeGroup = document.getElementById('fee-group');
-            const feeId = Date.now();
-            const feeItem = document.createElement('div');
-            feeItem.className = 'fee-item';
-            feeItem.innerHTML = `
-                <input type="text" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${feeId}, 'name', this.value)">
-                <input type="number" placeholder="Amount" step="0.01" oninput="updateFee(${feeId}, 'amount', this.value)">
-                <i class="fas fa-trash remove-fee" onclick="removeFee(${feeId})"></i>
-            `;
-            feeGroup.appendChild(feeItem);
-            additionalFees.push({ id: feeId, name: '', amount: 0 });
-            updateOrderSummary();
+    }
+    
+    document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('order-discount').textContent = couponDiscount.toFixed(2);
+    document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - couponDiscount).toFixed(2);
+    
+    const feeSummary = document.getElementById('fee-summary');
+    feeSummary.innerHTML = '';
+    if (deliveryFee > 0) {
+        feeSummary.innerHTML += `<p><strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}</p>`;
+    }
+    additionalFees.forEach(fee => {
+        if (fee.amount > 0) {
+            feeSummary.innerHTML += `<p><strong>${fee.name}:</strong> ${parseFloat(fee.amount).toFixed(2)}</p>`;
         }
+    });
+}
 
-        function updateFee(id, field, value) {
-            const fee = additionalFees.find(f => f.id === id);
-            if (fee) {
-                fee[field] = value;
-                updateOrderSummary();
-            }
-        }
-
-        function removeFee(id) {
-            additionalFees = additionalFees.filter(f => f.id !== id);
-            const feeGroup = document.getElementById('fee-group');
-            feeGroup.innerHTML = '';
-            additionalFees.forEach(fee => {
-                const feeItem = document.createElement('div');
-                feeItem.className = 'fee-item';
-                feeItem.innerHTML = `
-                    <input type="text" value="${fee.name}" placeholder="Fee Name (e.g., Service Fee)" oninput="updateFee(${fee.id}, 'name', this.value)">
-                    <input type="number" value="${fee.amount}" placeholder="Amount" step="0.01" oninput="updateFee(${fee.id}, 'amount', this.value)">
-                    <i class="fas fa-trash remove-fee" onclick="removeFee(${fee.id})"></i>
-                `;
-                feeGroup.appendChild(feeItem);
-            });
-            updateOrderSummary();
-        }
 
         async function fetchPaymentMethods() {
             try {
@@ -1062,66 +1031,177 @@
                 if (cb !== checkbox) cb.checked = false;
             });
         }
+// Define global arrays for categorized coupons
+let percentCoupons = [];
+let fixedCoupons = [];
 
-        async function fetchCoupons() {
-            try {
-                const response = await fetch(`${apiUrl}/coupons?per_page=100`, {
-                    headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
-                });
-                if (!response.ok) throw new Error('Failed to load coupons');
-                const allCoupons = await response.json();
-                const currentDate = new Date();
-                coupons = allCoupons.filter(coupon => {
-                    const expiryDate = coupon.date_expires ? new Date(coupon.date_expires) : null;
-                    const isNotExpired = !expiryDate || expiryDate >= currentDate;
-                    const isNotMaxUsed = coupon.maximum_uses === 0 || coupon.usage_count < coupon.maximum_uses;
-                    return isNotExpired && isNotMaxUsed;
-                });
-                renderCoupons();
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+async function fetchCoupons() {
+    try {
+        const response = await fetch(`${apiUrl}/coupons?per_page=100`, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`) }
+        });
+        if (!response.ok) throw new Error('Failed to load coupons');
+        const allCoupons = await response.json();
+        
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Normalize current date for comparison
+        
+        // Reset coupon arrays
+        percentCoupons = [];
+        fixedCoupons = [];
+        
+        allCoupons.forEach(coupon => {
+            // Check if coupon is enabled
+            if (coupon.status !== 'publish') return;
+            
+            // Check expiry date (if exists)
+            if (coupon.date_expires) {
+                const expiryDate = new Date(coupon.date_expires);
+                expiryDate.setHours(23, 59, 59, 999); // End of the expiry day
+                if (expiryDate < currentDate) return;
             }
+            
+            // Check usage limits
+            if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) return;
+            if (coupon.usage_limit_per_user && coupon.used_by && coupon.used_by.length >= coupon.usage_limit_per_user) return;
+            
+            // Check maximum uses (backward compatibility)
+            if (coupon.maximum_uses && coupon.maximum_uses > 0 && coupon.usage_count >= coupon.maximum_uses) return;
+            
+            // Categorize coupons
+            if (coupon.discount_type === 'percent') {
+                percentCoupons.push(coupon);
+            } else if (coupon.discount_type === 'fixed_cart') {
+                fixedCoupons.push(coupon);
+            }
+        });
+        
+        // Maintain the global coupons array for backward compatibility
+        coupons = [...percentCoupons, ...fixedCoupons];
+        
+        renderCoupons();
+    } catch (error) {
+        console.error('Coupon loading error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+}
+
+function renderCoupons() {
+    const couponSection = document.getElementById('coupon-section');
+    const couponList = document.getElementById('coupon-list');
+    
+    // Clear existing content
+    couponList.innerHTML = '';
+    
+    // Hide section if no coupons are available
+    if (percentCoupons.length === 0 && fixedCoupons.length === 0) {
+        couponSection.style.display = 'none';
+        return;
+    }
+    
+    couponSection.style.display = 'block';
+    
+    // Create percentage coupons dropdown
+    const percentLabel = document.createElement('label');
+    percentLabel.setAttribute('for', 'percent-coupons');
+    percentLabel.textContent = 'Percentage Coupons:';
+    
+    const percentSelect = document.createElement('select');
+    percentSelect.id = 'percent-coupons';
+    percentSelect.innerHTML = '<option value="">Select a percentage coupon</option>';
+    
+    // Sort percentage coupons by discount amount (highest first)
+    const sortedPercentCoupons = [...percentCoupons].sort((a, b) => {
+        return parseFloat(b.amount) - parseFloat(a.amount);
+    });
+    
+    sortedPercentCoupons.forEach(coupon => {
+        const option = document.createElement('option');
+        option.value = coupon.id;
+        option.textContent = `${coupon.code} (${coupon.amount}% OFF)`;
+        if (selectedCoupon && selectedCoupon.id === coupon.id) {
+            option.selected = true;
         }
-
-        function renderCoupons() {
-            const couponSection = document.getElementById('coupon-section');
-            const couponList = document.getElementById('coupon-list');
-            couponList.innerHTML = '';
-            if (coupons.length === 0) {
-                couponSection.style.display = 'none';
-                return;
-            }
-            couponSection.style.display = 'block';
-            coupons.forEach(coupon => {
-                const item = document.createElement('div');
-                item.className = `coupon-item ${selectedCoupon?.id === coupon.id ? 'active' : ''}`;
-                item.textContent = `${coupon.code} (${coupon.discount_type === 'percent' ? `${coupon.amount}%` : `EGP ${coupon.amount}`})`;
-                item.onclick = () => {
-                    selectedCoupon = coupon;
-                    document.querySelectorAll('.coupon-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Coupon Applied',
-                        text: `Coupon ${coupon.code} applied.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                    updateOrderSummary();
-                };
-                couponList.appendChild(item);
+        percentSelect.appendChild(option);
+    });
+    
+    // Create fixed coupons dropdown
+    const fixedLabel = document.createElement('label');
+    fixedLabel.setAttribute('for', 'fixed-coupons');
+    fixedLabel.textContent = 'Fixed Coupons:';
+    
+    const fixedSelect = document.createElement('select');
+    fixedSelect.id = 'fixed-coupons';
+    fixedSelect.innerHTML = '<option value="">Select a fixed coupon</option>';
+    
+    // Sort fixed coupons by discount amount (highest first)
+    const sortedFixedCoupons = [...fixedCoupons].sort((a, b) => {
+        return parseFloat(b.amount) - parseFloat(a.amount);
+    });
+    
+    sortedFixedCoupons.forEach(coupon => {
+        const option = document.createElement('option');
+        option.value = coupon.id;
+        option.textContent = `${coupon.code} (${coupon.amount} ${coupon.currency || 'EGP'} OFF)`;
+        if (selectedCoupon && selectedCoupon.id === coupon.id) {
+            option.selected = true;
+        }
+        fixedSelect.appendChild(option);
+    });
+    
+    // Append dropdowns to couponList
+    couponList.appendChild(percentLabel);
+    couponList.appendChild(percentSelect);
+    couponList.appendChild(fixedLabel);
+    couponList.appendChild(fixedSelect);
+    
+    // Event listeners for dropdowns
+    percentSelect.onchange = (e) => {
+        const couponId = parseInt(e.target.value);
+        selectedCoupon = couponId ? percentCoupons.find(c => c.id === couponId) : null;
+        // Sync the other dropdown
+        fixedSelect.value = '';
+        if (selectedCoupon) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Coupon Applied',
+                text: `Coupon ${selectedCoupon.code} applied successfully!`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
             });
         }
+        updateOrderSummary();
+    };
+    
+    fixedSelect.onchange = (e) => {
+        const couponId = parseInt(e.target.value);
+        selectedCoupon = couponId ? fixedCoupons.find(c => c.id === couponId) : null;
+        // Sync the other dropdown
+        percentSelect.value = '';
+        if (selectedCoupon) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Coupon Applied',
+                text: `Coupon ${selectedCoupon.code} applied successfully!`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+        updateOrderSummary();
+    };
+}
 
         async function fetchProducts(warehouse) {
             if (!warehouse) {
@@ -1625,305 +1705,273 @@
         }
 
         async function createOrder() {
-            if (!selectedWarehouse) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a warehouse.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            if (orderItems.length === 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please add products to the order.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            const requiredFields = ['customer_name', 'email', 'phone', 'address_1', 'zone_name', 'delivery_fee'];
-            for (const field of requiredFields) {
-                if (!document.getElementById(field).value.trim()) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: `${field.replace('_', ' ')} is required.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
-            if (!selectedPaymentMethod) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Please select a payment method.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            if (discountType === 'percent' && discountValue > 100) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Percentage discount cannot exceed 100%.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            if ((discountType === 'percent' || discountType === 'fixed') && discountValue < 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Discount value cannot be negative.',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
-            }
-            const paymentMethodId = selectedPaymentMethod.value;
-            const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
-            for (const item of orderItems) {
-                const product = products.find(p => p.id === item.product_id);
-                const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
-                if (item.quantity > currentStock) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Insufficient Stock',
-                        text: `Only ${currentStock} units available for ${item.name}.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            if (selectedCoupon) {
-                const currentDate = new Date();
-                const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
-                if (expiryDate && expiryDate < currentDate) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Coupon',
-                        text: `Coupon ${selectedCoupon.code} has expired.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-                if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Coupon',
-                        text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    return;
-                }
-            }
-            const customerName = document.getElementById('customer_name').value;
-            const email = document.getElementById('email').value;
-            const location = document.getElementById('location').value;
-            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            let manualDiscount = 0;
-            if (discountType === 'percent' && discountValue > 0) {
-                manualDiscount = (subtotal * discountValue) / 100;
-            } else if (discountType === 'fixed' && discountValue > 0) {
-                manualDiscount = discountValue;
-            }
-const orderData = {
-    customer_id: selectedCustomer || 0,
-    status: 'processing',
-    payment_method: paymentMethodId,
-    payment_method_title: paymentMethod.title,
-    billing: {
-        first_name: customerName.split(' ')[0],
-        last_name: customerName.split(' ').slice(1).join(' ') || '',
-        email: email,
-        phone: document.getElementById('phone').value,
-        address_1: document.getElementById('address_1').value
-    },
-    shipping: {
-        address_1: document.getElementById('address_1').value,
-        phone: document.getElementById('phone').value
-    },
-    line_items: orderItems.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-        meta_data: [
-            { key: '_warehouse', value: item.warehouse || selectedWarehouse },
-            { key: '_reduced_stock', value: item.quantity.toString() }
-        ]
-    })),
-    fee_lines: [
-        {
-            name: 'Delivery Fee',
-            total: document.getElementById('delivery_fee').value,
-            tax_status: 'taxable'
-        },
-        ...additionalFees.filter(fee => fee.amount > 0).map(fee => ({
-            name: fee.name || 'Additional Fee',
-            total: fee.amount.toString(),
-            tax_status: 'taxable'
-        }))
-    ],
-    coupon_lines: selectedCoupon ? [{ code: selectedCoupon.code }] : [],
-    meta_data: [
-        { key: '_selected_warehouse', value: selectedWarehouse },
-        { key: 'order_date', value: document.getElementById('order_date').value },
-        { key: 'order_time', value: document.getElementById('order_time').value },
-        { key: 'location_phone', value: document.getElementById('location_phone').value },
-        { key: '_billing_zone_name', value: document.getElementById('zone_name').value }, // 
-        { key: '_billing_delivery_location', value: document.getElementById('location').value || '' }, // إرسال delivery_location كحقل مخصص
-        { key: 'note', value: document.getElementById('order_note').value },
-        { key: 'discount_type', value: discountType },
-        { key: 'discount_value', value: discountValue.toString() },
-        { key: 'discount_amount', value: manualDiscount.toString() }
-    ]
-};
-            showLoader(true);
-            try {
-                const orderResponse = await fetch(`${apiUrl}/orders`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
-                    },
-                    body: JSON.stringify(orderData)
-                });
-                if (!orderResponse.ok) {
-                    const error = await orderResponse.json();
-                    throw new Error(error.message);
-                }
-                const order = await orderResponse.json();
-                lastOrder = { ...orderData, id: order.id };
-                for (const item of orderItems) {
-                    await updateProductStock(item.product_id, item.quantity);
-                }
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Order Created',
-                    text: 'Order created and stock updated successfully!',
-                    showConfirmButton: true,
-                    confirmButtonText: 'Send Invoice to WhatsApp',
-                    confirmButtonColor: '#25D366',
-                    showCancelButton: true,
-                    cancelButtonText: 'Close',
-                    cancelButtonColor: '#c62828'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        sendInvoice();
-                    }
-                    clearOrder();
-                });
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } finally {
-                showLoader(false);
-            }
+    if (!selectedWarehouse) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a warehouse.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    if (orderItems.length === 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please add products to the order.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    const requiredFields = ['customer_name', 'email', 'phone', 'address_1', 'zone_name', 'delivery_fee'];
+    for (const field of requiredFields) {
+        if (!document.getElementById(field).value.trim()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `${field.replace('_', ' ')} is required.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
         }
+    }
+    const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    if (!selectedPaymentMethod) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a payment method.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+    const paymentMethodId = selectedPaymentMethod.value;
+    const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
+    for (const item of orderItems) {
+        const product = products.find(p => p.id === item.product_id);
+        const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`)) || 0;
+        if (item.quantity > currentStock) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Insufficient Stock',
+                text: `Only ${currentStock} units available for ${item.name}.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+    }
+    if (selectedCoupon) {
+        const currentDate = new Date();
+        const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
+        if (expiryDate && expiryDate < currentDate) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: `Coupon ${selectedCoupon.code} has expired.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+        if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return;
+        }
+    }
+    const customerName = document.getElementById('customer_name').value;
+    const email = document.getElementById('email').value;
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * (parseFloat(item.price) || 0)), 0);
+    let couponDiscount = 0;
+    if (selectedCoupon && selectedCoupon.amount && selectedCoupon.discount_type) {
+        const couponAmount = parseFloat(selectedCoupon.amount) || 0;
+        if (selectedCoupon.discount_type === 'fixed_cart') {
+            couponDiscount = Math.min(couponAmount, subtotal);
+        } else if (selectedCoupon.discount_type === 'percent') {
+            couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
+        }
+    }
+    
+    const orderData = {
+        customer_id: selectedCustomer || 0,
+        status: 'processing',
+        payment_method: paymentMethodId,
+        payment_method_title: paymentMethod.title,
+        billing: {
+            first_name: customerName.split(' ')[0],
+            last_name: customerName.split(' ').slice(1).join(' ') || '',
+            email: email,
+            phone: document.getElementById('phone').value,
+            address_1: document.getElementById('address_1').value
+        },
+        shipping: {
+            address_1: document.getElementById('address_1').value,
+            phone: document.getElementById('phone').value
+        },
+        line_items: orderItems.map(item => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: parseFloat(item.price).toFixed(2),
+            meta_data: [
+                { key: '_warehouse', value: item.warehouse || selectedWarehouse },
+                { key: '_reduced_stock', value: item.quantity.toString() }
+            ]
+        })),
+        fee_lines: [
+            {
+                name: 'Delivery Fee',
+                total: (parseFloat(document.getElementById('delivery_fee').value) || 0).toFixed(2),
+                tax_status: 'taxable'
+            },
+            ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => ({
+                name: fee.name || 'Additional Fee',
+                total: parseFloat(fee.amount).toFixed(2),
+                tax_status: 'taxable'
+            }))
+        ],
+        coupon_lines: selectedCoupon && selectedCoupon.code ? [{
+            code: selectedCoupon.code.toUpperCase()
+        }] : [],
+        discount_total: couponDiscount > 0 ? couponDiscount.toFixed(2).toString() : "0.00",
+        meta_data: [
+            { key: '_selected_warehouse', value: selectedWarehouse },
+            { key: 'order_date', value: document.getElementById('order_date').value },
+            { key: 'order_time', value: document.getElementById('order_time').value },
+            { key: 'location_phone', value: document.getElementById('location_phone').value },
+            { key: '_billing_zone_name', value: document.getElementById('zone_name').value },
+            { key: '_billing_delivery_location', value: document.getElementById('location').value || '' },
+            { key: 'note', value: document.getElementById('order_note').value }
+        ]
+    };
+    
+    showLoader(true);
+    try {
+        const orderResponse = await fetch(`${apiUrl}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            },
+            body: JSON.stringify(orderData)
+        });
+        const responseBody = await orderResponse.json();
+        if (!orderResponse.ok) {
+            throw new Error(responseBody.message || 'Failed to create order');
+        }
+        const order = responseBody;
+        lastOrder = { ...orderData, id: order.id };
+        for (const item of orderItems) {
+            await updateProductStock(item.product_id, item.quantity);
+        }
+        Swal.fire({
+            icon: 'success',
+            title: 'Order Created',
+            text: 'Order created and stock updated successfully!',
+            showConfirmButton: true,
+            confirmButtonText: 'Send Invoice to WhatsApp',
+            confirmButtonColor: '#25D366',
+            showCancelButton: true,
+            cancelButtonText: 'Close',
+            cancelButtonColor: '#c62828'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                sendInvoice();
+            }
+            clearOrder();
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000
+        });
+    } finally {
+        showLoader(false);
+    }
+}
 
         function sendInvoice() {
-            if (!lastOrder) return;
-            const customerName = document.getElementById('customer_name').value;
-            const selectedDate = document.getElementById('order_date').value;
-            const selectedTime = document.getElementById('order_time').value;
-            const currency = 'EGP';
-            const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            let couponDiscount = 0;
-            let couponCode = '';
-            if (selectedCoupon) {
-                couponCode = selectedCoupon.code;
-                if (selectedCoupon.discount_type === 'fixed_cart') {
-                    couponDiscount = parseFloat(selectedCoupon.amount) || 0;
-                } else if (selectedCoupon.discount_type === 'percent') {
-                    couponDiscount = (subtotal * (parseFloat(selectedCoupon.amount) || 0)) / 100;
-                }
-            }
-            let manualDiscount = 0;
-            let discountText = '';
-            if (discountType === 'percent' && discountValue > 0) {
-                manualDiscount = (subtotal * discountValue) / 100;
-                discountText = `${discountValue}% Discount`;
-            } else if (discountType === 'fixed' && discountValue > 0) {
-                manualDiscount = discountValue;
-                discountText = `Fixed Discount`;
-            }
-            const totalDiscount = couponDiscount + manualDiscount;
-            const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
-            const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-            const feesText = [
-                `*Delivery Fee:* ${deliveryFee.toFixed(2)} ${currency}`,
-                ...additionalFees.filter(fee => fee.amount > 0).map(fee => `*${fee.name}:* ${parseFloat(fee.amount).toFixed(2)} ${currency}`)
-            ].join('\n');
-            const total = subtotal + deliveryFee + feeTotal - totalDiscount;
-            const products = orderItems.map(item => `${item.name} x${item.quantity} - ${item.price.toFixed(2)} ${currency}`).join('\n');
-            const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
-            const discountLines = [];
-            if (couponDiscount > 0) {
-                discountLines.push(`*Coupon${couponCode ? ` (${couponCode})` : ''}:* -${couponDiscount.toFixed(2)} ${currency}`);
-            }
-            if (manualDiscount > 0) {
-                discountLines.push(`*${discountText}:* -${manualDiscount.toFixed(2)} ${currency}`);
-            }
-            const discountTextCombined = discountLines.join('\n');
-            const message = `*Hello ${customerName},*\n\n` +
-                           `We’re happy to inform you that your order is ready and will be delivered on ${formattedDate} at ${selectedTime || 'Not specified'}.\n\n` +
-                           `━━━━━━━━━━━━━━━━━━\n` +
-                           `*Order Summary:*\n\n` +
-                           `${products}\n\n` +
-                           `━━━━━━━━━━━━━━━━━━\n` +
-                           `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
-                           (discountTextCombined ? `${discountTextCombined}\n\n` : '') +
-                           `${feesText}\n\n` +
-                           `*Total:* ${total.toFixed(2)} ${currency}\n` +
-                           `━━━━━━━━━━━━━━━━━━\n\n` +
-                           `You can explore all our delicious frozen meals anytime at:\n` +
-                           `https://tenderfrozen.com\n\n` +
-                           `*Thank you for choosing Tender Frozen!*\n\n` +
-                           `We can’t wait to serve you again.`;
-            let phone = document.getElementById('phone').value.replace(/\D/g, '');
-            if (!phone.startsWith('+20')) {
-                phone = `+20${phone}`;
-            }
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+    if (!lastOrder) return;
+    const customerName = document.getElementById('customer_name').value;
+    const selectedDate = document.getElementById('order_date').value;
+    const selectedTime = document.getElementById('order_time').value;
+    const currency = 'EGP';
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * (parseFloat(item.price) || 0)), 0);
+    let couponDiscount = 0;
+    let couponCode = '';
+    if (selectedCoupon && selectedCoupon.amount && selectedCoupon.discount_type) {
+        couponCode = selectedCoupon.code || '';
+        const couponAmount = parseFloat(selectedCoupon.amount) || 0;
+        if (selectedCoupon.discount_type === 'fixed_cart') {
+            couponDiscount = Math.min(couponAmount, subtotal);
+        } else if (selectedCoupon.discount_type === 'percent') {
+            couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
         }
+    }
+    const deliveryFee = parseFloat(document.getElementById('delivery_fee').value) || 0;
+    const feeTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+    const feesText = [
+        `*Delivery Fee:* ${deliveryFee.toFixed(2)} ${currency}`,
+        ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => `*${fee.name}:* ${parseFloat(fee.amount).toFixed(2)} ${currency}`)
+    ].join('\n');
+    const total = subtotal + deliveryFee + feeTotal - couponDiscount;
+    const products = orderItems.map(item => `${item.name} x${item.quantity} - ${(parseFloat(item.price) || 0).toFixed(2)} ${currency}`).join('\n');
+    const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
+    const discountLines = [];
+    if (couponDiscount > 0 && couponCode) {
+        discountLines.push(`*Coupon (${couponCode.toUpperCase()}):* -${couponDiscount.toFixed(2)} ${currency}`);
+    }
+    const discountTextCombined = discountLines.join('\n');
+    const message = `*Hello ${customerName},*\n\n` +
+        `We’re happy to inform you that your order is ready and will be delivered on ${formattedDate} at ${selectedTime || 'Not specified'}.\n\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `*Order Summary:*\n\n` +
+        `${products}\n\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
+        (discountTextCombined ? `${discountTextCombined}\n\n` : '') +
+        `${feesText}\n\n` +
+        `*Total:* ${total.toFixed(2)} ${currency}\n` +
+        `━━━━━━━━━━━━━━━━━━\n\n` +
+        `You can explore all our delicious frozen meals anytime at:\n` +
+        `https://tenderfrozen.com\n\n` +
+        `*Thank you for choosing Tender Frozen!*\n\n` +
+        `We can’t wait to serve you again.`;
+    let phone = document.getElementById('phone').value.replace(/\D/g, '');
+    if (!phone.startsWith('+20')) {
+        phone = `+20${phone}`;
+    }
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
 
         function clearOrder() {
             orderItems = [];
@@ -1982,8 +2030,6 @@ const orderData = {
             const defaultWarehouse = 'oraby';
             fetchProducts(defaultWarehouse);
             document.getElementById('delivery_fee').addEventListener('input', updateOrderSummary);
-            document.getElementById('discount_type').addEventListener('change', updateDiscountType);
-            document.getElementById('discount_value').addEventListener('input', updateOrderSummary);
         }
 
         init();
