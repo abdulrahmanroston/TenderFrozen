@@ -1398,7 +1398,6 @@
             }
             
             const displayName = product.name || 'Unnamed Product';
-            console.log(product)
             card.className = `product-card ${isOutOfStock ? 'out-of-stock' : ''}`;
             card.innerHTML = `
                 <img src="${imageSrc}" alt="${displayName}" loading="lazy">
