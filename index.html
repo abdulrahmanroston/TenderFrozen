@@ -1540,17 +1540,21 @@ function copyOrder(order, forWhatsApp = false) {
     const orderSelectTime = order.additional.order_time || 'لم يتم التحديد';
     const orderSelectDate = order.additional.order_date || '';
     const customerName = `${billing.first_name || shipping.first_name || ''}${billing.last_name || shipping.last_name || ''}`.trim() || 'غير معروف';
-    const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => `- ${item.name || 'Unknown Product'} (x ${item.quantity || 0})`).join('\n\n') || '- No products';
-
+    
+    const productLines = (Array.isArray(order.line_items) ? order.line_items : []).map(item => {
+        const arabicName = item.arabic_name;
+        return `- ${arabicName || item.name || 'Unknown Product'} (x ${item.quantity || 0})`;
+    }).join('\n\n') || '- No products';
+    
     const orderDetailsText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
-                            `━━━━━━━━━━━━━━━━━━\n` +
-                            `*العميل:* ${customerName}\n` +
-                            `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
-                            `*يوم التوصيل:* ${orderSelectDate}\n` +
-                            `*وقت التوصيل:* ${orderSelectTime}\n\n` +
-                            `*المنتجات:*\n${productLines}\n` +
-                            `━━━━━━━━━━━━━━━━━━`;
-
+        `` +
+        `*العميل:* ${customerName}\n` +
+        `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
+        `*يوم التوصيل:* ${orderSelectDate}\n` +
+        `*وقت التوصيل:* ${orderSelectTime}\n\n` +
+        `━━━━━━━━━━━━━━━━━━\n`+
+        `*المنتجات:*\n${productLines}\n` ;
+    
     if (!forWhatsApp) {
         navigator.clipboard.writeText(orderDetailsText).then(() => {
             showNotification('Order copied (bold format)', 'success');
@@ -1566,6 +1570,14 @@ function copyOrder(order, forWhatsApp = false) {
     }
     return orderDetailsText;
 }
+
+function getMetaValue(metaData, key) {
+    if (!Array.isArray(metaData)) return null;
+    const meta = metaData.find(m => m.key === key);
+    return meta ? meta.value : null;
+}
+
+
 
 function generateInvoiceText(order) {
     const billingInfo = order.billing || {};
@@ -1902,8 +1914,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.addEventListener('change', debouncedSaveSettingsAndFetch);
     });
 });
-
-
 
 
 </script> 
