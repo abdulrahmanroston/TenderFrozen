@@ -1378,7 +1378,7 @@
             let stockStatus, stockClass, stockDisplay;
             let isOutOfStock = false;
             let isLowStock = false;
-            
+            console.log(product);
             if (currentWarehouseFilter === 'all') {
                 stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
                 stockClass = product.stock_status === 'instock' ? 'instock' : 'outofstock';
