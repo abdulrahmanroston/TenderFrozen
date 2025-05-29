@@ -1401,7 +1401,8 @@ try {
             const billingInfo = orderData.billing || {};
             const shippingInfo = orderData.shipping || {};
             const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-            const customerLocationLink = billingInfo.delivery_location|| shippingInfo.location || '#';
+            const getMetaLocation = getMetaValue(orderData.meta_data, '_billing_delivery_location') ;
+            const customerLocationLink = billingInfo.delivery_location || getMetaLocation ||  '#';
             const warehouseMeta = orderData.meta_data?.find(meta => meta.key === '_selected_warehouse');
             const warehouseName = warehouseMeta ? warehouseMeta.value : 'Unspecified';
             const dateCreated = orderData.date_created ? new Date(orderData.date_created).toLocaleString() : 'N/A';
@@ -1477,9 +1478,11 @@ function switchTab(sanitizedZone) {
 
 function formatForCopySend(text) {
     return `*${text.trim()}*`;
+
 }
 
 function getPaymentInfoForCopy(order) {
+    
     const paymentMethodTitle = order.payment_method_title;
     const total = parseFloat(order.total || 0).toFixed(2);
     const currency = order.currency || '';
@@ -1491,7 +1494,6 @@ function getPaymentInfoForCopy(order) {
     if (paymentMethodTitle === 'Cash On Delivery') {
         return { note: '', totalLine: totalLine };
     }
-    
     return { note: '', totalLine: totalLine };
 }
 
@@ -1506,7 +1508,7 @@ function copyAddress(order, forWhatsApp = false) {
     const customerAddress = `${billing.address_1 || shipping.address_1 || ''}, ${billing.city || shipping.city || ''}, ${billing.state || shipping.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
 
     const addressText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
-                       `━━━━━━━━━━━━━━━━━━\n` +
+                       `-----------\n` +
                        `*العميل:* ${customerName}\n` +
                        `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
                        `*العنوان:* ${customerAddress}\n` +
@@ -1515,7 +1517,7 @@ function copyAddress(order, forWhatsApp = false) {
                        `*وقت التوصيل:* ${orderSelectTime}\n` +
                        `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n` +
                        `*${paymentInfo.totalLine}*\n` +
-                       `━━━━━━━━━━━━━━━━━━`;
+                       `-----------`;
 
     if (!forWhatsApp) {
         navigator.clipboard.writeText(addressText).then(() => {
@@ -1545,14 +1547,14 @@ function copyOrder(order, forWhatsApp = false) {
         const arabicName = item.arabic_name;
         return `- ${arabicName || item.name || 'Unknown Product'} (x ${item.quantity || 0})`;
     }).join('\n\n') || '- No products';
-    
+    console.log(getMetaValue(order.meta_data, '_billing_delivery_location') )
     const orderDetailsText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
         `` +
         `*العميل:* ${customerName}\n` +
         `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
         `*يوم التوصيل:* ${orderSelectDate}\n` +
         `*وقت التوصيل:* ${orderSelectTime}\n\n` +
-        `━━━━━━━━━━━━━━━━━━\n`+
+        `-----------\n`+
         `*المنتجات:*\n${productLines}\n` ;
     
     if (!forWhatsApp) {
@@ -1604,19 +1606,19 @@ function generateInvoiceText(order) {
 
     return `*Hello ${customerName},*\n\n` +
            `We’re happy to inform you that your order is ready and will be delivered on ${selectedDate} at ${selectedTime}.\n\n` +
-           `━━━━━━━━━━━━━━━━━━\n` +
-           `*Order Summary:*\n\n` +
+           `-----------\n` +
+           `*Your Order:*\n\n` +
            `${products}\n\n` +
-           `━━━━━━━━━━━━━━━━━━\n` +
+           `-----------\n` +
            `*Subtotal:* ${subtotal} ${currency}\n\n` +
            (discountTotal > 0 ? `*Discount${coupons ? ` (${coupons})` : ''}:* -${discountTotal.toFixed(2)} ${currency}\n\n` : '') +
            `${feesText}\n\n` +
            `*Total:* ${total} ${currency}\n` +
-           `━━━━━━━━━━━━━━━━━━\n\n` +
+           `-----------\n\n` +
            `You can explore all our delicious frozen meals anytime at:\n` +
            `https://tenderfrozen.com\n\n` +
            `*Thank you for choosing Tender Frozen!*\n\n` +
-           `We can’t wait to serve you again.`;
+           ``;
 }
 
 function sendInvoiceToCustomer(order) {
