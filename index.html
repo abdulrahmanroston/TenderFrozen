@@ -463,8 +463,17 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
+        .action-buttons {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px 0;
+            background: var(--card-bg);
+        }
         .action-btn {
-            padding: 8px 12px;
+            width: 45% ;
+            padding: 10px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -632,7 +641,7 @@
             }
             .action-btn {
                 font-size: 0.75rem;
-                padding: 6px 10px;
+                padding: 10px 10px;
                 margin: 3px;
             }
         }
@@ -665,7 +674,7 @@
     <div id="main-content">
         <div class="container" id="orders-content">
             <header class="header">
-                <h1>Frozen Orders </h1>
+                <h1>Orders</h1>
                 <div class="header-actions">
                     <button class="header-btn" onclick="toggleSettings()">
                         <i class="fas fa-sliders-h"></i> Settings
@@ -1445,14 +1454,11 @@ try {
                     <h4>Order Summary</h4>
                     ${orderSummaryHtml}
                 </div>
-                <div class="section action-buttons">
-                    <button class="action-btn copy-address-btn"><i class="fas fa-map-marker-alt"></i> Copy Address</button>
-                    <button class="action-btn copy-order-btn"><i class="fas fa-receipt"></i> Copy Order</button>
+                <div class="section action-buttons">   
+                    <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Status</button>
                     <button class="action-btn send-address-btn"><i class="fab fa-whatsapp"></i> Send Address</button>
                     <button class="action-btn send-order-btn"><i class="fab fa-whatsapp"></i> Send Order</button>
                     <button class="action-btn send-invoice-btn"><i class="fab fa-whatsapp"></i> Send Invoice</button>
-                    <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Status</button>
-                    <button class="action-btn edit-products-btn"><i class="fas fa-edit"></i> Products</button>
                 </div>
             `;
         }
@@ -1512,7 +1518,7 @@ function copyAddress(order, forWhatsApp = false) {
                        `*العميل:* ${customerName}\n` +
                        `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
                        `*العنوان:* ${customerAddress}\n` +
-                       `*اللوكيشن:* ${billing.delivery_location || shipping.location || 'Not Found'}\n` +
+                       `*اللوكيشن:* ${billing.delivery_location || getMetaValue(order.meta_data, '_billing_delivery_location') || 'Not Found'}\n` +
                        `*يوم التوصيل:* ${orderSelectDate}\n` +
                        `*وقت التوصيل:* ${orderSelectTime}\n` +
                        `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n` +
@@ -1617,8 +1623,7 @@ function generateInvoiceText(order) {
            `-----------\n\n` +
            `You can explore all our delicious frozen meals anytime at:\n` +
            `https://tenderfrozen.com\n\n` +
-           `*Thank you for choosing Tender Frozen!*\n\n` +
-           ``;
+           `*Thank you for choosing Tender Frozen!*\n\n`;
 }
 
 function sendInvoiceToCustomer(order) {
