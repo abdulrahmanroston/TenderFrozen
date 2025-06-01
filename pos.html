@@ -10,7 +10,7 @@
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="tf-navigation.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json"> 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#1a73e8">
@@ -394,8 +394,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            align-items: center;
-            gap: 15px;
+            align-items: center; 
         }
 
         .form-group {
@@ -779,9 +778,8 @@
             <h1><i class="fas fa-cash-register"></i> Frozen Master POS</h1>
             <div class="warehouse-buttons" id="warehouse-buttons">
                 <button class="warehouse-btn" data-warehouse="oraby"><i class="fas fa-warehouse"></i> Oraby</button>
-                <button class="warehouse-btn" data-warehouse="tagamo3"><i class="fas fa-warehouse"></i> Tagamo3</button>
-                <button class="warehouse-btn" data-warehouse="giza"><i class="fas fa-warehouse"></i> Giza</button>
                 <button class="warehouse-btn" data-warehouse="lavista"><i class="fas fa-warehouse"></i> Lavista</button>
+                <button class="warehouse-btn" data-warehouse="giza"><i class="fas fa-warehouse"></i> Giza</button>
             </div>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
@@ -894,8 +892,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.getElementById('order_time').selectedIndex = -1;
-        const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
-        const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+        const consumerKey = 'ck_e699cc781f313beee7715ec67e84ab033c19c19b';
+        const consumerSecret = 'cs_9e39ce40cfc336a7f547b79c4291f7f322334150';
         const storeUrl = 'https://tenderfrozen.com';
         const apiUrl = `${storeUrl}/wp-json/wc/v3`;
 
