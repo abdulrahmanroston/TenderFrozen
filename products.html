@@ -247,7 +247,6 @@
             border-radius: 8px;
             margin-bottom: 10px;
             background: var(--secondary);
-            loading: lazy;
         }
 
         .product-card h3 {
@@ -343,6 +342,7 @@
         }
 
         .transfer-section {
+            display: none;
             background: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
@@ -467,6 +467,7 @@
 
         .transfer-history {
             margin-top: 30px;
+            overflow: scroll;
         }
 
         .transfer-history h3 {
@@ -879,7 +880,7 @@
             <div id="loader" class="loader"></div>
             <div id="category-sections"></div>
         </div>
-        <div class="transfer-section" id="transfer-section" style="display: none;">
+        <div class="transfer-section" id="transfer-section">
             <h2>Stock Transfer</h2>
             <div class="transfer-form">
                 <div class="form-group">
@@ -897,18 +898,19 @@
                     <label><i class="fas fa-warehouse"></i> From Warehouse</label>
                     <select id="transfer-from">
                         <option value="oraby">Oraby</option>
-                        <option value="tagamo3">Tagamo3</option>
+                         <option value="lavista">Lavista</option>
+                        <option value="manufacturing">Manufacturing</option>
                         <option value="giza">Giza</option>
-                        <option value="lavista">Lavista</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-warehouse"></i> To Warehouse</label>
                     <select id="transfer-to">
                         <option value="oraby">Oraby</option>
-                        <option value="tagamo3">Tagamo3</option>
+                          <option value="lavista">Lavista</option>
+                        <option value="manufacturing">Manufacturing</option>
                         <option value="giza">Giza</option>
-                        <option value="lavista">Lavista</option>
+                      
                     </select>
                 </div>
                 <div class="form-group">
@@ -955,9 +957,10 @@
             <div class="tabs">
                 <div class="tab active" data-tab="general">General</div>
                 <div class="tab" data-tab="oraby">Oraby</div>
-                <div class="tab" data-tab="tagamo3">Tagamo3</div>
-                <div class="tab" data-tab="giza">Giza</div>
                 <div class="tab" data-tab="lavista">Lavista</div>
+                <div class="tab" data-tab="manufacturing">Manufacturing</div>
+                <div class="tab" data-tab="giza">Giza</div>
+
             </div>
             <div class="tab-content active" id="general-tab">
                 <div class="form-group">
@@ -1001,46 +1004,8 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-content" id="tagamo3-tab">
-                <div class="form-group">
-                    <label><i class="fas fa-box"></i> Tagamo3 Stock</label>
-                    <div class="stock-group">
-                        <span id="current-stock-tagamo3">0</span>
-                        <input type="number" id="adjust-stock-tagamo3" placeholder="Adjust (+/-)">
-                        <button class="stock-btn" onclick="adjustStock('tagamo3', 1)" title="Increase stock">+</button>
-                        <button class="stock-btn" onclick="adjustStock('tagamo3', -1)" title="Decrease stock">−</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-dollar-sign"></i> Tagamo3 Price</label>
-                    <input type="number" id="price-tagamo3" step="0.01" placeholder="Enter Tagamo3 price">
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-exclamation-triangle"></i> Tagamo3 Minimum Stock</label>
-                    <input type="number" id="min-stock-tagamo3" placeholder="Enter minimum stock">
-                </div>
-            </div>
-            <div class="tab-content" id="giza-tab">
-                <div class="stock-price-group">
-                    <div class="form-group">
-                        <label><i class="fas fa-box"></i> Giza Stock</label>
-                        <div class="stock-group">
-                            <span id="current-stock-giza">0</span>
-                            <input type="number" id="adjust-stock-giza" placeholder="Adjust (+/-)">
-                            <button class="stock-btn" onclick="adjustStock('giza', 1)" title="Increase stock">+</button>
-                            <button class="stock-btn" onclick="adjustStock('giza', -1)" title="Decrease stock">−</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-dollar-sign"></i> Giza Price</label>
-                        <input type="number" id="price-giza" step="0.01" placeholder="Enter Giza price">
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-exclamation-triangle"></i> Giza Minimum Stock</label>
-                        <input type="number" id="min-stock-giza" placeholder="Enter minimum stock">
-                    </div>
-                </div>
-            </div>
+
+
             <div class="tab-content" id="lavista-tab">
                 <div class="stock-price-group">
                     <div class="form-group">
@@ -1062,6 +1027,50 @@
                     </div>
                 </div>
             </div>
+           
+            <div class="tab-content" id="manufacturing-tab">
+                <div class="stock-price-group">
+                    <div class="form-group">
+                        <label><i class="fas fa-box"></i> Manufacturing Stock</label>
+                        <div class="stock-group">
+                            <span id="current-stock-manufacturing">0</span>
+                            <input type="number" id="adjust-stock-manufacturing" placeholder="Adjust (+/-)">
+                            <button class="stock-btn" onclick="adjustStock('manufacturing', 1)" title="Increase stock">+</button>
+                            <button class="stock-btn" onclick="adjustStock('manufacturing', -1)" title="Decrease stock">−</button>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                
+                            <div class="tab-content" id="giza-tab">
+                <div class="stock-price-group">
+                    <div class="form-group">
+                        <label><i class="fas fa-box"></i> Giza Stock</label>
+                        <div class="stock-group">
+                            <span id="current-stock-giza">0</span>
+                            <input type="number" id="adjust-stock-giza" placeholder="Adjust (+/-)">
+                            <button class="stock-btn" onclick="adjustStock('giza', 1)" title="Increase stock">+</button>
+                            <button class="stock-btn" onclick="adjustStock('giza', -1)" title="Decrease stock">−</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-dollar-sign"></i> Giza Price</label>
+                        <input type="number" id="price-giza" step="0.01" placeholder="Enter Giza price">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exclamation-triangle"></i> Giza Minimum Stock</label>
+                        <input type="number" id="min-stock-giza" placeholder="Enter minimum stock">
+                    </div>
+                </div>
+            </div>
+                
+                
+                
+            </div>
+
+
+
             <div class="modal-actions">
                 <button class="save-btn" onclick="updateProduct()">Update Product</button>
                 <button class="reset-btn" onclick="resetForm()">Reset Fields</button>
@@ -1094,8 +1103,8 @@
     <!-- Application Logic -->
     <script>
         // API Configuration
-        const consumerKey = 'ck_f40406bbecba206fc13e711e2f8df86de26dbbc7';
-        const consumerSecret = 'cs_62458ae4d624c3a04a515c770345466497fd88a5';
+        const consumerKey = 'ck_e699cc781f313beee7715ec67e84ab033c19c19b';
+        const consumerSecret = 'cs_9e39ce40cfc336a7f547b79c4291f7f322334150';
         const storeUrl = 'https://tenderfrozen.com';
         const apiUrl = `${storeUrl}/wp-json/wc/v3/products`;
 
@@ -1265,9 +1274,9 @@
             const warehouses = [
                 { value: 'all', label: 'All', icon: 'fa-warehouse' },
                 { value: 'oraby', label: 'Oraby', icon: 'fa-warehouse' },
-                { value: 'tagamo3', label: 'Tagamo3', icon: 'fa-warehouse' },
-                { value: 'giza', label: 'Giza', icon: 'fa-warehouse' },
-                { value: 'lavista', label: 'Lavista', icon: 'fa-warehouse' }
+                { value: 'lavista', label: 'Lavista', icon: 'fa-warehouse' },
+                { value: 'manufacturing', label: 'Mnufacturing', icon: 'fa-warehouse' },
+                { value: 'giza', label: 'Giza', icon: 'fa-warehouse' }
             ];
 
             warehouses.forEach(warehouse => {
@@ -1382,7 +1391,7 @@
             if (currentWarehouseFilter === 'all') {
                 stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
                 stockClass = product.stock_status === 'instock' ? 'instock' : 'outofstock';
-                const totalStock = ['oraby', 'tagamo3', 'giza', 'lavista'].reduce((sum, warehouse) => {
+                const totalStock = ['oraby','lavista', 'manufacturing', 'giza'].reduce((sum, warehouse) => {
                     return sum + (parseInt(getMetaValue(product.meta_data, `_stock_${warehouse}`)) || 0);
                 }, 0);
                 stockDisplay = `Total Stock: ${totalStock}`;
@@ -1479,9 +1488,10 @@
 
             const stocks = {
                 Oraby: getMetaValue(product.meta_data, '_stock_oraby') || '0',
-                Tagamo3: getMetaValue(product.meta_data, '_stock_tagamo3') || '0',
-                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0',
-                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0'
+                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0',
+    Manufacturing: getMetaValue(product.meta_data, '_stock_manufacturing') || '0',
+                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0'
+                
             };
 
             const table = document.createElement('table');
@@ -1495,9 +1505,10 @@
                 </thead>
                 <tbody>
                     <tr><td>Oraby</td><td>${stocks.Oraby}</td></tr>
-                    <tr><td>Tagamo3</td><td>${stocks.Tagamo3}</td></tr>
+                      <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                    <tr><td>Manufacturing</td><td>${stocks.Manufacturing}</td></tr>
                     <tr><td>Giza</td><td>${stocks.Giza}</td></tr>
-                    <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                  
                 </tbody>
             `;
             availableStockDiv.appendChild(table);
@@ -1556,41 +1567,115 @@
         }
 
         // Open edit modal
-        function openModal(productId) {
-            currentProduct = products.find(p => p.id === productId);
-            if (!currentProduct) return;
-            const editModal = document.getElementById('edit-modal');
-            const title = document.getElementById('edit-product-title');
-            const displayName = currentProduct.name || 'Unnamed Product';
-            title.innerHTML = `<i class="fas fa-edit"></i> Edit Product: ${displayName}`;
-            editModal.classList.add('active');
+function openModal(productId) {
+    currentProduct = products.find(p => p.id === productId);
+    if (!currentProduct) return;
+    const editModal = document.getElementById('edit-modal');
+    const title = document.getElementById('edit-product-title');
+    const displayName = currentProduct.name || 'Unnamed Product';
+    title.innerHTML = `<i class="fas fa-edit"></i> Edit Product: ${displayName}`;
+    editModal.classList.add('active');
 
-            // General tab
-            document.getElementById('name').value = currentProduct.name || '';
-            document.getElementById('arabic_name').value = getMetaValue(currentProduct.meta_data, '_arabic_name') || '';
-            document.getElementById('price').value = currentProduct.regular_price || '';
-            document.getElementById('stock_status').value = currentProduct.stock_status || 'instock';
+    // General tab
+    document.getElementById('name').value = currentProduct.name || '';
+    document.getElementById('arabic_name').value = getMetaValue(currentProduct.meta_data, '_arabic_name') || '';
+    document.getElementById('price').value = currentProduct.regular_price || '';
+    document.getElementById('stock_status').value = currentProduct.stock_status || 'instock';
 
-            // Warehouse tabs
-            const warehouses = ['oraby', 'tagamo3', 'giza', 'lavista'];
-            warehouses.forEach(warehouse => {
-                const currentStock = getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`) || '0';
-                document.getElementById(`current-stock-${warehouse}`).textContent = currentStock;
-                document.getElementById(`adjust-stock-${warehouse}`).value = '';
-                document.getElementById(`price-${warehouse}`).value = getMetaValue(currentProduct.meta_data, `_price_${warehouse}`) || '';
-                document.getElementById(`min-stock-${warehouse}`).value = getMetaValue(currentProduct.meta_data, `_min_stock_${warehouse}`) || '';
-            });
+    // Warehouse tabs
+    const warehouses = ['oraby', 'lavista', 'manufacturing', 'giza'];
+    warehouses.forEach(warehouse => {
+        const currentStock = getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`) || '0';
+        document.getElementById(`current-stock-${warehouse}`).textContent = currentStock;
+        document.getElementById(`adjust-stock-${warehouse}`).value = '';
+        document.getElementById(`price-${warehouse}`).value = getMetaValue(currentProduct.meta_data, `_price_${warehouse}`) || '';
+        document.getElementById(`min-stock-${warehouse}`).value = getMetaValue(currentProduct.meta_data, `_min_stock_${warehouse}`) || '';
+    });
 
-            // Initialize tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
-                });
-            });
+    // Reset tabs to show General tab by default
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.tab[data-tab="general"]').classList.add('active');
+    document.getElementById('general-tab').classList.add('active');
+}
+
+// Initialize tab switching (move this outside openModal)
+document.addEventListener('DOMContentLoaded', () => {
+    // Fetch initial data
+    fetchProducts();
+    renderTransferHistory();
+
+    // Initialize tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+        });
+    });
+
+    // Search input listener
+    document.getElementById('search').addEventListener('input', () => {
+        filterProducts();
+    });
+
+    // FAB click to toggle transfer section
+    document.getElementById('fab').addEventListener('click', () => {
+        const transferSection = document.getElementById('transfer-section');
+        const productsSection = document.getElementById('products-section');
+        const fab = document.getElementById('fab');
+        if (transferSection.style.display === 'none' || !transferSection.style.display) {
+            transferSection.style.display = 'block';
+            productsSection.style.display = 'none';
+            fab.innerHTML = '<i class="fas fa-box"></i>';
+            document.querySelector('.menu-modal li[data-section="transfer"]').classList.add('active');
+            document.querySelector('.menu-modal li[data-section="products"]').classList.remove('active');
+        } else {
+            transferSection.style.display = 'none';
+            productsSection.style.display = 'block';
+            fab.innerHTML = '<i class="fas fa-exchange-alt"></i>';
+            document.querySelector('.menu-modal li[data-section="products"]').classList.add('active');
+            document.querySelector('.menu-modal li[data-section="transfer"]').classList.remove('active');
         }
+    });
+
+    // Menu modal toggle
+    document.getElementById('page-title').addEventListener('click', () => {
+        const menuModal = document.getElementById('menu-modal');
+        menuModal.classList.toggle('active');
+    });
+
+    // Menu items click
+    document.querySelectorAll('.menu-modal li').forEach(item => {
+        item.addEventListener('click', () => {
+            const section = item.dataset.section;
+            const transferSection = document.getElementById('transfer-section');
+            const productsSection = document.getElementById('products-section');
+            const fab = document.getElementById('fab');
+            document.querySelectorAll('.menu-modal li').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            if (section === 'products') {
+                productsSection.style.display = 'block';
+                transferSection.style.display = 'none';
+                fab.innerHTML = '<i class="fas fa-exchange-alt"></i>';
+            } else {
+                productsSection.style.display = 'none';
+                transferSection.style.display = 'block';
+                fab.innerHTML = '<i class="fas fa-box"></i>';
+            }
+            document.getElementById('menu-modal').classList.remove('active');
+        });
+    });
+
+    // Transfer search input
+    document.getElementById('transfer-search').addEventListener('input', (e) => {
+        renderSearchResults(e.target.value);
+    });
+
+    // Clear selection button
+    document.getElementById('clear-selection').addEventListener('click', clearProductSelection);
+});
 
         // Quick view
         function quickView(productId) {
@@ -1602,9 +1687,10 @@
             const stockStatus = product.stock_status === 'instock' ? 'In Stock' : 'Out of Stock';
             const stocks = {
                 Oraby: getMetaValue(product.meta_data, '_stock_oraby') || '0',
-                Tagamo3: getMetaValue(product.meta_data, '_stock_tagamo3') || '0',
-                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0',
-                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0'
+                Lavista: getMetaValue(product.meta_data, '_stock_lavista') || '0',
+    Manufacturing: getMetaValue(product.meta_data, '_stock_manufacturing') || '0',
+                Giza: getMetaValue(product.meta_data, '_stock_giza') || '0'
+                
             };
 
             content.innerHTML = `
@@ -1620,9 +1706,10 @@
                     </thead>
                     <tbody>
                         <tr><td>Oraby</td><td>${stocks.Oraby}</td></tr>
-                        <tr><td>Tagamo3</td><td>${stocks.Tagamo3}</td></tr>
+                          <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                        <tr><td>Mnufacturing</td><td>${stocks.Manufacturing}</td></tr>
                         <tr><td>Giza</td><td>${stocks.Giza}</td></tr>
-                        <tr><td>Lavista</td><td>${stocks.Lavista}</td></tr>
+                      
                     </tbody>
                 </table>
             `;
@@ -1663,15 +1750,15 @@
                 adjust_stock_oraby: document.getElementById('adjust-stock-oraby').value.trim(),
                 price_oraby: document.getElementById('price-oraby').value.trim(),
                 min_stock_oraby: document.getElementById('min-stock-oraby').value.trim(),
-                adjust_stock_tagamo3: document.getElementById('adjust-stock-tagamo3').value.trim(),
-                price_tagamo3: document.getElementById('price-tagamo3').value.trim(),
-                min_stock_tagamo3: document.getElementById('min-stock-tagamo3').value.trim(),
                 adjust_stock_giza: document.getElementById('adjust-stock-giza').value.trim(),
                 price_giza: document.getElementById('price-giza').value.trim(),
                 min_stock_giza: document.getElementById('min-stock-giza').value.trim(),
                 adjust_stock_lavista: document.getElementById('adjust-stock-lavista').value.trim(),
                 price_lavista: document.getElementById('price-lavista').value.trim(),
-                min_stock_lavista: document.getElementById('min-stock-lavista').value.trim()
+                min_stock_lavista: document.getElementById('min-stock-lavista').value.trim(),
+                adjust_stock_manufacturing: document.getElementById('adjust-stock-manufacturing').value.trim(),
+                price_manufacturing: document.getElementById('price-manufacturing').value.trim(),
+                min_stock_manufacturing: document.getElementById('min-stock-manufacturing').value.trim()
             };
             
             if (!inputs.name) {
@@ -1679,7 +1766,7 @@
                 return;
             }
             
-            const warehouses = ['oraby', 'tagamo3', 'giza', 'lavista'];
+            const warehouses = ['oraby', 'lavista', 'manufacturing', 'giza'];
             for (const warehouse of warehouses) {
                 const adjustStock = parseInt(inputs[`adjust_stock_${warehouse}`]) || 0;
                 const currentStock = parseInt(getMetaValue(currentProduct.meta_data, `_stock_${warehouse}`)) || 0;
@@ -1988,25 +2075,34 @@
                 filterProducts();
             });
 
-            // FAB click to toggle transfer section
             document.getElementById('fab').addEventListener('click', () => {
-                const transferSection = document.getElementById('transfer-section');
-                const productsSection = document.getElementById('products-section');
-                const fab = document.getElementById('fab');
-                if (transferSection.style.display === 'none' || !transferSection.style.display) {
-                    transferSection.style.display = 'block';
-                    productsSection.style.display = 'none';
-                    fab.innerHTML = '<i class="fas fa-box"></i>';
-                    document.querySelector('.menu-modal li[data-section="transfer"]').classList.add('active');
-                    document.querySelector('.menu-modal li[data-section="products"]').classList.remove('active');
-                } else {
-                    transferSection.style.display = 'none';
-                    productsSection.style.display = 'block';
-                    fab.innerHTML = '<i class="fas fa-exchange-alt"></i>';
-                    document.querySelector('.menu-modal li[data-section="products"]').classList.add('active');
-                    document.querySelector('.menu-modal li[data-section="transfer"]').classList.remove('active');
-                }
-            });
+    const transferSection = document.getElementById('transfer-section');
+    const productsSection = document.getElementById('products-section');
+    const fab = document.getElementById('fab');
+
+    // التأكد من وجود العناصر
+    if (!transferSection || !productsSection || !fab) {
+        console.error('One or more elements not found');
+        return;
+    }
+
+
+    if (transferSection.style.display === 'none') {
+        transferSection.style.display = 'block !important';
+        productsSection.style.display = 'none  !important';
+        fab.innerHTML = '<i class="fas fa-box"></i>';
+        document.querySelector('#transfer-section').classList.add('active');
+        document.querySelector('#products-section').classList.remove('active');
+        console.log('Current transfer section display:', transferDisplay);
+    } else {
+        console.log('Showing products section');
+        transferSection.style.display = 'none !important';
+        productsSection.style.display = 'block !important';
+        fab.innerHTML = '<i class="fas fa-exchange-alt"></i>';
+        document.querySelector('.menu-modal li[data-section="products"]').classList.add('active');
+        document.querySelector('.menu-modal li[data-section="transfer"]').classList.remove('active');
+    }
+});
 
             // Menu modal toggle
             document.getElementById('page-title').addEventListener('click', () => {
