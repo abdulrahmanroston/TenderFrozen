@@ -665,6 +665,12 @@
             border-color: var(--primary) !important;
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
         }
+        #acc .stat-card, #acc * {
+            font-size: 13px !important;
+        }
+        #acc h3 {
+            font-size: 14px !important;
+        }
     </style>
 </head>
 <body>
@@ -752,6 +758,7 @@
                     </div>
                 </details>
             </div>
+            <div id="acc" class="acc"></div>
             <div class="stats" id="stats"></div>
             <div class="tabs-container" id="warehouse-tabs-container"></div>
             <div id="tab-contents"></div>
@@ -1168,8 +1175,19 @@
             };
             let activeStatus = localStorage.getItem('active-status-filter') || null;
             let statusCounts = {};
+            let tottalSales = 0;
             orders.forEach(order => {
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const year = today.getFullYear();
+                const formattedDate = `${day}/${month}/${year}`;
+
                 statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+                console.log(order) ;
+
+                calculateDailyAndTomorrowOrders(order)
+
             });
             Object.keys(statusConfig).forEach(status => {
                 const count = statusCounts[status] || 0;
@@ -1902,6 +1920,49 @@ async function updateOrderProducts(orderId, updatedItems) {
     }
 }
 
+
+let todayCompletedTotal = 0;
+let tomorrowCompletedTotal = 0;
+
+function calculateDailyAndTomorrowOrders(order) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // Start of tomorrow
+
+    // Format date to YYYY-MM-DD for comparison
+    const formatDate = (date) => date.toISOString().split('T')[0];
+
+    // Process current order
+    const completedDate = order.date_completed ? new Date(order.date_completed).toISOString().split('T')[0] : null;
+
+    // Add total for completed orders today
+    if (completedDate === formatDate(today) && order.status === 'completed') {
+        todayCompletedTotal += parseFloat(order.total || 0);
+    }
+    // Add total for completed orders tomorrow
+    if (completedDate === formatDate(tomorrow) && order.status === 'completed') {
+        tomorrowCompletedTotal += parseFloat(order.total || 0);
+    }
+
+    // Format totals to two decimal places
+    const formattedTodayTotal = todayCompletedTotal.toFixed(2);
+    const formattedTomorrowTotal = tomorrowCompletedTotal.toFixed(2);
+
+    // Update div with results using consistent styling
+    const accDiv = document.getElementById('acc');
+    accDiv.className = 'stats'; // Use same styling as stats section
+    accDiv.innerHTML = `
+        <div class="stat-card" style="background-color: var(--success); color: #fff; border-color: var(--success);">
+            <h3>Today Total</h3>
+            <p>${formattedTomorrowTotal} ${order.currency || 'EGP'}</p>
+        </div>
+        <div class="stat-card" style="background-color: var(--info); color: #fff; border-color: var(--info);">
+            <h3>Yasterday Total</h3>
+            <p>${formattedTodayTotal} ${order.currency || 'EGP'}</p>
+        </div>
+    `;
+}
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
