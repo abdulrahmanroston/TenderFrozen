@@ -1515,14 +1515,14 @@ function copyAddress(order, forWhatsApp = false) {
 
     const addressText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
                        `-----------\n` +
-                       `*العميل:* ${customerName}\n` +
-                       `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n` +
-                       `*العنوان:* ${customerAddress}\n` +
-                       `*اللوكيشن:* ${billing.delivery_location || getMetaValue(order.meta_data, '_billing_delivery_location') || 'Not Found'}\n` +
-                       `*يوم التوصيل:* ${orderSelectDate}\n` +
-                       `*وقت التوصيل:* ${orderSelectTime}\n` +
-                       `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n` +
-                       `*${paymentInfo.totalLine}*\n` +
+                       `*العميل:* ${customerName}\n\n` +
+                       `*رقم الهاتف:* ${formattedPhone || 'N/A'}\n\n` +
+                       `*العنوان:* ${customerAddress}\n\n` +
+                       `*اللوكيشن:* ${billing.delivery_location || getMetaValue(order.meta_data, '_billing_delivery_location') || 'Not Found'}\n\n` +
+                       `*يوم التوصيل:* ${orderSelectDate}\n\n` +
+                       `*وقت التوصيل:* ${orderSelectTime}\n\n` +
+                       `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n\n` +
+                       `*${paymentInfo.totalLine}*\n\n` +
                        `-----------`;
 
     if (!forWhatsApp) {
