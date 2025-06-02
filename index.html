@@ -1522,7 +1522,7 @@ function copyAddress(order, forWhatsApp = false) {
                        `*يوم التوصيل:* ${orderSelectDate}\n\n` +
                        `*وقت التوصيل:* ${orderSelectTime}\n\n` +
                        `${paymentInfo.note ? `\n*ملاحظة:* ${paymentInfo.note}\n` : ''}\n\n` +
-                       `*${paymentInfo.totalLine}*\n\n` +;
+                       `*${paymentInfo.totalLine}*\n\n` ;
 
     if (!forWhatsApp) {
         navigator.clipboard.writeText(addressText).then(() => {
