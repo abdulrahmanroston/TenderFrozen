@@ -666,7 +666,7 @@
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
         }
         #acc .stat-card, #acc * {
-            font-size: 13px !important;
+            font-size: 16px !important;
         }
         #acc h3 {
             font-size: 14px !important;
@@ -1954,11 +1954,11 @@ function calculateDailyAndTomorrowOrders(order) {
     accDiv.className = 'stats'; // Use same styling as stats section
     accDiv.innerHTML = `
         <div class="stat-card" style="background-color: var(--success); color: #fff; border-color: var(--success);">
-            <h3>Today Total</h3>
+            <h3>Today Sales</h3>
             <p>${formattedTomorrowTotal} ${order.currency || 'EGP'}</p>
         </div>
         <div class="stat-card" style="background-color: var(--info); color: #fff; border-color: var(--info);">
-            <h3>Yasterday Total</h3>
+            <h3>Yesterday Sales</h3>
             <p>${formattedTodayTotal} ${order.currency || 'EGP'}</p>
         </div>
     `;
