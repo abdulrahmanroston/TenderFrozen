@@ -1624,7 +1624,7 @@ function generateInvoiceText(order) {
     const orderNumber = order.id || 'N/A';
     const selectedDate = order.additional?.order_date || 'No Selected Date';
     const selectedTime = order.additional?.order_time || 'No Selected Time';
-    const products = order.line_items?.map(item => `• ${item.name || 'Unknown Product'} × ${item.quantity || 0}`).join('\n\n') || 'No products';
+    const products = order.line_items?.map(item => `• ${item.name || 'Unknown Product'}  ${item.quantity || 0} × ${item.subtotal} EGP`).join('\n\n') || 'No products';
     const total = parseFloat(order.total || 0).toFixed(2);
     const currency = order.currency || 'EGP';
     const discountTotal = parseFloat(order.discount_total || 0) || 0;
