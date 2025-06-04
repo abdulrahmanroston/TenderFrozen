@@ -1159,6 +1159,7 @@
         function refreshOrders() {
             localStorage.removeItem('active-status-filter');
             fetchOrders();
+            window.location.reload()
             showNotification('Refreshing orders...', 'info');
         }
 
