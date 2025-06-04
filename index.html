@@ -542,13 +542,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             display: none;
-            backdrop-filter: blur(2px);
+            
         }
         .loading-overlay.active {
             display: flex;
@@ -705,6 +705,8 @@
                             <label><input type="checkbox" name="status-filter" value="pending"> Pending Payment</label>
                             <label><input type="checkbox" name="status-filter" value="processing"> Processing</label>
                             <label><input type="checkbox" name="status-filter" value="on-hold"> On Hold</label>
+                             <label><input type="checkbox" name="status-filter" value="on-delivery"> On Delivery</label>
+                             <label><input type="checkbox" name="status-filter" value="delivered">Delivered</label>
                             <label><input type="checkbox" name="status-filter" value="completed"> Completed</label>
                             <label><input type="checkbox" name="status-filter" value="cancelled"> Cancelled</label>
                             <label><input type="checkbox" name="status-filter" value="refunded"> Refunded</label>
@@ -1165,14 +1167,16 @@
             const statsContainer = document.getElementById('stats');
             statsContainer.innerHTML = '';
             const statusConfig = {
-                pending: { name: 'Pending', color: '#f59e0b' },
-                processing: { name: 'Processing', color: '#3b82f6' },
-                'on-hold': { name: 'On Hold', color: '#f97316' },
-                completed: { name: 'Completed', color: '#10b981' },
-                cancelled: { name: 'Cancelled', color: '#ef4444' },
-                refunded: { name: 'Refunded', color: '#6b7280' },
-                failed: { name: 'Failed', color: '#991b1b' }
-            };
+    pending: { name: 'Pending', color: '#f59e0b' }, // أصفر برتقالي
+    processing: { name: 'Processing', color: '#3b82f6' }, // أزرق
+    'on-hold': { name: 'On Hold', color: '#f97316' }, // برتقالي
+    'on-delivery': { name: 'On Delivery', color: '#6366f1' }, // أزرق بنفسجي (لتمييزه عن On Hold)
+    delivered: { name: 'Delivered', color: '#3b82f6' }, // أخضر (أفتح من Completed)
+    completed: { name: 'Completed', color: '#10b981' }, // أخضر داكن
+    cancelled: { name: 'Cancelled', color: '#ef4444' }, // أحمر
+    refunded: { name: 'Refunded', color: '#6b7280' }, // رمادي
+    failed: { name: 'Failed', color: '#991b1b' } // أحمر داكن
+};
             let activeStatus = localStorage.getItem('active-status-filter') || null;
             let statusCounts = {};
             let tottalSales = 0;
@@ -1291,14 +1295,16 @@
             ordersList.innerHTML = '';
             const fragment = document.createDocumentFragment();
             const statusColors = {
-                pending: '#f59e0b',
-                processing: '#3b82f6',
-                'on-hold': '#f97316',
-                completed: '#10b981',
-                cancelled: '#ef4444',
-                refunded: '#6b7280',
-                failed: '#991b1b'
-            };
+    pending: '#f59e0b', 
+    processing: '#3b82f6', 
+    'on-hold': '#f97316', 
+    'on-delivery': '#8b5cf6', 
+    delivered: '#3b82f6', 
+    completed: '#10b981', 
+    cancelled: '#ef4444', 
+    refunded: '#6b7280', 
+    failed: '#991b1b' 
+};
 
             if (orders.length === 0) {
                 ordersList.innerHTML = '<p class="no-orders">No orders in this warehouse/status.</p>';
@@ -1361,125 +1367,132 @@
             });
         }
 
-        function generateDetailsHtml(orderData) {
-            let productItemsHtml = '';
-            try {
-                const lineItems = Array.isArray(orderData.line_items) ? orderData.line_items : [];
-                productItemsHtml = lineItems.map(item => {
-                    const imageSrc = item.image?.src || '';
-                    const imageAlt = item.name || 'Product';
-                    const itemName = item.name || 'Unknown Product';
-                    const itemQuantity = item.quantity || 0;
-                    return `
-                        <div class="product-item">
-                            ${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" />` : '<div style="width: 40px; height: 40px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; flex-shrink: 0;"><i class="fas fa-image"></i></div>'}
-                            <div>
-                                <span class="name">${itemName}</span>
-                                <span class="details"> × ${itemQuantity}</span>
-                            </div>
-                        </div>`;
-                }).join('');
-            } catch (error) {
-                console.error(`Error processing line items for order ${orderData.id}:`, error);
-                productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>';
-            }
-
-            let feesHtml = '';
-            try {
-                const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
-                feesHtml = feeLines.map(fee => `<p><strong>${fee.name || 'Fee'}:</strong> ${parseFloat(fee.total || 0).toFixed(2)} ${orderData.currency || ''}</p>`).join('');
-                if (feeLines.length === 0) feesHtml = '<p>No additional fees.</p>';
-            } catch (error) {
-                console.error(`Error processing fee lines for order ${orderData.id}:`, error);
-                feesHtml = '<p style="color: var(--danger);">Error loading fees</p>';
-            }
-
-            let orderSummaryHtml = '';
-try {
-    const total = parseFloat(orderData.total || 0) || 0;
-    const discountTotal = parseFloat(orderData.discount_total || 0) || 0;
-    const currency = orderData.currency || 'Unknown';
-    const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
-    const feeTotal = feeLines.reduce((sum, fee) => sum + (parseFloat(fee.total || 0) || 0), 0) || 0;
-    const subtotal = (total + discountTotal - feeTotal) || 0;
-    const coupons = Array.isArray(orderData.coupon_lines) && orderData.coupon_lines.length > 0 ?
-        orderData.coupon_lines.map(c => c.code || 'Unknown').join(', ') :
-        null;
-    
-    let feesRows = '';
-    if (feeLines.length > 0) {
-        feesRows = feeLines.map(fee =>
-            `<tr><td>${fee.name || 'Fee'}</td><td>${(parseFloat(fee.total || 0) || 0).toFixed(2)} ${currency}</td></tr>`
-        ).join('');
+       function generateDetailsHtml(orderData) {
+    let productItemsHtml = '';
+    try {
+        const lineItems = Array.isArray(orderData.line_items) ? orderData.line_items : [];
+        productItemsHtml = lineItems.map(item => {
+            const imageSrc = item.image?.src || '';
+            const imageAlt = item.name || 'Product';
+            const itemName = item.name || 'Unknown Product';
+            const itemQuantity = item.quantity || 0;
+            return `
+                <div class="product-item">
+                    ${imageSrc ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" />` : '<div style="width: 40px; height: 40px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; flex-shrink: 0;"><i class="fas fa-image"></i></div>'}
+                    <div>
+                        <span class="name">${itemName}</span>
+                        <span class="details"> × ${itemQuantity}</span>
+                    </div>
+                </div>`;
+        }).join('');
+    } catch (error) {
+        console.error(`Error processing line items for order ${orderData.id}:`, error);
+        productItemsHtml = '<p style="color: var(--danger);">Error loading products</p>';
     }
     
-    orderSummaryHtml = `
-        <table class="order-summary-table">
-            <tr><td>Subtotal</td><td>${subtotal.toFixed(2)} ${currency}</td></tr>
-            ${feesRows}
-            ${discountTotal > 0 ? `<tr><td>Discount${coupons ? ` (${coupons})` : ''}</td><td>-${discountTotal.toFixed(2)} ${currency}</td></tr>` : ''}
-            <tr><td>Total</td><td>${total.toFixed(2)} ${currency}</td></tr>
-        </table>`;
-} catch (error) {
-    console.error(`Error processing order summary for order ${orderData.id || 'Unknown'}:`, error);
-    orderSummaryHtml = `<p style="color: var(--danger);">Unable to load order summary. Please check order data.</p>`;
-}
-
-            const billingInfo = orderData.billing || {};
-            const shippingInfo = orderData.shipping || {};
-            const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
-            const getMetaLocation = getMetaValue(orderData.meta_data, '_billing_delivery_location') ;
-            const customerLocationLink = billingInfo.delivery_location || getMetaLocation ||  '#';
-            const warehouseMeta = orderData.meta_data?.find(meta => meta.key === '_selected_warehouse');
-            const warehouseName = warehouseMeta ? warehouseMeta.value : 'Unspecified';
-            const dateCreated = orderData.date_created ? new Date(orderData.date_created).toLocaleString() : 'N/A';
-            const total = parseFloat(orderData.total || 0).toFixed(2);
-            const currency = orderData.currency || '';
-            const paymentMethod = orderData.payment_method_title || 'N/A';
-            const email = billingInfo.email || 'N/A';
-            const phone = billingInfo.phone || 'N/A';
-            const orderSelectTime = orderData.additional?.order_time || 'No Selected Time';
-            const orderSelectDate = orderData.additional?.order_date || 'No Selected Date';
-
-            return `
-                <div class="section">
-                    <h4>Order Details</h4>
-                    <p><strong>Date:</strong> ${dateCreated}</p>
-                    <p><strong>Payment:</strong> ${paymentMethod}</p>
-                    <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
-                    <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
-                </div>
-                <div class="section">
-                    <h4>Customer</h4>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p><strong>Phone:</strong> ${phone}</p>
-                </div>
-                <div class="section">
-                    <h4>Address</h4>
-                    <p><strong>Address:</strong> ${customerAddress || 'N/A'}</p>
-                    <p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p>
-                    <p><strong>Warehouse:</strong> ${warehouseName}</p>
-                </div>
-                <div class="section">
-                    <h4>Products (${(orderData.line_items || []).length})</h4>
-                    ${productItemsHtml || '<p>No products</p>'}
-                </div>
-                <div class="section">
-                    <h4>Fees</h4>
-                    ${feesHtml}
-                </div>
-                <div class="section">
-                    <h4>Order Summary</h4>
-                    ${orderSummaryHtml}
-                </div>
-                <div class="section action-buttons">   
-                    <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Status</button>
-                    <button class="action-btn send-address-btn"><i class="fab fa-whatsapp"></i> Send Address</button>
-                    <button class="action-btn send-order-btn"><i class="fab fa-whatsapp"></i> Send Order</button>
-                    <button class="action-btn send-invoice-btn"><i class="fab fa-whatsapp"></i> Send Invoice</button>
-                </div>
-            `;
+    let feesHtml = '';
+    try {
+        const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
+        feesHtml = feeLines.map(fee => `<p><strong>${fee.name || 'Fee'}:</strong> ${parseFloat(fee.total || 0).toFixed(2)} ${orderData.currency || ''}</p>`).join('');
+        if (feeLines.length === 0) feesHtml = '<p>No additional fees.</p>';
+    } catch (error) {
+        console.error(`Error processing fee lines for order ${orderData.id}:`, error);
+        feesHtml = '<p style="color: var(--danger);">Error loading fees</p>';
+    }
+    
+    let orderSummaryHtml = '';
+    try {
+        const total = parseFloat(orderData.total || 0) || 0;
+        const discountTotal = parseFloat(orderData.discount_total || 0) || 0;
+        const currency = orderData.currency || 'Unknown';
+        const feeLines = Array.isArray(orderData.fee_lines) ? orderData.fee_lines : [];
+        const feeTotal = feeLines.reduce((sum, fee) => sum + (parseFloat(fee.total || 0) || 0), 0) || 0;
+        const subtotal = (total + discountTotal - feeTotal) || 0;
+        const coupons = Array.isArray(orderData.coupon_lines) && orderData.coupon_lines.length > 0 ?
+            orderData.coupon_lines.map(c => c.code || 'Unknown').join(', ') :
+            null;
+        
+        let feesRows = '';
+        if (feeLines.length > 0) {
+            feesRows = feeLines.map(fee =>
+                `<tr><td>${fee.name || 'Fee'}</td><td>${(parseFloat(fee.total || 0) || 0).toFixed(2)} ${currency}</td></tr>`
+            ).join('');
         }
+        
+        orderSummaryHtml = `
+            <table class="order-summary-table">
+                <tr><td>Subtotal</td><td>${subtotal.toFixed(2)} ${currency}</td></tr>
+                ${feesRows}
+                ${discountTotal > 0 ? `<tr><td>Discount${coupons ? ` (${coupons})` : ''}</td><td>-${discountTotal.toFixed(2)} ${currency}</td></tr>` : ''}
+                <tr><td>Total</td><td>${total.toFixed(2)} ${currency}</td></tr>
+            </table>`;
+    } catch (error) {
+        console.error(`Error processing order summary for order ${orderData.id || 'Unknown'}:`, error);
+        orderSummaryHtml = `<p style="color: var(--danger);">Unable to load order summary. Please check order data.</p>`;
+    }
+    
+    const billingInfo = orderData.billing || {};
+    const shippingInfo = orderData.shipping || {};
+    const customerAddress = `${billingInfo.address_1 || shippingInfo.address_1 || ''}, ${billingInfo.city || shippingInfo.city || ''}, ${billingInfo.state || shippingInfo.state || ''}`.trim().replace(/^,|,$/g, '').replace(/,{2,}/g, ',');
+    const getMetaLocation = getMetaValue(orderData.meta_data, '_billing_delivery_location');
+    const customerLocationLink = billingInfo.delivery_location || getMetaLocation || '#';
+    const warehouseMeta = orderData.meta_data?.find(meta => meta.key === '_selected_warehouse');
+    const warehouseName = warehouseMeta ? warehouseMeta.value : 'Unspecified';
+    const dateCreated = orderData.date_created ? new Date(orderData.date_created).toLocaleString() : 'N/A';
+    const total = parseFloat(orderData.total || 0).toFixed(2);
+    const currency = orderData.currency || '';
+    const paymentMethod = orderData.payment_method_title || 'N/A';
+    const email = billingInfo.email || 'N/A';
+    const phone = billingInfo.phone || 'N/A';
+    const orderSelectTime = orderData.additional?.order_time || 'No Selected Time';
+    const orderSelectDate = orderData.additional?.order_date || 'No Selected Date';
+    const deliveryPersonName = getMetaValue(orderData.meta_data, 'delivery_person_name') || 'Not set';
+    const deliveryPersonPhone = getMetaValue(orderData.meta_data, 'delivery_person_phone') || 'Not set';
+    
+    return `
+        <div class="section">
+            <h4>Order Details</h4>
+            <p><strong>Date:</strong> ${dateCreated}</p>
+            <p><strong>Payment:</strong> ${paymentMethod}</p>
+            <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
+            <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
+        </div>
+        <div class="section">
+            <h4>Customer</h4>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+        </div>
+        <div class="section">
+            <h4>Address</h4>
+            <p><strong>Address:</strong> ${customerAddress || 'N/A'}</p>
+            <p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p>
+            <p><strong>Warehouse:</strong> ${warehouseName}</p>
+        </div>
+        <div class="section">
+            <h4>Delivery Person</h4>
+            <p><strong>Name:</strong> ${deliveryPersonName}</p>
+            <p><strong>Phone:</strong> ${deliveryPersonPhone}</p>
+        </div>
+        <div class="section">
+            <h4>Products (${(orderData.line_items || []).length})</h4>
+            ${productItemsHtml || '<p>No products</p>'}
+        </div>
+        <div class="section">
+            <h4>Fees</h4>
+            ${feesHtml}
+        </div>
+        <div class="section">
+            <h4>Order Summary</h4>
+            ${orderSummaryHtml}
+        </div>
+        <div class="section action-buttons">   
+            <button class="action-btn update-status-btn"><i class="fas fa-sync-alt"></i> Status</button>
+            <button class="action-btn send-address-btn"><i class="fab fa-whatsapp"></i> Send Address</button>
+            <button class="action-btn send-order-btn"><i class="fab fa-whatsapp"></i> Send Order</button>
+            <button class="action-btn send-invoice-btn"><i class="fab fa-whatsapp"></i> Send Invoice</button>
+        </div>
+    `;
+}
 
         function attachDetailButtonListeners(detailsContainer, order) {
     detailsContainer.querySelectorAll('.copy-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); copyAddress(order); }));
@@ -1696,58 +1709,93 @@ function sendToWhatsApp(order, type) {
         }
     });
 }
-        async function openStatusModal(orderId, currentStatus) {
-            const statusOptions = [
-                { value: 'pending', label: 'Pending Payment' },
-                { value: 'processing', label: 'Processing' },
-                { value: 'on-hold', label: 'On Hold' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'cancelled', label: 'Cancelled' },
-                { value: 'refunded', label: 'Refunded' },
-                { value: 'failed', label: 'Failed' }
-            ];
-            const options = statusOptions.map(opt =>
-    `<option value="${opt.value}" ${opt.value === currentStatus ? 'selected' : ''}>${opt.label}</option>`
-).join('');
-
-Swal.fire({
-    title: 'Update Order Status',
-    html: `
-        <select id="swal-status" class="swal2-select">
-            ${options}
-        </select>
-    `,
-    showCancelButton: true,
-    confirmButtonText: 'Update',
-    cancelButtonText: 'Cancel',
-    confirmButtonColor: 'var(--success)',
-    cancelButtonColor: 'var(--danger)',
-    preConfirm: () => {
-        const status = document.getElementById('swal-status').value;
-        if (!status) {
-            Swal.showValidationMessage('Please select a status');
-            return false;
+       async function openStatusModal(orderId, currentStatus) {
+    const statusOptions = [
+        { value: 'pending', label: 'Pending Payment' },
+        { value: 'processing', label: 'Processing' },
+        { value: 'on-hold', label: 'On Hold' },
+        { value: 'on-delivery', label: 'On Delivery' },
+        { value: 'delivered', label: 'Delivered' },
+        { value: 'completed', label: 'Completed' },
+        { value: 'cancelled', label: 'Cancelled' },
+        { value: 'refunded', label: 'Refunded' },
+        { value: 'failed', label: 'Failed' }
+    ];
+    const userOptions = users.length > 0 ? users.map(user => `<option value="${user.id}">${user.name} (${user.phone})</option>`).join('') : '<option value="">No delivery persons available</option>';
+    const options = statusOptions.map(opt => `<option value="${opt.value}" ${opt.value === currentStatus ? 'selected' : ''}>${opt.label}</option>`).join('');
+    
+    Swal.fire({
+        title: 'Update Order Status',
+        html: `
+            <select id="swal-status" class="swal2-select">
+                ${options}
+            </select>
+            <div id="delivery-person-section" style="display: none; margin-top: 15px;">
+                <label for="swal-delivery-person">Select Delivery Person</label>
+                <select id="swal-delivery-person" class="swal2-select">
+                    <option value="">Select a delivery person</option>
+                    ${userOptions}
+                </select>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Update',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'var(--success)',
+        cancelButtonColor: 'var(--danger)',
+        didOpen: () => {
+            const statusSelect = document.getElementById('swal-status');
+            const deliveryPersonSection = document.getElementById('delivery-person-section');
+            statusSelect.addEventListener('change', () => {
+                deliveryPersonSection.style.display = statusSelect.value === 'on-delivery' ? 'block' : 'none';
+            });
+            if (currentStatus === 'on-delivery') {
+                deliveryPersonSection.style.display = 'block';
+            }
+        },
+        preConfirm: () => {
+            const status = document.getElementById('swal-status').value;
+            const deliveryPersonId = document.getElementById('swal-delivery-person').value;
+            if (!status) {
+                Swal.showValidationMessage('Please select a status');
+                return false;
+            }
+            if (status === 'on-delivery' && !deliveryPersonId) {
+                Swal.showValidationMessage('Please select a delivery person for On Delivery status');
+                return false;
+            }
+            return { status, deliveryPersonId };
         }
-        return status;
-    }
-}).then(async (result) => {
-    if (result.isConfirmed) {
-        const newStatus = result.value;
-        await updateOrderStatus(orderId, newStatus);
-    }
-});
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const { status, deliveryPersonId } = result.value;
+            await updateOrderStatus(orderId, status, deliveryPersonId);
+        }
+    });
 }
 
-async function updateOrderStatus(orderId, newStatus) {
+async function updateOrderStatus(orderId, newStatus, deliveryPersonId) {
     showLoading();
     try {
+        let body = { status: newStatus };
+        if (newStatus === 'on-delivery' && deliveryPersonId) {
+            const deliveryPerson = users.find(user => user.id === deliveryPersonId);
+            if (deliveryPerson) {
+                body.meta_data = [
+                    { key: 'delivery_person_name', value: deliveryPerson.name },
+                    { key: 'delivery_person_phone', value: deliveryPerson.phone }
+                ];
+            } else {
+                throw new Error('Selected delivery person not found');
+            }
+        }
         const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: newStatus })
+            body: JSON.stringify(body)
         });
         if (!response.ok) {
             const error = await response.json();
@@ -1760,31 +1808,6 @@ async function updateOrderStatus(orderId, newStatus) {
     } catch (error) {
         console.error('Error updating order status:', error);
         showNotification(`Failed to update status: ${error.message}`, 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-async function fetchProducts() {
-    if (productsCache) return productsCache;
-    showLoading();
-    try {
-        const response = await fetch(`${storeUrl}/wp-json/wc/v3/products?per_page=100`, {
-            headers: {
-                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-            }
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to fetch products');
-        }
-        productsCache = await response.json();
-        console.log('Products fetched:', productsCache.length);
-        return productsCache;
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        showNotification(`Failed to fetch products: ${error.message}`, 'error');
-        return [];
     } finally {
         hideLoading();
     }
