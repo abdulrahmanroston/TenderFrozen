@@ -1067,94 +1067,101 @@
         const debouncedSaveSettingsAndFetch = debounce(saveSettingsAndFetch, 800);
 
         // Fetch Orders
-        async function fetchOrders(statusFilter = null) {
-            showLoading();
-            const statuses = statusFilter ? [statusFilter] : JSON.parse(localStorage.getItem('status-filter') || '[]');
-            const dateFrom = localStorage.getItem('date-from') || '';
-            const dateTo = localStorage.getItem('date-to') || '';
-            const customer = localStorage.getItem('customer-filter') || '';
-            const perPage = localStorage.getItem('per-page') || '20';
-            const sortBy = localStorage.getItem('sort-by') || 'date-desc';
-            const perPageNum = parseInt(perPage) || 20;
-            const tabsContainer = document.getElementById('warehouse-tabs-container');
-            const contentsContainer = document.getElementById('tab-contents');
-            const statsContainer = document.getElementById('stats');
-            tabsContainer.innerHTML = '';
-            contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
-            statsContainer.innerHTML = '';
-            currentOrders = [];
-            let url = '';
-
-            try {
-                url = `${storeUrl}/wp-json/wc/v3/orders?page=1&per_page=${perPageNum}`;
-                if (statuses.length > 0) url += `&status=${statuses.join(',')}`;
-                if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
-                if (dateTo) url += `&before=${dateTo}T23:59:59`;
-                if (customer) url += `&search=${customer}`;
-                const [orderBy, order] = sortBy.split('-');
-                url += `&orderby=${orderBy}&order=${order}`;
-
-                console.log('Fetching orders from URL:', url);
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-                    }
-                });
-                const contentType = response.headers.get('content-type');
-                console.log('Fetch response status:', response.status);
-                console.log('Fetch response content-type:', contentType);
-
-                if (!response.ok) {
-                    let errorText = `HTTP error! status: ${response.status}`;
-                    try {
-                        const errorJson = await response.json();
-                        console.error('API Error Response:', errorJson);
-                        errorText += `, message: ${errorJson.message || 'Unknown API error'}`;
-                    } catch (e) {
-                        const bodyText = await response.text();
-                        console.error('API Non-JSON Error Response:', bodyText);
-                        errorText += `, body: ${bodyText}`;
-                    }
-                    throw new Error(errorText);
-                }
-                if (!contentType || !contentType.includes('application/json')) {
-                    const bodyText = await response.text();
-                    console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText);
-                    throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`);
-                }
-
-                currentOrders = await response.json();
-                console.log('Orders fetched successfully:', currentOrders.length);
-                displayStats(currentOrders);
-                if (currentOrders.length > 0) {
-                    groupAndDisplayOrders(currentOrders);
-                } else {
-                    contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
-                }
-            } catch (error) {
-                console.error('Detailed error fetching orders:', error);
-                console.error('Error Name:', error.name);
-                console.error('Error Message:', error.message);
-                console.error('Error Stack:', error.stack);
-                console.error('URL attempted:', url);
-                let displayMessage = `Error loading orders: ${error.message}`;
-                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                    displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint. Please check the browser console and network tab for more details.';
-                }
-                contentsContainer.innerHTML = `
-                    <div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;">
-                        <p><strong>Error loading orders:</strong></p>
-                        <p>${error.message}</p>
-                        <p><small>Check browser console (F12) for more details.</small></p>
-                        <button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;">
-                            <i class="fas fa-sync-alt"></i> Retry
-                        </button>
-                    </div>`;
-                showNotification(displayMessage, 'error');
-            } finally {
-                hideLoading();
+     async function fetchOrders(statusFilter = null) {
+    showLoading();
+    // استخدام active-status-filter إذا كانت موجودة، وإلا استخدام status-filter أو statusFilter الممرر
+    let statuses = statusFilter ? [statusFilter] : null;
+    const activeStatusFilter = localStorage.getItem('active-status-filter');
+    if (activeStatusFilter) {
+        statuses = [activeStatusFilter];
+    } else if (!statuses) {
+        statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
+    }
+    const dateFrom = localStorage.getItem('date-from') || '';
+    const dateTo = localStorage.getItem('date-to') || '';
+    const customer = localStorage.getItem('customer-filter') || '';
+    const perPage = localStorage.getItem('per-page') || '20';
+    const sortBy = localStorage.getItem('sort-by') || 'date-desc';
+    const perPageNum = parseInt(perPage) || 20;
+    const tabsContainer = document.getElementById('warehouse-tabs-container');
+    const contentsContainer = document.getElementById('tab-contents');
+    const statsContainer = document.getElementById('stats');
+    tabsContainer.innerHTML = '';
+    contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
+    statsContainer.innerHTML = '';
+    currentOrders = [];
+    let url = '';
+    
+    try {
+        url = `${storeUrl}/wp-json/wc/v3/orders?page=1&per_page=${perPageNum}`;
+        if (statuses.length > 0) url += `&status=${statuses.join(',')}`;
+        if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+        if (dateTo) url += `&before=${dateTo}T23:59:59`;
+        if (customer) url += `&search=${customer}`;
+        const [orderBy, order] = sortBy.split('-');
+        url += `&orderby=${orderBy}&order=${order}`;
+        
+        console.log('Fetching orders from URL:', url);
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
             }
+        });
+        const contentType = response.headers.get('content-type');
+        console.log('Fetch response status:', response.status);
+        console.log('Fetch response content-type:', contentType);
+        
+        if (!response.ok) {
+            let errorText = `HTTP error! status: ${response.status}`;
+            try {
+                const errorJson = await response.json();
+                console.error('API Error Response:', errorJson);
+                errorText += `, message: ${errorJson.message || 'Unknown API error'}`;
+            } catch (e) {
+                const bodyText = await response.text();
+                console.error('API Non-JSON Error Response:', bodyText);
+                errorText += `, body: ${bodyText}`;
+            }
+            throw new Error(errorText);
         }
+        if (!contentType || !contentType.includes('application/json')) {
+            const bodyText = await response.text();
+            console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText);
+            throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`);
+        }
+        
+        currentOrders = await response.json();
+        console.log('Orders fetched successfully:', currentOrders.length);
+        displayStats(currentOrders);
+        if (currentOrders.length > 0) {
+            groupAndDisplayOrders(currentOrders);
+        } else {
+            contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
+        }
+    } catch (error) {
+        console.error('Detailed error fetching orders:', error);
+        console.error('Error Name:', error.name);
+        console.error('Error Message:', error.message);
+        console.error('Error Stack:', error.stack);
+        console.error('URL attempted:', url);
+        let displayMessage = `Error loading orders: ${error.message}`;
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint.';
+        }
+        contentsContainer.innerHTML = `
+            <div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;">
+                <p><strong>Error loading orders:</strong></p>
+                <p>${error.message}</p>
+                <p><small>Check browser console (F12) for more details.</small></p>
+                <button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>`;
+        showNotification(displayMessage, 'error');
+    } finally {
+        hideLoading();
+    }
+}
 
      function refreshOrders() {
     localStorage.removeItem('active-status-filter');
@@ -1201,13 +1208,13 @@
                 statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
             }
             statCard.addEventListener('click', () => {
-                if (activeStatus === status) {
-                    localStorage.removeItem('active-status-filter');
-                } else {
-                    localStorage.setItem('active-status-filter', status);
-                }
-                window.location.reload();
-            });
+    if (activeStatus === status) {
+        localStorage.removeItem('active-status-filter');
+    } else {
+        localStorage.setItem('active-status-filter', status);
+    }
+    window.location.reload();
+});
             statsContainer.appendChild(statCard);
         }
     });
