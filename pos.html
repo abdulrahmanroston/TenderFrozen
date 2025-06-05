@@ -779,7 +779,7 @@
             <h1><i class="fas fa-cash-register"></i> Frozen Master POS</h1>
             <div class="warehouse-buttons" id="warehouse-buttons">
                 <button class="warehouse-btn" data-warehouse="oraby"><i class="fas fa-warehouse"></i> Oraby</button>
-                <button class="warehouse-btn" data-warehouse="tagamo3"><i class="fas fa-warehouse"></i> Tagamo3</button>
+                <button class="warehouse-btn" style="display: none;" data-warehouse="tagamo3"><i class="fas fa-warehouse"></i> Tagamo3</button>
                 <button class="warehouse-btn" data-warehouse="giza"><i class="fas fa-warehouse"></i> Giza</button>
                 <button class="warehouse-btn" data-warehouse="lavista"><i class="fas fa-warehouse"></i> Lavista</button>
             </div>
@@ -1947,7 +1947,7 @@ function renderCoupons() {
     const formattedDate = selectedDate ? selectedDate.replace(/-/g, '/') : 'Not specified';
     const discountLines = [];
     if (couponDiscount > 0 && couponCode) {
-        discountLines.push(`*Coupon (${couponCode.toUpperCase()}):* -${couponDiscount.toFixed(2)} ${currency}`);
+        discountLines.push(`*Coupon:* ${couponCode.toUpperCase()}`);
     }
     const discountTextCombined = discountLines.join('\n');
     const message = `*Hello ${customerName},*\n\n` +
@@ -1958,13 +1958,13 @@ function renderCoupons() {
         `━━━━━━━━━━━━━━━━━━\n` +
         `*Subtotal:* ${subtotal.toFixed(2)} ${currency}\n\n` +
         (discountTextCombined ? `${discountTextCombined}\n\n` : '') +
+        (couponDiscount > 0 ? `*Discount Amount:* -${couponDiscount.toFixed(2)} ${currency}\n\n` : '') +
         `${feesText}\n\n` +
         `*Total:* ${total.toFixed(2)} ${currency}\n` +
         `━━━━━━━━━━━━━━━━━━\n\n` +
         `You can explore all our delicious frozen meals anytime at:\n` +
         `https://tenderfrozen.com\n\n` +
-        `*Thank you for choosing Tender Frozen!*\n\n` +
-        `We can’t wait to serve you again.`;
+        `*Thank you for choosing Tender Frozen!*\n\n`;
     let phone = document.getElementById('phone').value.replace(/\D/g, '');
     if (!phone.startsWith('+20')) {
         phone = `+20${phone}`;
