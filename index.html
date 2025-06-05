@@ -1502,7 +1502,7 @@
     detailsContainer.querySelectorAll('.send-address-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'address'); }));
     detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'order'); }));
     detailsContainer.querySelectorAll('.send-invoice-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendInvoiceToCustomer(order); }));
-    detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status); }));
+    detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status, order.payment_method); }));
     detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openProductsModal(order.id, order.line_items); }));
 }
 
@@ -1711,7 +1711,34 @@ function sendToWhatsApp(order, type) {
         }
     });
 }
-       async function openStatusModal(orderId, currentStatus) {
+
+
+async function fetchPaymentGateways() {
+    try {
+        const response = await fetch(`${storeUrl}/wp-json/wc/v3/payment_gateways`, {
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+            }
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch payment gateways');
+        }
+        const gateways = await response.json();
+        // Filter only enabled gateways
+        return gateways.filter(gateway => gateway.enabled).map(gateway => ({
+            id: gateway.id,
+            title: gateway.title || gateway.method_title || 'Unknown Payment Method'
+        }));
+    } catch (error) {
+        console.error('Error fetching payment gateways:', error);
+        showNotification(`Failed to fetch payment gateways: ${error.message}`, 'error');
+        return [];
+    }
+}
+
+
+       async function openStatusModal(orderId, currentStatus, currentPaymentMethod) {
     const statusOptions = [
         { value: 'pending', label: 'Pending Payment' },
         { value: 'processing', label: 'Processing' },
@@ -1724,6 +1751,10 @@ function sendToWhatsApp(order, type) {
         { value: 'failed', label: 'Failed' }
     ];
     const userOptions = users.length > 0 ? users.map(user => `<option value="${user.id}">${user.name} (${user.phone})</option>`).join('') : '<option value="">No delivery persons available</option>';
+    const paymentGateways = await fetchPaymentGateways();
+    const paymentOptions = paymentGateways.length > 0 ?
+        paymentGateways.map(gateway => `<option value="${gateway.id}" ${gateway.id === currentPaymentMethod ? 'selected' : ''}>${gateway.title}</option>`).join('') :
+        '<option value="">No payment methods available</option>';
     const options = statusOptions.map(opt => `<option value="${opt.value}" ${opt.value === currentStatus ? 'selected' : ''}>${opt.label}</option>`).join('');
     
     Swal.fire({
@@ -1739,6 +1770,13 @@ function sendToWhatsApp(order, type) {
                     ${userOptions}
                 </select>
             </div>
+            <div id="payment-method-section" style="display: none; margin-top: 15px;">
+                <label for="swal-payment-method">Select Payment Method</label>
+                <select id="swal-payment-method" class="swal2-select">
+                    <option value="">Keep current payment method</option>
+                    ${paymentOptions}
+                </select>
+            </div>
         `,
         showCancelButton: true,
         confirmButtonText: 'Update',
@@ -1748,16 +1786,22 @@ function sendToWhatsApp(order, type) {
         didOpen: () => {
             const statusSelect = document.getElementById('swal-status');
             const deliveryPersonSection = document.getElementById('delivery-person-section');
+            const paymentMethodSection = document.getElementById('payment-method-section');
             statusSelect.addEventListener('change', () => {
                 deliveryPersonSection.style.display = statusSelect.value === 'on-delivery' ? 'block' : 'none';
+                paymentMethodSection.style.display = statusSelect.value === 'completed' ? 'block' : 'none';
             });
             if (currentStatus === 'on-delivery') {
                 deliveryPersonSection.style.display = 'block';
+            }
+            if (currentStatus === 'completed') {
+                paymentMethodSection.style.display = 'block';
             }
         },
         preConfirm: () => {
             const status = document.getElementById('swal-status').value;
             const deliveryPersonId = document.getElementById('swal-delivery-person').value;
+            const paymentMethod = document.getElementById('swal-payment-method').value;
             if (!status) {
                 Swal.showValidationMessage('Please select a status');
                 return false;
@@ -1766,17 +1810,17 @@ function sendToWhatsApp(order, type) {
                 Swal.showValidationMessage('Please select a delivery person for On Delivery status');
                 return false;
             }
-            return { status, deliveryPersonId };
+            return { status, deliveryPersonId, paymentMethod };
         }
     }).then(async (result) => {
         if (result.isConfirmed) {
-            const { status, deliveryPersonId } = result.value;
-            await updateOrderStatus(orderId, status, deliveryPersonId);
+            const { status, deliveryPersonId, paymentMethod } = result.value;
+            await updateOrderStatus(orderId, status, deliveryPersonId, paymentMethod);
         }
     });
 }
 
-async function updateOrderStatus(orderId, newStatus, deliveryPersonId) {
+async function updateOrderStatus(orderId, newStatus, deliveryPersonId, paymentMethod) {
     showLoading();
     try {
         let body = { status: newStatus };
@@ -1789,6 +1833,17 @@ async function updateOrderStatus(orderId, newStatus, deliveryPersonId) {
                 ];
             } else {
                 throw new Error('Selected delivery person not found');
+            }
+        }
+        if (newStatus === 'completed' && paymentMethod) {
+            // Fetch payment gateways to get the title for the selected payment method
+            const paymentGateways = await fetchPaymentGateways();
+            const selectedGateway = paymentGateways.find(g => g.id === paymentMethod);
+            if (selectedGateway) {
+                body.payment_method = paymentMethod;
+                body.payment_method_title = selectedGateway.title;
+            } else {
+                throw new Error('Selected payment method not found');
             }
         }
         const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
