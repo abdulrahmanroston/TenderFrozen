@@ -1001,33 +1001,33 @@
             document.getElementById('sort-by').value = localStorage.getItem('sort-by') || 'date-desc';
         }
 
-      function saveSettingsAndFetch() {
-    const statuses = Array.from(document.querySelectorAll('input[name="status-filter"]:checked')).map(cb => cb.value);
-    localStorage.setItem('status-filter', JSON.stringify(statuses));
-    localStorage.setItem('date-from', document.getElementById('date-from').value);
-    localStorage.setItem('date-to', document.getElementById('date-to').value);
-    localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
-    localStorage.setItem('per-page', document.getElementById('per-page').value);
-    localStorage.setItem('sort-by', document.getElementById('sort-by').value);
-    localStorage.removeItem('active-status-filter');
-    window.location.reload();
-}
+        function saveSettingsAndFetch() {
+            const statuses = Array.from(document.querySelectorAll('input[name="status-filter"]:checked')).map(cb => cb.value);
+            localStorage.setItem('status-filter', JSON.stringify(statuses));
+            localStorage.setItem('date-from', document.getElementById('date-from').value);
+            localStorage.setItem('date-to', document.getElementById('date-to').value);
+            localStorage.setItem('customer-filter', document.getElementById('customer-filter').value);
+            localStorage.setItem('per-page', document.getElementById('per-page').value);
+            localStorage.setItem('sort-by', document.getElementById('sort-by').value);
+            localStorage.removeItem('active-status-filter');
+            fetchOrders();
+        }
 
-       function clearFiltersAndFetch() {
-    document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    document.getElementById('date-from').value = '';
-    document.getElementById('date-to').value = '';
-    document.getElementById('customer-filter').value = '';
-    localStorage.removeItem('status-filter');
-    localStorage.removeItem('date-from');
-    localStorage.removeItem('date-to');
-    localStorage.removeItem('customer-filter');
-    localStorage.removeItem('active-status-filter');
-    showNotification('Filters cleared', 'success');
-    window.location.reload();
-}
+        function clearFiltersAndFetch() {
+            document.querySelectorAll('input[name="status-filter"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('customer-filter').value = '';
+            localStorage.removeItem('status-filter');
+            localStorage.removeItem('date-from');
+            localStorage.removeItem('date-to');
+            localStorage.removeItem('customer-filter');
+            localStorage.removeItem('active-status-filter');
+            fetchOrders();
+            showNotification('Filters cleared', 'success');
+        }
 
         function showNotification(message, type) {
             Swal.fire({
@@ -1067,162 +1067,166 @@
         const debouncedSaveSettingsAndFetch = debounce(saveSettingsAndFetch, 800);
 
         // Fetch Orders
-     async function fetchOrders(statusFilter = null) {
-    showLoading();
-    // استخدام active-status-filter إذا كانت موجودة، وإلا استخدام status-filter أو statusFilter الممرر
-    let statuses = statusFilter ? [statusFilter] : null;
-    const activeStatusFilter = localStorage.getItem('active-status-filter');
-    if (activeStatusFilter) {
-        statuses = [activeStatusFilter];
-    } else if (!statuses) {
-        statuses = JSON.parse(localStorage.getItem('status-filter') || '[]');
-    }
-    const dateFrom = localStorage.getItem('date-from') || '';
-    const dateTo = localStorage.getItem('date-to') || '';
-    const customer = localStorage.getItem('customer-filter') || '';
-    const perPage = localStorage.getItem('per-page') || '20';
-    const sortBy = localStorage.getItem('sort-by') || 'date-desc';
-    const perPageNum = parseInt(perPage) || 20;
-    const tabsContainer = document.getElementById('warehouse-tabs-container');
-    const contentsContainer = document.getElementById('tab-contents');
-    const statsContainer = document.getElementById('stats');
-    tabsContainer.innerHTML = '';
-    contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
-    statsContainer.innerHTML = '';
-    currentOrders = [];
-    let url = '';
-    
-    try {
-        url = `${storeUrl}/wp-json/wc/v3/orders?page=1&per_page=${perPageNum}`;
-        if (statuses.length > 0) url += `&status=${statuses.join(',')}`;
-        if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
-        if (dateTo) url += `&before=${dateTo}T23:59:59`;
-        if (customer) url += `&search=${customer}`;
-        const [orderBy, order] = sortBy.split('-');
-        url += `&orderby=${orderBy}&order=${order}`;
-        
-        console.log('Fetching orders from URL:', url);
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
-            }
-        });
-        const contentType = response.headers.get('content-type');
-        console.log('Fetch response status:', response.status);
-        console.log('Fetch response content-type:', contentType);
-        
-        if (!response.ok) {
-            let errorText = `HTTP error! status: ${response.status}`;
-            try {
-                const errorJson = await response.json();
-                console.error('API Error Response:', errorJson);
-                errorText += `, message: ${errorJson.message || 'Unknown API error'}`;
-            } catch (e) {
-                const bodyText = await response.text();
-                console.error('API Non-JSON Error Response:', bodyText);
-                errorText += `, body: ${bodyText}`;
-            }
-            throw new Error(errorText);
-        }
-        if (!contentType || !contentType.includes('application/json')) {
-            const bodyText = await response.text();
-            console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText);
-            throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`);
-        }
-        
-        currentOrders = await response.json();
-        console.log('Orders fetched successfully:', currentOrders.length);
-        displayStats(currentOrders);
-        if (currentOrders.length > 0) {
-            groupAndDisplayOrders(currentOrders);
-        } else {
-            contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
-        }
-    } catch (error) {
-        console.error('Detailed error fetching orders:', error);
-        console.error('Error Name:', error.name);
-        console.error('Error Message:', error.message);
-        console.error('Error Stack:', error.stack);
-        console.error('URL attempted:', url);
-        let displayMessage = `Error loading orders: ${error.message}`;
-        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-            displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint.';
-        }
-        contentsContainer.innerHTML = `
-            <div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;">
-                <p><strong>Error loading orders:</strong></p>
-                <p>${error.message}</p>
-                <p><small>Check browser console (F12) for more details.</small></p>
-                <button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;">
-                    <i class="fas fa-sync-alt"></i> Retry
-                </button>
-            </div>`;
-        showNotification(displayMessage, 'error');
-    } finally {
-        hideLoading();
-    }
-}
+        async function fetchOrders(statusFilter = null) {
+            showLoading();
+            const statuses = statusFilter ? [statusFilter] : JSON.parse(localStorage.getItem('status-filter') || '[]');
+            const dateFrom = localStorage.getItem('date-from') || '';
+            const dateTo = localStorage.getItem('date-to') || '';
+            const customer = localStorage.getItem('customer-filter') || '';
+            const perPage = localStorage.getItem('per-page') || '20';
+            const sortBy = localStorage.getItem('sort-by') || 'date-desc';
+            const perPageNum = parseInt(perPage) || 20;
+            const tabsContainer = document.getElementById('warehouse-tabs-container');
+            const contentsContainer = document.getElementById('tab-contents');
+            const statsContainer = document.getElementById('stats');
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '<p class="no-orders">Loading orders...</p>';
+            statsContainer.innerHTML = '';
+            currentOrders = [];
+            let url = '';
 
-     function refreshOrders() {
-    localStorage.removeItem('active-status-filter');
-    showNotification('Refreshing orders...', 'info');
-    window.location.reload();
-}
+            try {
+                url = `${storeUrl}/wp-json/wc/v3/orders?page=1&per_page=${perPageNum}`;
+                if (statuses.length > 0) url += `&status=${statuses.join(',')}`;
+                if (dateFrom) url += `&after=${dateFrom}T00:00:00`;
+                if (dateTo) url += `&before=${dateTo}T23:59:59`;
+                if (customer) url += `&search=${customer}`;
+                const [orderBy, order] = sortBy.split('-');
+                url += `&orderby=${orderBy}&order=${order}`;
+
+                console.log('Fetching orders from URL:', url);
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`)
+                    }
+                });
+                const contentType = response.headers.get('content-type');
+                console.log('Fetch response status:', response.status);
+                console.log('Fetch response content-type:', contentType);
+
+                if (!response.ok) {
+                    let errorText = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorJson = await response.json();
+                        console.error('API Error Response:', errorJson);
+                        errorText += `, message: ${errorJson.message || 'Unknown API error'}`;
+                    } catch (e) {
+                        const bodyText = await response.text();
+                        console.error('API Non-JSON Error Response:', bodyText);
+                        errorText += `, body: ${bodyText}`;
+                    }
+                    throw new Error(errorText);
+                }
+                if (!contentType || !contentType.includes('application/json')) {
+                    const bodyText = await response.text();
+                    console.error('API Unexpected Content Type:', contentType, 'Body:', bodyText);
+                    throw new Error(`Expected JSON, got ${contentType}: ${bodyText}`);
+                }
+
+                currentOrders = await response.json();
+                console.log('Orders fetched successfully:', currentOrders.length);
+                displayStats(currentOrders);
+                if (currentOrders.length > 0) {
+                    groupAndDisplayOrders(currentOrders);
+                } else {
+                    
+                    contentsContainer.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
+                    contentsContainer.innerHTML = response.json;
+                }
+            } catch (error) {
+                console.error('Detailed error fetching orders:', error);
+                console.error('Error Name:', error.name);
+                console.error('Error Message:', error.message);
+                console.error('Error Stack:', error.stack);
+                console.error('URL attempted:', url);
+                let displayMessage = `Error loading orders: ${error.message}`;
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    displayMessage += '. This might be a network issue, CORS problem, or an incorrect API URL/endpoint. Please check the browser console and network tab for more details.';
+                }
+                contentsContainer.innerHTML = `
+                    <div class="no-orders" style="color: var(--danger); border: 1px solid var(--danger); background-color: #fee2e2; padding: 20px; border-radius: 8px;">
+                        <p><strong>Error loading orders:</strong></p>
+                        <p>${error.message}</p>
+                        <p><small>Check browser console (F12) for more details.</small></p>
+                        <button class="action-btn" onclick="refreshOrders()" style="background: var(--primary); color: #fff; margin-top: 10px;">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>`;
+                showNotification(displayMessage, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function refreshOrders() {
+            localStorage.removeItem('active-status-filter');
+            fetchOrders();
+            showNotification('Refreshing orders...', 'info');
+        }
 
         // Display Stats
-      function displayStats(orders) {
-    const statsContainer = document.getElementById('stats');
-    statsContainer.innerHTML = '';
-    const statusConfig = {
-        pending: { name: 'Pending', color: '#f59e0b' },
-        processing: { name: 'Processing', color: '#3b82f6' },
-        'on-hold': { name: 'On Hold', color: '#f97316' },
-        'on-delivery': { name: 'On Delivery', color: '#6366f1' },
-        delivered: { name: 'Delivered', color: '#3b82f6' },
-        completed: { name: 'Completed', color: '#10b981' },
-        cancelled: { name: 'Cancelled', color: '#ef4444' },
-        refunded: { name: 'Refunded', color: '#6b7280' },
-        failed: { name: 'Failed', color: '#991b1b' }
-    };
-    let activeStatus = localStorage.getItem('active-status-filter') || null;
-    let statusCounts = {};
-    
-    orders.forEach(order => {
-        statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
-        calculateDailyAndTomorrowOrders(order);
-    });
-    
-    Object.keys(statusConfig).forEach(status => {
-        const count = statusCounts[status] || 0;
-        if (count > 0) {
-            const config = statusConfig[status];
-            const statCard = document.createElement('div');
-            statCard.classList.add('stat-card');
-            statCard.style.backgroundColor = config.color + '20';
-            statCard.style.borderColor = config.color;
-            statCard.innerHTML = `<h3 style="color: ${config.color};">${config.name}</h3><p style="color: ${config.color};">${count}</p>`;
-            if (activeStatus === status) {
-                statCard.classList.add('active');
-                statCard.style.backgroundColor = config.color;
-                statCard.style.borderColor = config.color;
-                statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
+        function displayStats(orders) {
+            const statsContainer = document.getElementById('stats');
+            statsContainer.innerHTML = '';
+            const statusConfig = {
+    pending: { name: 'Pending', color: '#f59e0b' }, // أصفر برتقالي
+    processing: { name: 'Processing', color: '#3b82f6' }, // أزرق
+    'on-hold': { name: 'On Hold', color: '#f97316' }, // برتقالي
+    'on-delivery': { name: 'On Delivery', color: '#6366f1' }, // أزرق بنفسجي (لتمييزه عن On Hold)
+    delivered: { name: 'Delivered', color: '#3b82f6' }, // أخضر (أفتح من Completed)
+    completed: { name: 'Completed', color: '#10b981' }, // أخضر داكن
+    cancelled: { name: 'Cancelled', color: '#ef4444' }, // أحمر
+    refunded: { name: 'Refunded', color: '#6b7280' }, // رمادي
+    failed: { name: 'Failed', color: '#991b1b' } // أحمر داكن
+};
+            let activeStatus = localStorage.getItem('active-status-filter') || null;
+            let statusCounts = {};
+            let tottalSales = 0;
+            orders.forEach(order => {
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const year = today.getFullYear();
+                const formattedDate = `${day}/${month}/${year}`;
+
+                statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+                console.log(order) ;
+
+                calculateDailyAndTomorrowOrders(order)
+
+            });
+            Object.keys(statusConfig).forEach(status => {
+                const count = statusCounts[status] || 0;
+                if (count > 0) {
+                    
+                    const config = statusConfig[status];
+                    const statCard = document.createElement('div');
+                    statCard.classList.add('stat-card');
+                    statCard.style.backgroundColor = config.color + '20';
+                    statCard.style.borderColor = config.color;
+                    statCard.innerHTML = `<h3 style="color: ${config.color};">${config.name}</h3><p style="color: ${config.color};">${count}</p>`;
+                    if (activeStatus === status) {
+                        statCard.classList.add('active');
+                        statCard.style.backgroundColor = config.color;
+                        statCard.style.borderColor = config.color;
+                        statCard.innerHTML = `<h3>${config.name}</h3><p>${count}</p>`;
+                    }
+                    statCard.addEventListener('click', () => {
+                        if (activeStatus === status) {
+                            localStorage.removeItem('active-status-filter');
+                            fetchOrders();
+                        } else {
+                            localStorage.setItem('active-status-filter', status);
+                            fetchOrders(status);
+                        }
+                    });
+                    statsContainer.appendChild(statCard);
+                }
+            });
+            if (statsContainer.children.length === 0 && orders.length > 0) {
+                statsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">Stats reflect displayed orders.</p>';
             }
-            statCard.addEventListener('click', () => {
-    if (activeStatus === status) {
-        localStorage.removeItem('active-status-filter');
-    } else {
-        localStorage.setItem('active-status-filter', status);
-    }
-    window.location.reload();
-});
-            statsContainer.appendChild(statCard);
         }
-    });
-    
-    if (statsContainer.children.length === 0 && orders.length > 0) {
-        statsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">Stats reflect displayed orders.</p>';
-    }
-}
 
         // Group Orders by Warehouse
         function groupOrdersByWarehouse(orders) {
@@ -1802,7 +1806,7 @@ async function updateOrderStatus(orderId, newStatus, deliveryPersonId) {
         const updatedOrder = await response.json();
         console.log('Order status updated:', updatedOrder);
         showNotification('Order status updated successfully', 'success');
-        
+        fetchOrders();
     } catch (error) {
         console.error('Error updating order status:', error);
         showNotification(`Failed to update status: ${error.message}`, 'error');
@@ -1932,7 +1936,7 @@ async function updateOrderProducts(orderId, updatedItems) {
         console.log('Order products updated:', updatedOrder);
         showNotification('Order products updated successfully', 'success');
         productsCache = null; // Clear cache to refresh products
-        window.location.reload();
+        fetchOrders();
     } catch (error) {
         console.error('Error updating order products:', error);
         showNotification(`Failed to update products: ${error.message}`, 'error');
