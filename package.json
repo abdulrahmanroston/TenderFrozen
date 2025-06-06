@@ -1,0 +1,24 @@
+{
+  "name": "tenderfrozen-dashboard",
+  "version": "1.0.0",
+  "description": "Professional frozen products management dashboard",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "chart.js": "^4.4.0",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "gh-pages": "^6.1.0"
+  },
+  "keywords": ["dashboard", "frozen", "products", "management"],
+  "author": "TenderFrozen Team",
+  "license": "MIT"
+}
