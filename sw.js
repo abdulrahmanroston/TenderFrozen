@@ -1,7 +1,7 @@
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open('tenderfrozen-cache-v2')
+    caches.open('tenderfrozen-cache-v2.1.1')
     .then((cache) => {
       return cache.addAll([
         'https://abdulrahmanroston.github.io/TenderFrozen/',
