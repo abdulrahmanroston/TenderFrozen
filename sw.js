@@ -8,6 +8,7 @@ self.addEventListener('install', (event) => {
         'https://abdulrahmanroston.github.io/TenderFrozen/index.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/pos.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/products.html',
+        'https://abdulrahmanroston.github.io/TenderFrozen/acc.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/tf-navigation.js',
         'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon1.png',
         'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon2.png',
@@ -49,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         // Return cached response, but also check for updates  
         fetch(event.request).then((networkResponse) => {
           if (networkResponse.ok) {
-            caches.open('tenderfrozen-cache-v2.1.3').then((cache) => {
+            caches.open('tenderfrozen-cache-v2.1.4').then((cache) => {
               cache.put(event.request, networkResponse.clone());
             });
           }

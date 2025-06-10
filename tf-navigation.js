@@ -4,6 +4,7 @@ const navConfig = {
     { id: 'orders', name: 'Orders', icon: 'fas fa-shopping-cart', url: 'https://abdulrahmanroston.github.io/TenderFrozen/', relativePath: '' },
     { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', relativePath: 'products.html' },
     { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', relativePath: 'pos.html' },
+    { id: 'accounting', name: 'Accounting', icon: 'fas fa-calculator', url: 'https://abdulrahmanroston.github.io/TenderFrozen/acc.html', relativePath: 'acc.html' },
   ],
   menuTitle: 'Frozen Dashboard',
 };
