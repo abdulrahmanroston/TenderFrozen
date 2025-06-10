@@ -1448,6 +1448,7 @@
     const phone = billingInfo.phone || 'N/A';
     const orderSelectTime = orderData.additional?.order_time || 'No Selected Time';
     const orderSelectDate = orderData.additional?.order_date || 'No Selected Date';
+    const orderNote = orderData.additional.note || 'No Additional Note';
     const deliveryPersonName = getMetaValue(orderData.meta_data, 'delivery_person_name') || 'Not set';
     const deliveryPersonPhone = getMetaValue(orderData.meta_data, 'delivery_person_phone') || 'Not set';
     
@@ -1463,6 +1464,7 @@
             <h4>Customer</h4>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Phone:</strong> ${phone}</p>
+             <p><strong>Note:</strong> ${orderNote}</p>
         </div>
         <div class="section">
             <h4>Address</h4>
