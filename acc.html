@@ -1933,7 +1933,7 @@
 
         async function loadRecentTransactions() {
             try {
-                const data = await apiRequest('/cashflow?per_page=5');
+                const data = await apiRequest('/cashflow?per_page=15');
                 
                 if (data.status === 'success') {
                     const tbody = document.getElementById('recentTransactions');
