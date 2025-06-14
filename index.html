@@ -1190,7 +1190,6 @@
                 const formattedDate = `${day}/${month}/${year}`;
 
                 statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
-                console.log(order) ;
 
                 calculateDailyAndTomorrowOrders(order)
 
@@ -1446,6 +1445,7 @@
     const paymentMethod = orderData.payment_method_title || 'N/A';
     const email = billingInfo.email || 'N/A';
     const phone = billingInfo.phone || 'N/A';
+    const zoneName = billingInfo.zone_name;
     const orderSelectTime = orderData.additional?.order_time || 'No Selected Time';
     const orderSelectDate = orderData.additional?.order_date || 'No Selected Date';
     const orderNote = orderData.additional.note || 'No Additional Note';
@@ -1456,6 +1456,7 @@
         <div class="section">
             <h4>Order Details</h4>
             <p><strong>Date:</strong> ${dateCreated}</p>
+            <br/>
             <p><strong>Payment:</strong> ${paymentMethod}</p>
             <p><strong>Delivery Time:</strong> ${orderSelectTime}</p>
             <p><strong>Delivery Date:</strong> ${orderSelectDate}</p>
@@ -1469,6 +1470,7 @@
         <div class="section">
             <h4>Address</h4>
             <p><strong>Address:</strong> ${customerAddress || 'N/A'}</p>
+            <p><strong>Zone:</strong> ${zoneName || ''}</p>
             <p><strong>Location:</strong> <a href="${customerLocationLink}" target="_blank" ${customerLocationLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Location</a></p>
             <p><strong>Warehouse:</strong> ${warehouseName}</p>
         </div>
@@ -1587,7 +1589,6 @@ function copyOrder(order, forWhatsApp = false) {
         const arabicName = item.arabic_name;
         return `- ${arabicName || item.name || 'Unknown Product'} (x ${item.quantity || 0})`;
     }).join('\n\n') || '- No products';
-    console.log(getMetaValue(order.meta_data, '_billing_delivery_location') )
     const orderDetailsText = `*رقم الطلب: #${order.id || 'N/A'}*\n\n` +
         `` +
         `*العميل:* ${customerName}\n` +
