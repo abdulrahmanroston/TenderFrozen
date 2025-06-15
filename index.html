@@ -1507,7 +1507,6 @@
     detailsContainer.querySelectorAll('.send-order-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendToWhatsApp(order, 'order'); }));
     detailsContainer.querySelectorAll('.send-invoice-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); sendInvoiceToCustomer(order); }));
     detailsContainer.querySelectorAll('.update-status-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openStatusModal(order.id, order.status, order.payment_method); }));
-    detailsContainer.querySelectorAll('.edit-products-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openProductsModal(order.id, order.line_items); }));
 }
 
 function switchTab(sanitizedZone) {
@@ -1873,135 +1872,6 @@ async function updateOrderStatus(orderId, newStatus, deliveryPersonId, paymentMe
     }
 }
 
-async function openProductsModal(order) {
-    const products = await fetchProducts();
-    if (!products || products.length === 0) {
-        showNotification('No products available to edit.', 'error');
-        return;
-    }
-    const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
-    const itemsHtml = lineItems.map(item => {
-        const product = products.find(p => p.id === item.product_id) || {};
-        return `
-        <div class="product-item" data-item-id="${item.id}">
-            <input type="text" value="${item.name || ''}" disabled style="width: 60%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
-            <input type="number" class="item-quantity" value="${item.quantity || 0}" min="0" style="width: 20%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
-            <button class="action-btn remove-item-btn" style="background: var(--danger); color: #fff; padding: 8px;"><i class="fas fa-trash"></i></button>
-        </div>
-    `;
-    }).join('');
-    const productsOptions = products.map(p => `<option value="${p.id}">${p.name || 'Unknown Product'}</option>`).join('');
-    
-    Swal.fire({
-        title: 'Edit Order Products',
-        html: `
-        <div id="products-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
-            ${itemsHtml || '<p>No products in this order.</p>'}
-        </div>
-        <div style="margin-top: 15px;">
-            <select id="swal-add-product" class="swal2-select" style="width: 70%;">
-                <option value="" disabled selected>Add a product</option>
-                ${productsOptions}
-            </select>
-            <button id="swal-add-product-btn" class="action-btn" style="background: var(--success); color: #fff; margin-left: 10px;">
-                <i class="fas fa-plus"></i> Add
-            </button>
-        </div>
-    `,
-        showCancelButton: true,
-        confirmButtonText: 'Save Changes',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: 'var(--success)',
-        cancelButtonColor: 'var(--danger)',
-        width: '600px',
-        didOpen: () => {
-            const addBtn = document.getElementById('swal-add-product-btn');
-            addBtn.addEventListener('click', () => {
-                const select = document.getElementById('swal-add-product');
-                const productId = select.value;
-                if (!productId) {
-                    Swal.showValidationMessage('Please select a product to add');
-                    return;
-                }
-                const product = products.find(p => p.id == productId);
-                if (!product) return;
-                const productsList = document.getElementById('products-list');
-                const newItem = document.createElement('div');
-                newItem.classList.add('product-item');
-                newItem.dataset.itemId = `new-${Date.now()}`;
-                newItem.innerHTML = `
-                <input type="text" value="${product.name || ''}" disabled style="width: 60%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
-                <input type="number" class="item-quantity" value="1" min="0" style="width: 20%; padding: 8px; border-radius: 4px; border: 1px solid var(--border);">
-                <button class="action-btn remove-item-btn" style="background: var(--danger); color: #fff; padding: 8px;"><i class="fas fa-trash"></i></button>
-            `;
-                productsList.appendChild(newItem);
-                newItem.querySelector('.remove-item-btn').addEventListener('click', () => newItem.remove());
-                select.value = '';
-            });
-            document.querySelectorAll('.remove-item-btn').forEach(btn => {
-                btn.addEventListener('click', () => btn.closest('.product-item').remove());
-            });
-        },
-        preConfirm: () => {
-            const items = [];
-            document.querySelectorAll('.product-item').forEach(item => {
-                const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
-                const itemId = item.dataset.itemId;
-                if (quantity > 0) {
-                    if (itemId.startsWith('new-')) {
-                        const productName = item.querySelector('input[type="text"]').value;
-                        const product = products.find(p => p.name === productName);
-                        if (product) {
-                            items.push({ product_id: product.id, quantity });
-                        }
-                    } else {
-                        items.push({ id: parseInt(itemId), quantity });
-                    }
-                }
-            });
-            return items;
-        }
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            const updatedItems = result.value;
-            await updateOrderProducts(order.id, updatedItems);
-        }
-    });
-}
-
-async function updateOrderProducts(orderId, updatedItems) {
-    showLoading();
-    try {
-        const response = await fetch(`${storeUrl}/wp-json/wc/v3/orders/${orderId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'Basic ' + btoa(`${consumer_key}:${consumer_secret}`),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                line_items: updatedItems.map(item => ({
-                    id: item.id || undefined,
-                    product_id: item.product_id || undefined,
-                    quantity: item.quantity
-                }))
-            })
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to update products');
-        }
-        const updatedOrder = await response.json();
-        console.log('Order products updated:', updatedOrder);
-        showNotification('Order products updated successfully', 'success');
-        productsCache = null; // Clear cache to refresh products
-        fetchOrders();
-    } catch (error) {
-        console.error('Error updating order products:', error);
-        showNotification(`Failed to update products: ${error.message}`, 'error');
-    } finally {
-        hideLoading();
-    }
-}
 
 
 let todayCompletedTotal = 0;
@@ -2053,7 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     fetchOrders();
     document.getElementById('save-settings-btn').addEventListener('click', saveSettingsAndFetch);
-    document.getElementById('clear-filters-btn').addEventListener('click', clearFiltersAndFetch);
+    document.getElementById('clear-filters-btn').addentListener('click', clearFiltersAndFetch);
     document.getElementById('add-user-btn').addEventListener('click', addUser);
     document.getElementById('customer-filter').addEventListener('input', debouncedSaveSettingsAndFetch);
     document.getElementById('per-page').addEventListener('input', debouncedSaveSettingsAndFetch);
@@ -2064,7 +1934,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.addEventListener('change', debouncedSaveSettingsAndFetch);
     });
 });
-
 
 </script> 
 
