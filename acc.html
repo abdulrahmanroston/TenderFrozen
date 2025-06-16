@@ -769,23 +769,6 @@
         #vaultTransferModal .form-row {
             margin-bottom: 15px;
         }
-
-        /* تنسيق الأرصدة السالبة */
-        .negative-balance {
-            color: var(--danger-color) !important;
-            font-weight: bold;
-        }
-
-        .overdraft-warning {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
     </style>
 </head>
 <body>
@@ -2076,8 +2059,7 @@
                 vault_id: document.getElementById('expenseVault').value,
                 employee_id: document.getElementById('expenseEmployee').value,
                 warehouse: document.getElementById('expenseWarehouse').value,
-                description: document.getElementById('expenseDescription').value,
-                allow_negative_balance: true
+                description: document.getElementById('expenseDescription').value
             };
             
             try {
@@ -2327,8 +2309,7 @@
                 quantity: document.getElementById('purchaseQuantity').value,
                 unit_cost: document.getElementById('purchaseUnitCost').value,
                 vault_id: document.getElementById('purchaseVault').value,
-                employee_id: document.getElementById('purchaseEmployee').value,
-                allow_negative_balance: true
+                employee_id: document.getElementById('purchaseEmployee').value
             };
             
             try {
@@ -2391,7 +2372,7 @@
                         row.innerHTML = `
                             <td>${vault.name}</td>
                             <td>${vault.payment_method.replace('_', ' ').toUpperCase()}</td>
-                            <td ${balanceClass}>${balanceText}</td>
+                            <td>${formatNumber(vault.balance)}</td>
                             <td>${vault.is_default ? 'Yes' : 'No'}</td>
                             <td>
                                 <button class="btn btn-danger btn-sm" onclick="deleteVault(${vault.id})">
@@ -2420,16 +2401,7 @@
                         data.data.forEach(vault => {
                             const option = document.createElement('option');
                             option.value = vault.id;
-                            const balance = parseFloat(vault.balance);
-                        let balanceText;
-
-                        if (balance < 0) {
-                            balanceText = `-${formatNumber(Math.abs(balance))} (Overdraft)`;
-                        } else {
-                            balanceText = formatNumber(balance);
-                        }
-
-                        option.textContent = `${vault.name} (${balanceText})`;
+                            option.textContent = `${vault.name} (${formatNumber(vault.balance)})`;
                             option.dataset.balance = vault.balance;
                             select.appendChild(option);
                         });
@@ -2492,15 +2464,7 @@
             if (fromVaultSelect.selectedIndex > 0) {
                 const selectedOption = fromVaultSelect.options[fromVaultSelect.selectedIndex];
                 const balance = selectedOption.dataset.balance || 0;
-                const balanceValue = parseFloat(balance);
-    
-                if (balanceValue < 0) {
-                    balanceDisplay.textContent = `Available: -${formatNumber(Math.abs(balanceValue))} (Overdraft)`;
-                    balanceDisplay.style.color = 'var(--danger-color)';
-                } else {
-                    balanceDisplay.textContent = `Available: ${formatNumber(balanceValue)}`;
-                    balanceDisplay.style.color = 'var(--text-secondary)';
-                }
+                balanceDisplay.textContent = `Available: ${formatNumber(balance)}`;
             } else {
                 balanceDisplay.textContent = 'Available: 0.00';
             }
@@ -2542,8 +2506,7 @@
                 from_vault_id: document.getElementById('fromVault').value,
                 to_vault_id: document.getElementById('toVault').value,
                 amount: document.getElementById('transferAmount').value,
-                employee_id: document.getElementById('transferEmployee').value,
-                allow_negative_balance: true
+                employee_id: document.getElementById('transferEmployee').value
             };
             
             try {
@@ -2633,9 +2596,6 @@
                     
                     data.data.forEach(vendor => {
                         const row = document.createElement('tr');
-                        const balance = parseFloat(vault.balance);
-                        const balanceClass = balance < 0 ? 'style="color: var(--danger-color); font-weight: bold;"' : '';
-                        const balanceText = balance < 0 ? `-${formatNumber(Math.abs(balance))} (Overdraft)` : formatNumber(balance);
                         row.innerHTML = `
                             <td>${vendor.name}</td>
                             <td>${vendor.phone || '-'}</td>
@@ -2805,8 +2765,7 @@
             const formData = {
                 salary_id: document.getElementById('salaryId').value,
                 vault_id: document.getElementById('salaryVault').value,
-                employee_id: document.getElementById('salaryEmployee').value,
-                allow_negative_balance: true
+                employee_id: document.getElementById('salaryEmployee').value
             };
             
             try {
