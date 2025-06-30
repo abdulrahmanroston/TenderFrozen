@@ -5,9 +5,12 @@ const navConfig = {
     { id: 'products', name: 'Products', icon: 'fas fa-box', url: 'https://abdulrahmanroston.github.io/TenderFrozen/products.html', relativePath: 'products.html' },
     { id: 'pos', name: 'POS', icon: 'fas fa-cash-register', url: 'https://abdulrahmanroston.github.io/TenderFrozen/pos.html', relativePath: 'pos.html' },
     { id: 'accounting', name: 'Accounting', icon: 'fas fa-calculator', url: 'https://abdulrahmanroston.github.io/TenderFrozen/acc.html', relativePath: 'acc.html' },
+    { id: 'twok', name: 'T WOK Stock', icon: 'fa-solid fa-warehouse', url: 'https://abdulrahmanroston.github.io/TenderFrozen/twok.html', relativePath: 'twok.html' },
   ],
   menuTitle: 'Frozen Dashboard',
 };
+
+
 
 // Function to get the relative path segment after /TenderFrozen/
 function getRelativePath() {
