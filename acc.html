@@ -927,6 +927,7 @@
                                     <thead>
                                         <tr>
                                             <th>Type</th>
+                                            <th>Employee</th>
                                             <th>Amount</th>
                                             <th>Description</th>
                                             <th>Date</th>
@@ -963,7 +964,7 @@
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Type</th>
+                                            <th>Employee</th>
                                             <th>Category</th>
                                             <th>Amount</th>
                                             <th>Description</th>
@@ -1945,6 +1946,7 @@
                     }
                     
                     data.data.forEach(transaction => {
+                        console.log(transaction)
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>
@@ -1952,6 +1954,7 @@
                                     ${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                                 </span>
                             </td>
+                            <td>${transaction.employee_name || 'Order'}</td>
                             <td>${formatNumber(transaction.amount)}</td>
                             <td>${transaction.description || '-'}</td>
                             <td>${formatDate(transaction.created_at)}</td>
@@ -1980,9 +1983,10 @@
                     }
                     
                     data.data.forEach(expense => {
+                        console.log(expense)
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${expense.type.charAt(0).toUpperCase() + expense.type.slice(1)}</td>
+                            <td>${expense.employee_name}</td>
                             <td>${expense.category_name || 'Uncategorized'}</td>
                             <td>${formatNumber(expense.amount)}</td>
                             <td>${expense.description || '-'}</td>
