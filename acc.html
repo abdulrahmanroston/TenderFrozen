@@ -930,6 +930,8 @@
                                             <th>Employee</th>
                                             <th>Amount</th>
                                             <th>Description</th>
+                                            <th>Warehouse</th>
+                                            <th>Vault</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>
@@ -968,6 +970,8 @@
                                             <th>Category</th>
                                             <th>Amount</th>
                                             <th>Description</th>
+                                            <th>Warehouse</th>
+                                            <th>Vault</th>
                                             <th>Date</th>
                                             <th>Actions</th>
                                         </tr>
@@ -1957,6 +1961,8 @@
                             <td>${transaction.employee_name || 'Order'}</td>
                             <td>${formatNumber(transaction.amount)}</td>
                             <td>${transaction.description || '-'}</td>
+                            <td>${transaction.warehouse || '-'}</td>
+                            <td>${transaction.vault_name || '-'}</td>
                             <td>${formatDate(transaction.created_at)}</td>
                         `;
                         tbody.appendChild(row);
@@ -1990,6 +1996,8 @@
                             <td>${expense.category_name || 'Uncategorized'}</td>
                             <td>${formatNumber(expense.amount)}</td>
                             <td>${expense.description || '-'}</td>
+                            <td>${expense.warehouse || '-'}</td>
+                            <td>${expense.vault_name || '-'}</td>
                             <td>${formatDate(expense.created_at)}</td>
                             <td>
                                 <button class="btn btn-danger btn-sm" onclick="deleteExpense(${expense.id})">
