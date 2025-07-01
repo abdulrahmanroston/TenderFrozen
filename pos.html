@@ -1818,7 +1818,7 @@ function renderCoupons() {
     
     const orderData = {
         customer_id: selectedCustomer || 0,
-        status: 'processing',
+        status: 'completed',
         payment_method: paymentMethodId,
         payment_method_title: paymentMethod.title,
         billing: {
@@ -2033,6 +2033,8 @@ function renderCoupons() {
         }
 
         init();
+        
+        
     </script>
 </body>
 </html>
