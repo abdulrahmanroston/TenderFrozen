@@ -78,7 +78,7 @@
         .section:hover {
             transform: translateY(-2px);
         }
-        
+
         .products-section  {
             min-height: 80vh;
         }
@@ -770,7 +770,7 @@
                 flex-direction: row;
             }
         }
-      
+
     </style>
 </head>
 <body>
@@ -938,9 +938,10 @@
         }
 
         function getProductPrice(product, warehouse) {
-            const warehousePrice = parseFloat(getMetaValue(product.meta_data, `_price_${warehouse}`)) || 0;
-            return warehousePrice > 0 ? warehousePrice : parseFloat(product.regular_price) || 0;
-        }
+    const warehousePrice = parseFloat(getMetaValue(product.meta_data, `_price_${warehouse}`)) || 0;
+    const basePrice = parseFloat(product.regular_price) || 0;
+    return warehousePrice > 0 ? warehousePrice : basePrice;
+}
 
         function updateDiscountType() {
             const discountTypeSelect = document.getElementById('discount_type');
@@ -973,11 +974,11 @@
             couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
         }
     }
-    
+
     document.getElementById('order-subtotal').textContent = subtotal.toFixed(2);
     document.getElementById('order-discount').textContent = couponDiscount.toFixed(2);
     document.getElementById('order-total').textContent = (subtotal + deliveryFee + feeTotal - couponDiscount).toFixed(2);
-    
+
     const feeSummary = document.getElementById('fee-summary');
     feeSummary.innerHTML = '';
     if (deliveryFee > 0) {
@@ -1042,32 +1043,32 @@ async function fetchCoupons() {
         });
         if (!response.ok) throw new Error('Failed to load coupons');
         const allCoupons = await response.json();
-        
+
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0); // Normalize current date for comparison
-        
+
         // Reset coupon arrays
         percentCoupons = [];
         fixedCoupons = [];
-        
+
         allCoupons.forEach(coupon => {
             // Check if coupon is enabled
             if (coupon.status !== 'publish') return;
-            
+
             // Check expiry date (if exists)
             if (coupon.date_expires) {
                 const expiryDate = new Date(coupon.date_expires);
                 expiryDate.setHours(23, 59, 59, 999); // End of the expiry day
                 if (expiryDate < currentDate) return;
             }
-            
+
             // Check usage limits
             if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) return;
             if (coupon.usage_limit_per_user && coupon.used_by && coupon.used_by.length >= coupon.usage_limit_per_user) return;
-            
+
             // Check maximum uses (backward compatibility)
             if (coupon.maximum_uses && coupon.maximum_uses > 0 && coupon.usage_count >= coupon.maximum_uses) return;
-            
+
             // Categorize coupons
             if (coupon.discount_type === 'percent') {
                 percentCoupons.push(coupon);
@@ -1075,10 +1076,10 @@ async function fetchCoupons() {
                 fixedCoupons.push(coupon);
             }
         });
-        
+
         // Maintain the global coupons array for backward compatibility
         coupons = [...percentCoupons, ...fixedCoupons];
-        
+
         renderCoupons();
     } catch (error) {
         console.error('Coupon loading error:', error);
@@ -1097,32 +1098,32 @@ async function fetchCoupons() {
 function renderCoupons() {
     const couponSection = document.getElementById('coupon-section');
     const couponList = document.getElementById('coupon-list');
-    
+
     // Clear existing content
     couponList.innerHTML = '';
-    
+
     // Hide section if no coupons are available
     if (percentCoupons.length === 0 && fixedCoupons.length === 0) {
         couponSection.style.display = 'none';
         return;
     }
-    
+
     couponSection.style.display = 'block';
-    
+
     // Create percentage coupons dropdown
     const percentLabel = document.createElement('label');
     percentLabel.setAttribute('for', 'percent-coupons');
     percentLabel.textContent = 'Percentage Coupons:';
-    
+
     const percentSelect = document.createElement('select');
     percentSelect.id = 'percent-coupons';
     percentSelect.innerHTML = '<option value="">Select a percentage coupon</option>';
-    
+
     // Sort percentage coupons by discount amount (highest first)
     const sortedPercentCoupons = [...percentCoupons].sort((a, b) => {
         return parseFloat(b.amount) - parseFloat(a.amount);
     });
-    
+
     sortedPercentCoupons.forEach(coupon => {
         const option = document.createElement('option');
         option.value = coupon.id;
@@ -1132,21 +1133,21 @@ function renderCoupons() {
         }
         percentSelect.appendChild(option);
     });
-    
+
     // Create fixed coupons dropdown
     const fixedLabel = document.createElement('label');
     fixedLabel.setAttribute('for', 'fixed-coupons');
     fixedLabel.textContent = 'Fixed Coupons:';
-    
+
     const fixedSelect = document.createElement('select');
     fixedSelect.id = 'fixed-coupons';
     fixedSelect.innerHTML = '<option value="">Select a fixed coupon</option>';
-    
+
     // Sort fixed coupons by discount amount (highest first)
     const sortedFixedCoupons = [...fixedCoupons].sort((a, b) => {
         return parseFloat(b.amount) - parseFloat(a.amount);
     });
-    
+
     sortedFixedCoupons.forEach(coupon => {
         const option = document.createElement('option');
         option.value = coupon.id;
@@ -1156,13 +1157,13 @@ function renderCoupons() {
         }
         fixedSelect.appendChild(option);
     });
-    
+
     // Append dropdowns to couponList
     couponList.appendChild(percentLabel);
     couponList.appendChild(percentSelect);
     couponList.appendChild(fixedLabel);
     couponList.appendChild(fixedSelect);
-    
+
     // Event listeners for dropdowns
     percentSelect.onchange = (e) => {
         const couponId = parseInt(e.target.value);
@@ -1182,7 +1183,7 @@ function renderCoupons() {
         }
         updateOrderSummary();
     };
-    
+
     fixedSelect.onchange = (e) => {
         const couponId = parseInt(e.target.value);
         selectedCoupon = couponId ? fixedCoupons.find(c => c.id === couponId) : null;
@@ -1248,11 +1249,11 @@ function renderCoupons() {
                     return stock >= item.quantity;
                 });
                 orderItems.forEach(item => {
-                    const product = products.find(p => p.id === item.product_id);
-                    if (product) {
-                        item.price = getProductPrice(product, warehouse);
-                    }
-                });
+    const product = products.find(p => p.id === item.product_id);
+    if (product) {
+        item.price = getProductPrice(product, warehouse); // تحديث السعر باستخدام منطق السعر الجديد
+    }
+});
                 localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
                 categories = [];
                 products.forEach(p => {
@@ -1300,9 +1301,9 @@ function renderCoupons() {
         function renderCategoryTabs() {
             const categoryTabs = document.getElementById('category-tabs');
             categoryTabs.innerHTML = '<div class="category-tab active" data-category="all">All</div>';
-            
+
             const allTab = categoryTabs.firstChild;
-            
+
             categories.forEach(category => {
                 const tab = document.createElement('div');
                 tab.className = 'category-tab';
@@ -1315,7 +1316,7 @@ function renderCoupons() {
                 };
                 categoryTabs.appendChild(tab);
             });
-            
+
             allTab.onclick = () => {
                 document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
                 allTab.classList.add('active');
@@ -1563,7 +1564,7 @@ function renderCoupons() {
     document.getElementById('phone').value = order.billing.phone || '';
     document.getElementById('location_phone').value = getMetaValue(order.meta_data, 'location_phone') || '';
     document.getElementById('address_1').value = order.billing.address_1 || '';
-    
+
     // التحقق من location مع جعل billing.delivery_location المصدر الأساسي
     let location = order.billing.delivery_location || '';
     if (!location) {
@@ -1573,7 +1574,7 @@ function renderCoupons() {
         location = getMetaValue(order.meta_data, 'location') || '';
     }
     document.getElementById('location').value = location;
-    
+
     document.getElementById('zone_name').value = getMetaValue(order.meta_data, 'zone_name') || '';
     document.getElementById('order_date').value = getMetaValue(order.meta_data, 'order_date') || '';
     document.getElementById('order_time').value = getMetaValue(order.meta_data, 'order_time') || '12:00PM To 2:00PM';
@@ -1623,36 +1624,36 @@ function renderCoupons() {
                 const unavailableItems = [];
                 const adjustedItems = [];
                 order.line_items.forEach(item => {
-                    const product = products.find(p => p.id === item.product_id);
-                    if (!product) {
-                        unavailableItems.push(item.name);
-                        return;
-                    }
-                    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
-                    if (stock === 0) {
-                        unavailableItems.push(item.name);
-                        return;
-                    }
-                    const price = getProductPrice(product, selectedWarehouse);
-                    const quantity = Math.min(item.quantity, stock);
-                    if (quantity < item.quantity) {
-                        adjustedItems.push({ name: item.name, available: quantity });
-                    }
-                    const existingItem = orderItems.find(i => i.product_id === item.product_id);
-                    if (existingItem) {
-                        existingItem.quantity = Math.min(existingItem.quantity + quantity, stock);
-                        existingItem.price = price;
-                        existingItem.warehouse = selectedWarehouse;
-                    } else {
-                        orderItems.push({
-                            product_id: item.product_id,
-                            name: item.name,
-                            quantity: quantity,
-                            price: price,
-                            warehouse: selectedWarehouse
-                        });
-                    }
-                });
+    const product = products.find(p => p.id === item.product_id);
+    if (!product) {
+        unavailableItems.push(item.name);
+        return;
+    }
+    const stock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`));
+    if (stock === 0) {
+        unavailableItems.push(item.name);
+        return;
+    }
+    const price = getProductPrice(product, selectedWarehouse); // استخدام منطق السعر الجديد
+    const quantity = Math.min(item.quantity, stock);
+    if (quantity < item.quantity) {
+        adjustedItems.push({ name: item.name, available: quantity });
+    }
+    const existingItem = orderItems.find(i => i.product_id === item.product_id);
+    if (existingItem) {
+        existingItem.quantity = Math.min(existingItem.quantity + quantity, stock);
+        existingItem.price = price; // تحديث السعر
+        existingItem.warehouse = selectedWarehouse;
+    } else {
+        orderItems.push({
+            product_id: item.product_id,
+            name: item.name,
+            quantity: quantity,
+            price: price, // استخدام السعر المحدث
+            warehouse: selectedWarehouse
+        });
+    }
+});
                 localStorage.setItem('posOrderItems', JSON.stringify(orderItems));
                 renderOrderItems();
                 filterProducts();
@@ -1815,7 +1816,7 @@ function renderCoupons() {
             couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
         }
     }
-    
+
     const orderData = {
         customer_id: selectedCustomer || 0,
         status: 'processing',
@@ -1867,7 +1868,7 @@ function renderCoupons() {
             { key: 'note', value: document.getElementById('order_note').value }
         ]
     };
-    
+
     showLoader(true);
     try {
         const orderResponse = await fetch(`${apiUrl}/orders`, {
@@ -2027,14 +2028,14 @@ function renderCoupons() {
                     fetchProducts(warehouse);
                 });
             });
-            const defaultWarehouse = 'oraby';
+            const defaultWarehouse = 'lavista';
             fetchProducts(defaultWarehouse);
             document.getElementById('delivery_fee').addEventListener('input', updateOrderSummary);
         }
 
         init();
-        
-        
+
+
     </script>
 </body>
 </html>
