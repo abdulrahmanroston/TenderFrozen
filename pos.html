@@ -1839,7 +1839,8 @@ function renderCoupons() {
         price: parseFloat(item.price).toFixed(2),
         meta_data: [
             { key: '_warehouse', value: item.warehouse || selectedWarehouse },
-            { key: '_reduced_stock', value: item.quantity.toString() }
+            { key: '_reduced_stock', value: item.quantity.toString() },
+            { key: '_warehouse_price', value: parseFloat(item.price).toFixed(2) }
         ]
     })),
     fee_lines: [
