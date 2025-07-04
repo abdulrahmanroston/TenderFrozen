@@ -1818,56 +1818,56 @@ function renderCoupons() {
     }
 
     const orderData = {
-        customer_id: selectedCustomer || 0,
-        status: 'processing',
-        payment_method: paymentMethodId,
-        payment_method_title: paymentMethod.title,
-        billing: {
-            first_name: customerName.split(' ')[0],
-            last_name: customerName.split(' ').slice(1).join(' ') || '',
-            email: email,
-            phone: document.getElementById('phone').value,
-            address_1: document.getElementById('address_1').value
-        },
-        shipping: {
-            address_1: document.getElementById('address_1').value,
-            phone: document.getElementById('phone').value
-        },
-        line_items: orderItems.map(item => ({
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: parseFloat(item.price).toFixed(2),
-            meta_data: [
-                { key: '_warehouse', value: item.warehouse || selectedWarehouse },
-                { key: '_reduced_stock', value: item.quantity.toString() }
-            ]
-        })),
-        fee_lines: [
-            {
-                name: 'Delivery Fee',
-                total: (parseFloat(document.getElementById('delivery_fee').value) || 0).toFixed(2),
-                tax_status: 'taxable'
-            },
-            ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => ({
-                name: fee.name || 'Additional Fee',
-                total: parseFloat(fee.amount).toFixed(2),
-                tax_status: 'taxable'
-            }))
-        ],
-        coupon_lines: selectedCoupon && selectedCoupon.code ? [{
-            code: selectedCoupon.code.toUpperCase()
-        }] : [],
-        discount_total: couponDiscount > 0 ? couponDiscount.toFixed(2).toString() : "0.00",
+    customer_id: selectedCustomer || 0,
+    status: 'processing',
+    payment_method: paymentMethodId,
+    payment_method_title: paymentMethod.title,
+    billing: {
+        first_name: customerName.split(' ')[0],
+        last_name: customerName.split(' ').slice(1).join(' ') || '',
+        email: email,
+        phone: document.getElementById('phone').value,
+        address_1: document.getElementById('address_1').value
+    },
+    shipping: {
+        address_1: document.getElementById('address_1').value,
+        phone: document.getElementById('phone').value
+    },
+    line_items: orderItems.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: parseFloat(item.price).toFixed(2),
         meta_data: [
-            { key: '_selected_warehouse', value: selectedWarehouse },
-            { key: 'order_date', value: document.getElementById('order_date').value },
-            { key: 'order_time', value: document.getElementById('order_time').value },
-            { key: 'location_phone', value: document.getElementById('location_phone').value },
-            { key: '_billing_zone_name', value: document.getElementById('zone_name').value },
-            { key: '_billing_delivery_location', value: document.getElementById('location').value || '' },
-            { key: 'note', value: document.getElementById('order_note').value }
+            { key: '_warehouse', value: item.warehouse || selectedWarehouse },
+            { key: '_reduced_stock', value: item.quantity.toString() }
         ]
-    };
+    })),
+    fee_lines: [
+        {
+            name: 'Delivery Fee',
+            total: (parseFloat(document.getElementById('delivery_fee').value) || 0).toFixed(2),
+            tax_status: 'taxable'
+        },
+        ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => ({
+            name: fee.name || 'Additional Fee',
+            total: parseFloat(fee.amount).toFixed(2),
+            tax_status: 'taxable'
+        }))
+    ],
+    coupon_lines: selectedCoupon && selectedCoupon.code ? [{
+        code: selectedCoupon.code.toUpperCase()
+    }] : [],
+    discount_total: couponDiscount > 0 ? couponDiscount.toFixed(2).toString() : "0.00",
+    meta_data: [
+        { key: '_selected_warehouse', value: selectedWarehouse },
+        { key: 'order_date', value: document.getElementById('order_date').value },
+        { key: 'order_time', value: document.getElementById('order_time').value },
+        { key: 'location_phone', value: document.getElementById('location_phone').value },
+        { key: '_billing_zone_name', value: document.getElementById('zone_name').value },
+        { key: '_billing_delivery_location', value: document.getElementById('location').value || '' },
+        { key: 'note', value: document.getElementById('order_note').value }
+    ]
+};
 
     showLoader(true);
     try {
