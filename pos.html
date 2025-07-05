@@ -1705,7 +1705,67 @@ function renderCoupons() {
             }
         }
 
-        async function createOrder() {
+        // Helper function to fetch warehouse-specific price for a product
+async function getWarehousePrice(productId, warehouse) {
+    try {
+        const response = await fetch(`${apiUrl}/products/${productId}`, {
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`)
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const product = await response.json();
+        console.log(`Fetched product ${productId} for warehouse ${warehouse}:`, product);
+        
+        // Determine the price key based on the selected warehouse
+        const warehousePriceKey = `${warehouse.toLowerCase()}_price`;
+        const warehousePrice = getMetaValue(product.meta_data, warehousePriceKey);
+        
+        // Use warehouse price if valid; otherwise, fall back to regular price
+        if (warehousePrice && !isNaN(parseFloat(warehousePrice)) && parseFloat(warehousePrice) > 0) {
+            console.log(`Warehouse price for product ${productId} (${warehouse}): ${warehousePrice}`);
+            return parseFloat(warehousePrice).toFixed(2);
+        } else {
+            const regularPrice = parseFloat(product.price || product.regular_price || 0);
+            console.warn(`No valid warehouse price for product ${productId} (${warehouse}). Using regular price: ${regularPrice}`);
+            return regularPrice.toFixed(2);
+        }
+    } catch (error) {
+        console.error(`Error fetching warehouse price for product ${productId}:`, error);
+        // Fallback to the price stored in orderItems or 0 if unavailable
+        const product = orderItems.find(item => item.product_id === productId);
+        const fallbackPrice = product ? parseFloat(product.price || 0).toFixed(2) : '0.00';
+        console.warn(`Using fallback price for product ${productId}: ${fallbackPrice}`);
+        return fallbackPrice;
+    }
+}
+
+// Modified createOrder function
+// Helper function to fetch warehouse-specific price for a product
+function getWarehousePrice(productId, warehouse) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+        const warehousePriceKey = `_price_${warehouse.toLowerCase()}`;
+        const warehousePrice = getMetaValue(product.meta_data, warehousePriceKey);
+        if (warehousePrice && !isNaN(parseFloat(warehousePrice)) && parseFloat(warehousePrice) > 0) {
+            console.log(`Warehouse price for product ${productId} (${warehouse}): ${warehousePrice}`);
+            return parseFloat(warehousePrice).toFixed(2);
+        }
+        const regularPrice = parseFloat(product.price || product.regular_price || 0);
+        console.warn(`No valid warehouse price for product ${productId} (${warehouse}). Using regular price: ${regularPrice}`);
+        return regularPrice.toFixed(2);
+    }
+    // Fallback to price in orderItems if product not found
+    const orderItem = orderItems.find(item => item.product_id === productId);
+    const fallbackPrice = orderItem ? parseFloat(orderItem.price || 0).toFixed(2) : '0.00';
+    console.warn(`Product ${productId} not found in cache. Using fallback price: ${fallbackPrice}`);
+    return fallbackPrice;
+}
+
+// Modified createOrder function
+async function createOrder() {
     if (!selectedWarehouse) {
         Swal.fire({
             icon: 'error',
@@ -1760,7 +1820,9 @@ function renderCoupons() {
     }
     const paymentMethodId = selectedPaymentMethod.value;
     const paymentMethod = paymentMethods.find(m => m.id === paymentMethodId);
-    for (const item of orderItems) {
+    
+    // Validate stock and fetch warehouse-specific prices
+    const lineItems = orderItems.map(item => {
         const product = products.find(p => p.id === item.product_id);
         const currentStock = parseInt(getMetaValue(product.meta_data, `_stock_${selectedWarehouse}`)) || 0;
         if (item.quantity > currentStock) {
@@ -1773,40 +1835,30 @@ function renderCoupons() {
                 showConfirmButton: false,
                 timer: 3000
             });
-            return;
+            throw new Error(`Insufficient stock for ${item.name}`);
         }
+        const warehousePrice = getWarehousePrice(item.product_id, selectedWarehouse);
+        return {
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: parseFloat(warehousePrice),
+            subtotal: (parseFloat(warehousePrice) * item.quantity).toFixed(2),
+            total: (parseFloat(warehousePrice) * item.quantity).toFixed(2),
+            meta_data: [
+                { key: '_warehouse', value: item.warehouse || selectedWarehouse },
+                { key: '_warehouse_price', value: parseFloat(warehousePrice).toFixed(2) },
+                { key: '_reduced_stock', value: item.quantity.toString() }
+            ]
+        };
+    });
+    
+    if (!lineItems.every(item => item)) {
+        return;
     }
-    if (selectedCoupon) {
-        const currentDate = new Date();
-        const expiryDate = selectedCoupon.date_expires ? new Date(selectedCoupon.date_expires) : null;
-        if (expiryDate && expiryDate < currentDate) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Coupon',
-                text: `Coupon ${selectedCoupon.code} has expired.`,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            return;
-        }
-        if (selectedCoupon.maximum_uses > 0 && selectedCoupon.usage_count >= selectedCoupon.maximum_uses) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Coupon',
-                text: `Coupon ${selectedCoupon.code} has reached its usage limit.`,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            return;
-        }
-    }
+    
     const customerName = document.getElementById('customer_name').value;
     const email = document.getElementById('email').value;
-    const subtotal = orderItems.reduce((sum, item) => sum + (item.quantity * (parseFloat(item.price) || 0)), 0);
+    const subtotal = lineItems.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
     let couponDiscount = 0;
     if (selectedCoupon && selectedCoupon.amount && selectedCoupon.discount_type) {
         const couponAmount = parseFloat(selectedCoupon.amount) || 0;
@@ -1816,62 +1868,54 @@ function renderCoupons() {
             couponDiscount = Math.min((subtotal * couponAmount) / 100, subtotal);
         }
     }
-
+    
     const orderData = {
-    customer_id: selectedCustomer || 0,
-    status: 'processing',
-    payment_method: paymentMethodId,
-    payment_method_title: paymentMethod.title,
-    billing: {
-        first_name: customerName.split(' ')[0],
-        last_name: customerName.split(' ').slice(1).join(' ') || '',
-        email: email,
-        phone: document.getElementById('phone').value,
-        address_1: document.getElementById('address_1').value
-    },
-    shipping: {
-        address_1: document.getElementById('address_1').value,
-        phone: document.getElementById('phone').value
-    },
-    line_items: orderItems.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: parseFloat(item.price).toFixed(2),
-        meta_data: [
-            { key: '_warehouse', value: item.warehouse || selectedWarehouse },
-            { key: '_reduced_stock', value: item.quantity.toString() },
-            { key: '_warehouse_price', value: parseFloat(item.price).toFixed(2) }
-        ]
-    })),
-    fee_lines: [
-        {
-            name: 'Delivery Fee',
-            total: (parseFloat(document.getElementById('delivery_fee').value) || 0).toFixed(2),
-            tax_status: 'taxable'
+        customer_id: selectedCustomer || 0,
+        status: 'processing',
+        payment_method: paymentMethodId,
+        payment_method_title: paymentMethod.title,
+        billing: {
+            first_name: customerName.split(' ')[0],
+            last_name: customerName.split(' ').slice(1).join(' ') || '',
+            email: email,
+            phone: document.getElementById('phone').value,
+            address_1: document.getElementById('address_1').value
         },
-        ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => ({
-            name: fee.name || 'Additional Fee',
-            total: parseFloat(fee.amount).toFixed(2),
-            tax_status: 'taxable'
-        }))
-    ],
-    coupon_lines: selectedCoupon && selectedCoupon.code ? [{
-        code: selectedCoupon.code.toUpperCase()
-    }] : [],
-    discount_total: couponDiscount > 0 ? couponDiscount.toFixed(2).toString() : "0.00",
-    meta_data: [
-        { key: '_selected_warehouse', value: selectedWarehouse },
-        { key: 'order_date', value: document.getElementById('order_date').value },
-        { key: 'order_time', value: document.getElementById('order_time').value },
-        { key: 'location_phone', value: document.getElementById('location_phone').value },
-        { key: '_billing_zone_name', value: document.getElementById('zone_name').value },
-        { key: '_billing_delivery_location', value: document.getElementById('location').value || '' },
-        { key: 'note', value: document.getElementById('order_note').value }
-    ]
-};
-
+        shipping: {
+            address_1: document.getElementById('address_1').value,
+            phone: document.getElementById('phone').value
+        },
+        line_items: lineItems,
+        fee_lines: [
+            {
+                name: 'Delivery Fee',
+                total: (parseFloat(document.getElementById('delivery_fee').value) || 0).toFixed(2),
+                tax_status: 'taxable'
+            },
+            ...additionalFees.filter(fee => parseFloat(fee.amount) > 0).map(fee => ({
+                name: fee.name || 'Additional Fee',
+                total: parseFloat(fee.amount).toFixed(2),
+                tax_status: 'taxable'
+            }))
+        ],
+        coupon_lines: selectedCoupon && selectedCoupon.code ? [{
+            code: selectedCoupon.code.toUpperCase()
+        }] : [],
+        discount_total: couponDiscount > 0 ? couponDiscount.toFixed(2).toString() : "0.00",
+        meta_data: [
+            { key: '_selected_warehouse', value: selectedWarehouse },
+            { key: 'order_date', value: document.getElementById('order_date').value },
+            { key: 'order_time', value: document.getElementById('order_time').value },
+            { key: 'location_phone', value: document.getElementById('location_phone').value },
+            { key: '_billing_zone_name', value: document.getElementById('zone_name').value },
+            { key: '_billing_delivery_location', value: document.getElementById('location').value || '' },
+            { key: 'note', value: document.getElementById('order_note').value }
+        ]
+    };
+    
     showLoader(true);
     try {
+        console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
         const orderResponse = await fetch(`${apiUrl}/orders`, {
             method: 'POST',
             headers: {
@@ -1888,7 +1932,23 @@ function renderCoupons() {
         lastOrder = { ...orderData, id: order.id };
         for (const item of orderItems) {
             await updateProductStock(item.product_id, item.quantity);
+            // تحديث الكميات في مصفوفة products محليًا
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+                const stockKey = `_stock_${selectedWarehouse}`;
+                const currentStock = parseInt(getMetaValue(product.meta_data, stockKey)) || 0;
+                const newStock = currentStock - item.quantity;
+                const metaIndex = product.meta_data.findIndex(m => m.key === stockKey);
+                if (metaIndex >= 0) {
+                    product.meta_data[metaIndex].value = newStock.toString();
+                } else {
+                    product.meta_data.push({ key: stockKey, value: newStock.toString() });
+                }
+                console.log(`Updated local stock for product ${item.product_id} (${selectedWarehouse}): ${newStock}`);
+            }
         }
+        // إعادة عرض المنتجات لتحديث الكميات في واجهة المستخدم
+        await fetchProducts(selectedWarehouse);
         Swal.fire({
             icon: 'success',
             title: 'Order Created',
@@ -1906,6 +1966,7 @@ function renderCoupons() {
             clearOrder();
         });
     } catch (error) {
+        console.error('Error creating order:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
