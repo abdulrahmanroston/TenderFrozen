@@ -684,17 +684,17 @@
             border-radius: 4px;
             text-transform: uppercase;
         }
-        
+
         .badge-success {
             background-color: var(--success-color);
             color: white;
         }
-        
+
         .badge-warning {
             background-color: var(--warning-color);
             color: white;
         }
-        
+
         .badge-danger {
             background-color: var(--danger-color);
             color: white;
@@ -780,24 +780,24 @@
             </div>
             <h1 class="login-title">Accounting</h1>
             <p class="login-subtitle">Sign in to your account</p>
-            
+
             <form id="loginForm">
                 <div class="form-group">
                     <label class="form-label" for="phone">Phone Number</label>
                     <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
                     <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">
                     <span id="loginText">Sign In</span>
                     <div id="loginLoading" class="loading" style="display: none;"></div>
                 </button>
             </form>
-            
+
             <div id="loginAlert" style="display: none; margin-top: 20px;"></div>
         </div>
     </div>
@@ -812,7 +812,7 @@
                 </div>
                 <div class="sidebar-title">Accounting</div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <div class="nav-item">
                     <a href="#" class="nav-link active" data-section="dashboard">
@@ -1601,7 +1601,7 @@
 
 
         <div id="tf-navigation"></div>
-        
+
         <!-- External Scripts -->
         <script type="text/javascript" src="tf-navigation.js"></script>
 
@@ -1613,7 +1613,7 @@
         const API_BASE = 'https://tenderfrozen.com/wp-json/ffa/v1';
         let allMaterials = []; // Store all materials for search
         let vaultsData = []; // Store vaults data for reference
-        
+
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             if (authToken && currentUser.id) {
@@ -1622,10 +1622,10 @@
             } else {
                 showLogin();
             }
-            
+
             // Set current month for payroll
             document.getElementById('payrollMonth').value = new Date().toISOString().slice(0, 7);
-            
+
             // Setup event listeners
             setupEventListeners();
         });
@@ -1633,26 +1633,26 @@
         function setupEventListeners() {
             // Login form
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
+
             // Navigation
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const section = this.dataset.section;
                     showSection(section);
-                    
+
                     // Close sidebar on mobile after navigation
                     if (window.innerWidth <= 768) {
                         document.getElementById('sidebar').classList.remove('show');
                     }
                 });
             });
-            
+
             // Mobile menu toggle
             document.getElementById('mobileMenuToggle').addEventListener('click', function() {
                 document.getElementById('sidebar').classList.toggle('show');
             });
-            
+
             // Forms
             document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
             document.getElementById('purchaseForm').addEventListener('submit', handlePurchaseSubmit);
@@ -1662,21 +1662,21 @@
             document.getElementById('vaultTransferForm').addEventListener('submit', handleVaultTransferSubmit);
             document.getElementById('addFundsForm').addEventListener('submit', handleAddFundsSubmit);
             document.getElementById('paySalaryForm').addEventListener('submit', handlePaySalarySubmit);
-            
+
             // Material search
             document.getElementById('purchaseMaterialSearch').addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 const dropdown = document.getElementById('materialDropdown');
-                
+
                 if (searchTerm.length < 2) {
                     dropdown.classList.remove('show');
                     return;
                 }
-                
+
                 const filteredMaterials = allMaterials.filter(material => 
                     material.name.toLowerCase().includes(searchTerm)
                 );
-                
+
                 if (filteredMaterials.length > 0) {
                     dropdown.innerHTML = '';
                     filteredMaterials.slice(0, 10).forEach(material => {
@@ -1696,14 +1696,14 @@
                     dropdown.classList.add('show');
                 }
             });
-            
+
             // Hide material dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.material-select-container')) {
                     document.getElementById('materialDropdown').classList.remove('show');
                 }
             });
-            
+
             // Modal close on outside click
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(e) {
@@ -1717,12 +1717,12 @@
         // Authentication functions
         async function handleLogin(e) {
             e.preventDefault();
-            
+
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
-            
+
             showLoading('loginLoading', 'loginText', 'Signing in...');
-            
+
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
@@ -1731,16 +1731,16 @@
                     },
                     body: JSON.stringify({ phone, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.status === 'success') {
                     authToken = data.data.token;
                     currentUser = data.data.employee;
-                    
+
                     localStorage.setItem('ffa_token', authToken);
                     localStorage.setItem('ffa_user', JSON.stringify(currentUser));
-                    
+
                     showDashboard();
                     loadDashboardData();
                     showAlert('Login successful!', 'success');
@@ -1780,18 +1780,18 @@
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
-            
+
             // Remove active class from all nav links
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            
+
             // Show selected section
             document.getElementById(sectionName + 'Section').classList.add('active');
-            
+
             // Add active class to clicked nav link
             document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
-            
+
             // Update page title
             const titles = {
                 dashboard: 'Dashboard',
@@ -1804,7 +1804,7 @@
                 settings: 'System Settings'
             };
             document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
-            
+
             // Load section data
             switch(sectionName) {
                 case 'dashboard':
@@ -1841,7 +1841,7 @@
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
                 ${message}
             `;
-            
+
             if (containerId) {
                 const container = document.getElementById(containerId);
                 if (container) {
@@ -1853,7 +1853,7 @@
                 // Show in global alerts container
                 const alertsContainer = document.getElementById('alertsContainer');
                 alertsContainer.appendChild(alertElement);
-                
+
                 // Auto remove after 5 seconds
                 setTimeout(() => {
                     if (alertElement.parentNode) {
@@ -1888,22 +1888,22 @@
                 },
                 ...options
             };
-            
+
             try {
                 const response = await fetch(url, config);
-                
+
                 if (response.status === 401) {
                     logout();
                     showAlert('Session expired. Please login again.', 'error');
                     throw new Error('Session expired');
                 }
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.message || `HTTP error! status: ${response.status}`);
                 }
-                
+
                 return data;
             } catch (error) {
                 console.error('API request failed:', error);
@@ -1915,7 +1915,7 @@
         async function loadDashboardData() {
             try {
                 const data = await apiRequest('/dashboard');
-                
+
                 if (data.status === 'success') {
                     const currency = data.data.currency || 'USD';
                     document.getElementById('cashBalance').textContent = `${currency} ${formatNumber(data.data.cash_balance)}`;
@@ -1923,7 +1923,7 @@
                     document.getElementById('weeklySales').textContent = `${currency} ${formatNumber(data.data.weekly_sales.total)}`;
                     document.getElementById('monthlySales').textContent = `${currency} ${formatNumber(data.data.monthly_sales.total)}`;
                 }
-                
+
                 // Load recent transactions
                 loadRecentTransactions();
             } catch (error) {
@@ -1939,16 +1939,16 @@
         async function loadRecentTransactions() {
             try {
                 const data = await apiRequest('/cashflow?per_page=15');
-                
+
                 if (data.status === 'success') {
                     const tbody = document.getElementById('recentTransactions');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No transactions found</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(transaction => {
                         console.log(transaction)
                         const row = document.createElement('tr');
@@ -1978,16 +1978,16 @@
         async function loadExpenses(page = 1) {
             try {
                 const data = await apiRequest(`/expenses?page=${page}&per_page=10`);
-                
+
                 if (data.status === 'success') {
                     const tbody = document.getElementById('expensesTable');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No expenses found</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(expense => {
                         console.log(expense)
                         const row = document.createElement('tr');
@@ -2007,7 +2007,7 @@
                         `;
                         tbody.appendChild(row);
                     });
-                    
+
                     // Update pagination
                     updatePagination('expensesPagination', data.pagination, loadExpenses);
                 }
@@ -2024,7 +2024,7 @@
                 loadVaultsForSelect('expenseVault'),
                 loadEmployeesForSelect('expenseEmployee')
             ]);
-            
+
             // Set current employee as default
             const employeeSelect = document.getElementById('expenseEmployee');
             if (employeeSelect && currentUser.id) {
@@ -2035,25 +2035,25 @@
                     }
                 }
             }
-            
+
             document.getElementById('expenseModal').classList.add('show');
         }
 
         async function loadExpenseCategories() {
             try {
                 const data = await apiRequest('/expense-categories');
-                
+
                 if (data.status === 'success') {
                     const select = document.getElementById('expenseCategory');
                     if (select) {
                         select.innerHTML = '<option value="">Select Category</option>';
-                        
+
                         data.data.forEach(category => {
-                            const option = document.createElement('option');
-                            option.value = category.id;
-                            option.textContent = category.name;
-                            select.appendChild(option);
-                        });
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = `${category.name} (${category.description})`; 
+    select.appendChild(option);
+});
                     }
                 }
             } catch (error) {
@@ -2063,7 +2063,7 @@
 
         async function handleExpenseSubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 type: document.getElementById('expenseType').value,
                 category_id: document.getElementById('expenseCategory').value,
@@ -2073,13 +2073,13 @@
                 warehouse: document.getElementById('expenseWarehouse').value,
                 description: document.getElementById('expenseDescription').value
             };
-            
+
             try {
                 const data = await apiRequest('/expenses', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('expenseModal');
                     loadExpenses();
@@ -2096,28 +2096,28 @@
     if (!confirm('Are you sure you want to delete this expense? The amount will be returned to the vault.')) {
         return;
     }
-    
+
     try {
         // First get expense details to know which vault to return money to
         const expenseData = await apiRequest(`/expenses/${id}`);
-        
+
         if (expenseData.status === 'success') {
             const expense = expenseData.data;
             const vaultId = expense.vault_id;
             const amount = parseFloat(expense.amount);
-            
+
             // Get current vault balance
             const vaultData = await apiRequest(`/vaults/${vaultId}`);
-            
+
             if (vaultData.status === 'success') {
                 const currentBalance = parseFloat(vaultData.data.balance);
                 const newBalance = currentBalance + amount;
-                
+
                 // Delete the expense
                 const deleteData = await apiRequest(`/expenses/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (deleteData.status === 'success') {
                     // Update vault balance to return the money
                     const updateVaultData = await apiRequest(`/vaults/${vaultId}`, {
@@ -2128,7 +2128,7 @@
                             update_reason: `Expense deleted - returned ${amount}`
                         })
                     });
-                    
+
                     if (updateVaultData.status === 'success') {
                         loadExpenses();
                         loadDashboardData(); // Refresh dashboard to show updated balances
@@ -2147,7 +2147,7 @@
         } else {
             showAlert('Failed to get expense details.', 'error');
         }
-        
+
     } catch (error) {
         console.error('Failed to delete expense:', error);
         showAlert(error.message || 'Failed to delete expense', 'error');
@@ -2158,16 +2158,16 @@
         async function loadPurchases(page = 1) {
             try {
                 const data = await apiRequest(`/purchases?page=${page}&per_page=10`);
-                
+
                 if (data.status === 'success') {
                     const tbody = document.getElementById('purchasesTable');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No purchases found</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(purchase => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -2185,7 +2185,7 @@
                         `;
                         tbody.appendChild(row);
                     });
-                    
+
                     // Update pagination
                     updatePagination('purchasesPagination', data.pagination, loadPurchases);
                 }
@@ -2203,7 +2203,7 @@
                 loadVaultsForSelect('purchaseVault'),
                 loadEmployeesForSelect('purchaseEmployee')
             ]);
-            
+
             // Set current employee as default
             const employeeSelect = document.getElementById('purchaseEmployee');
             if (employeeSelect && currentUser.id) {
@@ -2214,7 +2214,7 @@
                     }
                 }
             }
-            
+
             document.getElementById('purchaseModal').classList.add('show');
         }
 
@@ -2223,7 +2223,7 @@
         // Try to load materials from multiple API endpoints
         let materials = [];
         let loaded = false;
-        
+
         // Try FMS API first
         try {
             const fmsResponse = await fetch('https://tenderfrozen.com/wp-json/fms/v1/materials', {
@@ -2231,7 +2231,7 @@
                     'Authorization': `Bearer ${authToken}`
                 }
             });
-            
+
             if (fmsResponse.ok) {
                 const fmsData = await fmsResponse.json();
                 if (fmsData.status === 'success' && Array.isArray(fmsData.data)) {
@@ -2246,12 +2246,12 @@
         } catch (fmsError) {
             console.log('FMS API not available, trying WordPress API...');
         }
-        
+
         // If FMS failed, try WordPress posts API
         if (!loaded) {
             try {
                 const wpResponse = await fetch('https://tenderfrozen.com/wp-json/wp/v2/material?per_page=200&_fields=id,title');
-                
+
                 if (wpResponse.ok) {
                     const wpMaterials = await wpResponse.json();
                     if (Array.isArray(wpMaterials)) {
@@ -2267,12 +2267,12 @@
                 console.log('WordPress API not available...');
             }
         }
-        
+
         // If still no materials, try custom post type
         if (!loaded) {
             try {
                 const customResponse = await fetch('https://tenderfrozen.com/wp-json/wp/v2/materials?per_page=200&_fields=id,title');
-                
+
                 if (customResponse.ok) {
                     const customMaterials = await customResponse.json();
                     if (Array.isArray(customMaterials)) {
@@ -2288,17 +2288,17 @@
                 console.log('Custom materials API not available...');
             }
         }
-        
+
         // Set loaded materials
         allMaterials = materials;
-        
+
         if (materials.length === 0) {
             console.log('No materials found from any API');
             showAlert('No materials found. Please check server connection.', 'warning');
         } else {
             console.log(`Successfully loaded ${materials.length} materials`);
         }
-        
+
     } catch (error) {
         console.error('Failed to load materials:', error);
         allMaterials = [];
@@ -2308,13 +2308,13 @@
 
         async function handlePurchaseSubmit(e) {
             e.preventDefault();
-            
+
             const materialId = document.getElementById('purchaseMaterial').value;
             if (!materialId) {
                 showAlert('Please select a material', 'error', 'purchaseModalAlert');
                 return;
             }
-            
+
             const formData = {
                 material_id: materialId,
                 vendor_id: document.getElementById('purchaseVendor').value,
@@ -2323,13 +2323,13 @@
                 vault_id: document.getElementById('purchaseVault').value,
                 employee_id: document.getElementById('purchaseEmployee').value
             };
-            
+
             try {
                 const data = await apiRequest('/purchases', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('purchaseModal');
                     loadPurchases();
@@ -2348,12 +2348,12 @@
             if (!confirm('Are you sure you want to delete this purchase?')) {
                 return;
             }
-            
+
             try {
                 const data = await apiRequest(`/purchases/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (data.status === 'success') {
                     loadPurchases();
                     showAlert('Purchase deleted successfully!', 'success');
@@ -2368,17 +2368,17 @@
         async function loadVaults() {
             try {
                 const data = await apiRequest('/vaults');
-                
+
                 if (data.status === 'success') {
                     vaultsData = data.data; // Store for reference
                     const tbody = document.getElementById('vaultsTable');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No vaults found</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(vault => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -2404,12 +2404,12 @@
         async function loadVaultsForSelect(selectId) {
             try {
                 const data = await apiRequest('/vaults');
-                
+
                 if (data.status === 'success') {
                     const select = document.getElementById(selectId);
                     if (select) {
                         select.innerHTML = '<option value="">Select Vault</option>';
-                        
+
                         data.data.forEach(vault => {
                             const option = document.createElement('option');
                             option.value = vault.id;
@@ -2434,7 +2434,7 @@
                 loadVaultsForSelect('toVault'),
                 loadEmployeesForSelect('transferEmployee')
             ]);
-            
+
             // Set current employee as default
             const employeeSelect = document.getElementById('transferEmployee');
             if (employeeSelect && currentUser.id) {
@@ -2445,7 +2445,7 @@
                     }
                 }
             }
-            
+
             document.getElementById('vaultTransferModal').classList.add('show');
         }
 
@@ -2454,7 +2454,7 @@
                 loadVaultsForSelect('fundsVault'),
                 loadEmployeesForSelect('fundsEmployee')
             ]);
-            
+
             // Set current employee as default
             const employeeSelect = document.getElementById('fundsEmployee');
             if (employeeSelect && currentUser.id) {
@@ -2465,14 +2465,14 @@
                     }
                 }
             }
-            
+
             document.getElementById('addFundsModal').classList.add('show');
         }
 
         function updateFromVaultBalance() {
             const fromVaultSelect = document.getElementById('fromVault');
             const balanceDisplay = document.getElementById('fromVaultBalance');
-            
+
             if (fromVaultSelect.selectedIndex > 0) {
                 const selectedOption = fromVaultSelect.options[fromVaultSelect.selectedIndex];
                 const balance = selectedOption.dataset.balance || 0;
@@ -2484,7 +2484,7 @@
 
         async function handleVaultSubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 name: document.getElementById('vaultName').value,
                 payment_method: document.getElementById('vaultPaymentMethod').value,
@@ -2492,13 +2492,13 @@
                 is_default: document.getElementById('vaultIsDefault').checked ? 1 : 0,
                 employees: []
             };
-            
+
             try {
                 const data = await apiRequest('/vaults', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('vaultModal');
                     loadVaults();
@@ -2513,20 +2513,20 @@
 
         async function handleVaultTransferSubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 from_vault_id: document.getElementById('fromVault').value,
                 to_vault_id: document.getElementById('toVault').value,
                 amount: document.getElementById('transferAmount').value,
                 employee_id: document.getElementById('transferEmployee').value
             };
-            
+
             try {
                 const data = await apiRequest('/vaults/transfer', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('vaultTransferModal');
                     loadVaults();
@@ -2542,23 +2542,23 @@
 
         async function handleAddFundsSubmit(e) {
             e.preventDefault();
-            
+
             const vaultId = document.getElementById('fundsVault').value;
             const amount = parseFloat(document.getElementById('fundsAmount').value);
             const description = document.getElementById('fundsDescription').value || 'Funds added to vault';
-            
+
             try {
                 // Get current vault balance
                 const vaultData = await apiRequest(`/vaults/${vaultId}`);
                 const currentBalance = parseFloat(vaultData.data.balance);
                 const newBalance = currentBalance + amount;
-                
+
                 // Update vault balance
                 const updateData = await apiRequest(`/vaults/${vaultId}`, {
                     method: 'PUT',
                     body: JSON.stringify({ balance: newBalance })
                 });
-                
+
                 if (updateData.status === 'success') {
                     closeModal('addFundsModal');
                     loadVaults();
@@ -2576,12 +2576,12 @@
             if (!confirm('Are you sure you want to delete this vault?')) {
                 return;
             }
-            
+
             try {
                 const data = await apiRequest(`/vaults/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (data.status === 'success') {
                     loadVaults();
                     showAlert('Vault deleted successfully!', 'success');
@@ -2596,16 +2596,16 @@
         async function loadVendors() {
             try {
                 const data = await apiRequest('/vendors');
-                
+
                 if (data.status === 'success') {
                     const tbody = document.getElementById('vendorsTable');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No vendors found</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(vendor => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -2631,12 +2631,12 @@
         async function loadVendorsForSelect(selectId) {
             try {
                 const data = await apiRequest('/vendors');
-                
+
                 if (data.status === 'success') {
                     const select = document.getElementById(selectId);
                     if (select) {
                         select.innerHTML = '<option value="">Select Vendor</option>';
-                        
+
                         data.data.forEach(vendor => {
                             const option = document.createElement('option');
                             option.value = vendor.id;
@@ -2656,7 +2656,7 @@
 
         async function handleVendorSubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 name: document.getElementById('vendorName').value,
                 phone: document.getElementById('vendorPhone').value,
@@ -2664,13 +2664,13 @@
                 material_ids: [],
                 payment_methods: []
             };
-            
+
             try {
                 const data = await apiRequest('/vendors', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('vendorModal');
                     loadVendors();
@@ -2687,12 +2687,12 @@
             if (!confirm('Are you sure you want to delete this vendor?')) {
                 return;
             }
-            
+
             try {
                 const data = await apiRequest(`/vendors/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (data.status === 'success') {
                     loadVendors();
                     showAlert('Vendor deleted successfully!', 'success');
@@ -2706,19 +2706,19 @@
         // Payroll functions
         async function loadPayroll() {
             const month = document.getElementById('payrollMonth').value;
-            
+
             try {
                 const data = await apiRequest(`/payroll?month=${month}`);
-                
+
                 if (data.status === 'success') {
                     const tbody = document.getElementById('payrollTable');
                     tbody.innerHTML = '';
-                    
+
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No payroll data found for this month</td></tr>';
                         return;
                     }
-                    
+
                     data.data.forEach(salary => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -2751,12 +2751,12 @@
 
         async function openPaySalaryModal(salaryId, employeeName, amount) {
             document.getElementById('salaryId').value = salaryId;
-            
+
             await Promise.all([
                 loadVaultsForSelect('salaryVault'),
                 loadEmployeesForSelect('salaryEmployee')
             ]);
-            
+
             // Set current employee as default
             const employeeSelect = document.getElementById('salaryEmployee');
             if (employeeSelect && currentUser.id) {
@@ -2767,25 +2767,25 @@
                     }
                 }
             }
-            
+
             document.getElementById('paySalaryModal').classList.add('show');
         }
 
         async function handlePaySalarySubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 salary_id: document.getElementById('salaryId').value,
                 vault_id: document.getElementById('salaryVault').value,
                 employee_id: document.getElementById('salaryEmployee').value
             };
-            
+
             try {
                 const data = await apiRequest('/payroll/pay', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     closeModal('paySalaryModal');
                     loadPayroll();
@@ -2802,14 +2802,14 @@
         // Reports functions
         async function loadReports() {
             const period = document.getElementById('reportPeriod').value;
-            
+
             try {
                 const data = await apiRequest(`/reports?period=${period}`);
-                
+
                 if (data.status === 'success') {
                     const content = document.getElementById('reportsContent');
                     const currency = data.data.currency || 'USD';
-                    
+
                     content.innerHTML = `
                         <div class="stats-grid">
                             <div class="stat-card">
@@ -2865,15 +2865,15 @@
         async function loadSettings() {
             try {
                 const data = await apiRequest('/settings');
-                
+
                 if (data.status === 'success') {
                     document.getElementById('currency').value = data.data.currency || 'USD';
                     document.getElementById('reportEmails').value = (data.data.report_emails || []).join(', ');
-                    
+
                     // Load main vault options
                     const mainVaultSelect = document.getElementById('mainVault');
                     mainVaultSelect.innerHTML = '<option value="">Select Main Vault</option>';
-                    
+
                     if (data.data.available_vaults) {
                         data.data.available_vaults.forEach(vault => {
                             const option = document.createElement('option');
@@ -2891,19 +2891,19 @@
 
         async function handleSettingsSubmit(e) {
             e.preventDefault();
-            
+
             const formData = {
                 currency: document.getElementById('currency').value,
                 main_vault: document.getElementById('mainVault').value,
                 report_emails: document.getElementById('reportEmails').value.split(',').map(email => email.trim()).filter(email => email)
             };
-            
+
             try {
                 const data = await apiRequest('/settings', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
-                
+
                 if (data.status === 'success') {
                     showAlert('Settings saved successfully!', 'success');
                 }
@@ -2917,16 +2917,16 @@
             if (!confirm('Are you sure you want to reset ALL transactions? This action cannot be undone!')) {
                 return;
             }
-            
+
             if (!confirm('This will delete all expenses, purchases, and reset all balances. Are you absolutely sure?')) {
                 return;
             }
-            
+
             try {
                 const data = await apiRequest('/reset-transactions', {
                     method: 'POST'
                 });
-                
+
                 if (data.status === 'success') {
                     showAlert('All transactions have been reset successfully!', 'success');
                     loadDashboardData();
@@ -2946,12 +2946,12 @@
                         'Authorization': `Bearer ${authToken}`
                     }
                 });
-                
+
                 const select = document.getElementById(selectId);
                 if (!select) return;
-                
+
                 select.innerHTML = '<option value="">Select Employee</option>';
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     if (data.status === 'success' && Array.isArray(data.data)) {
@@ -2964,7 +2964,7 @@
                         return;
                     }
                 }
-                
+
                 // Fallback: add current user
                 if (currentUser.id && currentUser.name) {
                     const option = document.createElement('option');
@@ -2974,7 +2974,7 @@
                 }
             } catch (error) {
                 console.error('Failed to load employees:', error);
-                
+
                 // Fallback: add current user
                 const select = document.getElementById(selectId);
                 if (select && currentUser.id && currentUser.name) {
@@ -3007,27 +3007,27 @@
         function updatePagination(containerId, pagination, loadFunction) {
             const container = document.getElementById(containerId);
             if (!container) return;
-            
+
             container.innerHTML = '';
-            
+
             if (pagination.total_pages <= 1) {
                 return;
             }
-            
+
             // Previous button
             const prevBtn = document.createElement('button');
             prevBtn.textContent = 'Previous';
             prevBtn.disabled = pagination.page <= 1;
             prevBtn.onclick = () => loadFunction(pagination.page - 1);
             container.appendChild(prevBtn);
-            
+
             // Page numbers
             for (let i = 1; i <= pagination.total_pages; i++) {
                 if (i === pagination.page || 
                     i === 1 || 
                     i === pagination.total_pages || 
                     (i >= pagination.page - 2 && i <= pagination.page + 2)) {
-                    
+
                     const pageBtn = document.createElement('button');
                     pageBtn.textContent = i;
                     pageBtn.className = i === pagination.page ? 'active' : '';
@@ -3040,7 +3040,7 @@
                     container.appendChild(dots);
                 }
             }
-            
+
             // Next button
             const nextBtn = document.createElement('button');
             nextBtn.textContent = 'Next';
@@ -3060,22 +3060,53 @@
             const searchTerm = document.getElementById(searchId).value.toLowerCase();
             const table = document.getElementById(tableId);
             const rows = table.getElementsByTagName('tr');
-            
+
             for (let i = 1; i < rows.length; i++) { // Skip header row
                 const row = rows[i];
                 const cells = row.getElementsByTagName('td');
                 let found = false;
-                
+
                 for (let j = 0; j < cells.length - 1; j++) { // Skip actions column
                     if (cells[j].textContent.toLowerCase().includes(searchTerm)) {
                         found = true;
                         break;
                     }
                 }
-                
+
                 row.style.display = found ? '' : 'none';
             }
         }
+        
+        // Disable Service Worker during development
+if ('serviceWorker' in navigator) {
+    // Unregister all existing Service Workers
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+            registration.unregister().then(() => {
+                console.log('Service Worker unregistered successfully');
+            }).catch(err => {
+                console.error('Failed to unregister Service Worker:', err);
+            });
+        }
+    }).catch(err => {
+        console.error('Error retrieving Service Worker registrations:', err);
+    });
+
+    // Optional: Clear all caches to ensure no cached resources interfere
+    if (window.caches) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    return caches.delete(cacheName).then(() => {
+                        console.log(`Cache ${cacheName} cleared`);
+                    });
+                })
+            );
+        }).catch(err => {
+            console.error('Error clearing caches:', err);
+        });
+    }
+}
     </script>
 </body>
 </html>
