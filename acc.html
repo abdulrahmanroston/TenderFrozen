@@ -3077,36 +3077,7 @@
             }
         }
         
-        // Disable Service Worker during development
-if ('serviceWorker' in navigator) {
-    // Unregister all existing Service Workers
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) {
-            registration.unregister().then(() => {
-                console.log('Service Worker unregistered successfully');
-            }).catch(err => {
-                console.error('Failed to unregister Service Worker:', err);
-            });
-        }
-    }).catch(err => {
-        console.error('Error retrieving Service Worker registrations:', err);
-    });
 
-    // Optional: Clear all caches to ensure no cached resources interfere
-    if (window.caches) {
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    return caches.delete(cacheName).then(() => {
-                        console.log(`Cache ${cacheName} cleared`);
-                    });
-                })
-            );
-        }).catch(err => {
-            console.error('Error clearing caches:', err);
-        });
-    }
-}
     </script>
 </body>
 </html>
