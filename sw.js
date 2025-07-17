@@ -1,7 +1,7 @@
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open('tenderfrozen-cache-v2.1.6')
+    caches.open('tenderfrozen-cache-v2.1.7')
     .then((cache) => {
       return cache.addAll([
         'https://abdulrahmanroston.github.io/TenderFrozen/',
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         // Return cached response, but also check for updates  
         fetch(event.request).then((networkResponse) => {
           if (networkResponse.ok) {
-            caches.open('tenderfrozen-cache-v2.1.6').then((cache) => {
+            caches.open('tenderfrozen-cache-v2.1.7').then((cache) => {
               cache.put(event.request, networkResponse.clone());
             });
           }
