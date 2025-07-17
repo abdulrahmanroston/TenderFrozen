@@ -861,6 +861,10 @@
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
+        
+        .none {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -900,7 +904,7 @@
                         <option value="oraby">Oraby</option>
                          <option value="lavista">Lavista</option>
                         <option value="manufacturing">Manufacturing</option>
-                        <option value="giza">Giza</option>
+                        <option style="display: none;" value="giza">Giza</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -910,7 +914,7 @@
                           <option value="lavista">Lavista</option>
                         <option value="manufacturing">Manufacturing</option>
                         <option value="giza">Giza</option>
-                      
+                        <option style="display: none;" value="giza">Giza</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -959,8 +963,7 @@
                 <div class="tab" data-tab="oraby">Oraby</div>
                 <div class="tab" data-tab="lavista">Lavista</div>
                 <div class="tab" data-tab="manufacturing">Manufacturing</div>
-                <div class="tab" data-tab="giza">Giza</div>
-
+                <div class="tab none" style="display: none;"  data-tab="giza">Giza</div>
             </div>
             <div class="tab-content active" id="general-tab">
                 <div class="form-group">
