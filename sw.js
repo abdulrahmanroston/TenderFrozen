@@ -9,7 +9,6 @@ self.addEventListener('install', (event) => {
         'https://abdulrahmanroston.github.io/TenderFrozen/pos.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/products.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/acc.html',
-        'https://abdulrahmanroston.github.io/TenderFrozen/twok.html',
         'https://abdulrahmanroston.github.io/TenderFrozen/tf-navigation.js',
         'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon1.png',
         'https://abdulrahmanroston.github.io/TenderFrozen/icons/icon2.png',
