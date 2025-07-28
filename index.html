@@ -1451,7 +1451,8 @@
     const orderNote = orderData.additional.note || 'No Additional Note';
     const deliveryPersonName = getMetaValue(orderData.meta_data, 'delivery_person_name') || 'Not set';
     const deliveryPersonPhone = getMetaValue(orderData.meta_data, 'delivery_person_phone') || 'Not set';
-    
+    const paymentLink = orderData.payment_url;
+    console.log(paymentLink)
     return `
         <div class="section">
             <h4>Order Details</h4>
@@ -1466,6 +1467,7 @@
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Phone:</strong> ${phone}</p>
              <p><strong>Note:</strong> ${orderNote}</p>
+             <p><strong>Payment Link:</strong> <a href="${paymentLink}" target="_blank" ${paymentLink === '#' ? 'style="color: grey; pointer-events: none; text-decoration: line-through;"' : ''}>Open Payment Link</a></p>
         </div>
         <div class="section">
             <h4>Address</h4>
