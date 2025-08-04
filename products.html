@@ -1744,7 +1744,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Please select a product.', 'error');
                 return;
             }
-            
+                 closeModal();
             const inputs = {
                 name: document.getElementById('name').value.trim(),
                 arabic_name: document.getElementById('arabic_name').value.trim(),
@@ -1910,7 +1910,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.ok) {
                         showToast('Product updated successfully!', 'success');
                         await fetchProducts();
-                        closeModal();
+        
                     } else {
                         showErrorModal(`Failed to update product: ${responseData.message || 'Unknown error'}`);
                         console.error('API Error:', responseData);
@@ -1923,8 +1923,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 showToast('No changes to update.', 'success');
-                closeModal();
+       
             }
+                   
+
         }
 
         // Transfer stock
